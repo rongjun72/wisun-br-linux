@@ -144,9 +144,39 @@ cmake -D COMPILE_SIMULATION_TOOLS=ON -G Ninja .
 
 在Linux/Ubuntu下的三个terminal中分别运行以上三个应用：
 ```bash
-  wssimserver /tmp/rf_driver
-  wshwsim /tmp/rcp_socket /tmp/rf_driver -T rf,hdlc,hif
-  wsbrd -F examples/wsbrd.conf -u /dev/pts/2 -T 15.4-mngt,15.4,eap
+###################################################################################
+# Wi-SUN br & node simulation on Linux host
+# 在Linux host上可以同时运行: wsbrd + wshwsim 和 wshwsim + wsnode。 
+# 前者是Wi-SUN BR包含从MAC sublayer到网络层，后者是完整的Wi-SUN node。
+# 上面的"+"反映的是：两个host上运行的线程间通过伪终端(PeudoTerminal)相联系，
+# 与现实中NCP到Linux host的串口/dev/ttyACMx等效。
+# 两个模拟分别与BR和Node相连的NCP的wshwsim的RF端通过socket相连，模拟空中channel。
+#
+#                         tun0
+#---------------------------------------------------------------------------------
+#                   | application     |                    | application     |
+#                   | RPL/ICMPv6/IPv6 |                    | RPL/ICMPv6/IPv6 |
+#                   | 6LowPAN         |                    | 6LowPAN         |
+#   wsbrd:          | LLC             |            wsnode: | LLC             | 
+#---------------------------------------------------------------------------------
+#                           |                                        |
+#   PeudoTerminal       /dev/pts/m                              /dev/pts/n
+#                           |                                        |
+#---------------------------------------------------------------------------------
+#   wshwsim:br      | MAC sublayer    |      wshwsim:node   | MAC sublayer   |
+#---------------------------------------------------------------------------------
+#                           |                                        |
+#  wssimserver:             |____________socket_rf_driver____________|
+#
+###################################################################################
+
+# run the following in sequence:  
+wssimserver /tmp/rf_driver
+wshwsim /tmp/rcp_socket /tmp/rf_driver -T rf,hdlc,hif
+sudo wsbrd -F examples/wsbrd.conf -u /dev/pts/2 -T 15.4-mngt,15.4,eap
+wshwsim /tmp/rcp_node_socket /tmp/rf_driver -T rf,hdlc,hif
+sudo wsnode -F examples/wsnode.conf -u /dev/pts/8 -T 15.4-mngt,15.4,eap
+# each time the number /dev/pts/# is different depend on wshwsim
 ```
 
 ## 2. MAC sublayer上移的实施方法

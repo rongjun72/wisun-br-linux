@@ -382,3 +382,36 @@ frame size (or to enable `IPV6_DONTFRAG`).
 
 Therefore, sending UDP packets with `IPV6_DONTFRAG` is recommended. Use
 `IPV6_PATHMTU` and `IPV6_RECVPATHMTU` to determine the optimal packet size.
+
+## Run `wsbrd` without RF hardware
+-------------------------------
+
+The compilation also generate binary `wshwsim` that simulate a RF device.
+This binary is not installed by default, you will find it in your build
+directory.
+
+In wshwsim main code we use `openpty()` to create a pseudo UART device (a PTY).
+When start wshwsim deamon by:
+
+    wshwsim /tmp/rcp_socket /tmp/rf_driver
+
+    ./wsbrd -A pki/ca_cert.pem -C pki/br_cert.pem -K pki/br_key.pem -u /dev/pty2
+
+The project also generate binary `wsnode` that act as a Wi-SUN node. `wsnode`
+will connect automatically to the Wi-SUN network and reply to the ping requests.
+It is sufficient for rough testing. Like `wsbrd`, `wsnode` need a RF device to
+work. The hardware can also been simulated with `wshwsim`:
+
+Finally, you can link the `wshwsim` together using a third PTY:
+
+    socat -d -d pty,raw,echo=0 pty,raw,echo=0
+      -> return /dev/pts/1 and /dev/pts/2
+    socat -d -d pty,raw,echo=0 pty,raw,echo=0
+      -> return /dev/pts/3 and /dev/pts/4
+    socat -d -d pty,raw,echo=0 pty,raw,echo=0
+      -> return /dev/pts/5 and /dev/pts/6
+    ./wshwsim -u /dev/pts/3 /dev/pts/1
+    ./wsbrd -u /dev/pts/4 -A pki/ca_cert.pem -C pki/br_cert.pem -K pki/br_key.pem
+    ./wshwsim -u /dev/pts/5 /dev/pts/2
+    ./wsnode -u /dev/pts/6 -A pki/ca_cert.pem -C pki/node_cert.pem -K pki/node_key.pem
+

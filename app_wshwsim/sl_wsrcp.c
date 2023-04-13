@@ -184,6 +184,7 @@ int pty_open(const char *dest_path, int bitrate, bool hardflow)
     else
         tty.c_cflag &= ~CRTSCTS;
     ret = openpty(&master, &slave, pty_path, &tty, NULL);
+    printf("pty_path: %s\n",pty_path); // rong debug
     if (ret < 0)
         FATAL(1, "openpty: %m");
     ret = unlink(dest_path);

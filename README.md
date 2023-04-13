@@ -415,3 +415,8 @@ Finally, you can link the `wshwsim` together using a third PTY:
     ./wshwsim -u /dev/pts/5 /dev/pts/2
     ./wsnode -u /dev/pts/6 -A pki/ca_cert.pem -C pki/node_cert.pem -K pki/node_key.pem
 
+```bash
+  wssimserver /tmp/rf_driver
+  wshwsim /tmp/rcp_socket /tmp/rf_driver -T rf,hdlc,hif
+  sudo wsbrd -F examples/wsbrd.conf -u /dev/pts/2 -T 15.4-mngt,15.4,eap
+```

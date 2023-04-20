@@ -407,6 +407,11 @@ Finally, you can link the `wshwsim` together using a third PTY:
 ```bash
 ###################################################################################
 # Wi-SUN br & node simulation on Linux host
+# 在Linux host上可以同时运行: wsbrd + wshwsim 和 wshwsim + wsnode。 
+# 前者是Wi-SUN BR包含从MAC sublayer到网络层，后者是完整的Wi-SUN node。
+# 上面的"+"反映的是：两个host上运行的线程间通过伪终端(PeudoTerminal)相联系，
+# 与现实中NCP到Linux host的串口/dev/ttyACMx等效。
+# 两个模拟分别与BR和Node相连的NCP的wshwsim的RF端通过socket相连，模拟空中channel。
 #
 #                         tun0
 #---------------------------------------------------------------------------------

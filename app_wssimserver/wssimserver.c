@@ -197,6 +197,7 @@ static void broadcast(uint64_t *node_graph, struct pollfd *fds, int fds_len, voi
     for (j = 0; j < fds_len; j++) {
         if (fds[j].fd >= 0 && bitmap_get(j, node_graph, MAX_NODES / 64)) {
             ret = write(fds[j].fd, buf, buf_len);
+            printf("-- send data to socket.%d\n",fds[j].fd);
             FATAL_ON(ret != buf_len, 1, "write: %m");
         }
     }
@@ -233,8 +234,15 @@ int main(int argc, char **argv)
     while (true) {
         ret = poll(fds, fd_limit, -1);
         FATAL_ON(ret < 0, 1, "poll: %m");
+        /* fds[0] is a socket.0 works as the interface connect RF end of all devices/nodes
+         * this socket is binded to a local file and always listening ...
+         * For every node added to this environment, there will be a socket created and connected to the socket.0
+         * for data to be transmitted from one node, it is read and than broadcasted
+         * to all other nodes
+         */
         if (fds[0].revents) {
             for (i = 0; i < fd_limit; i++) {
+                /* find a unused channel to create a socket.n connecting to socket.0 */
                 if (fds[i].fd == -1) {
                     fds[i].events = POLLIN;
                     fds[i].fd = accept(fds[0].fd, NULL, NULL);
@@ -246,6 +254,7 @@ int main(int argc, char **argv)
             if (i == fd_limit)
                 FATAL(1, "can't accept new node %d %d", i, fd_limit);
         }
+        /* to see if there is event from any channel/socket */
         for (i = 1; i < fd_limit; i++) {
             if (fds[i].revents) {
                 len = read(fds[i].fd, buf, sizeof(buf));
@@ -255,15 +264,24 @@ int main(int argc, char **argv)
                     fds[i].fd = -1;
                     fds[i].events = 0;
                 } else {
+                    /* rongjun debug code below */
+                    printf("read from socket: %d\t buffer len: %d buf=[", fds[i].fd, len);
+                    for (debug_cnt=0; debug_cnt<len; debug_cnt++)
+                        printf("%d, ", buf[debug_cnt]);
+                    printf("]\n");
+
                     broadcast(ctxt.node_graph[i - 1], fds + 1, fd_limit - 1, buf, len);
                     if (len == 6 && buf[0] == 'x' && buf[1] == 'x') {
                         len = read(fds[i].fd, buf, sizeof(buf));
+                        printf("read from socket: %d\t buffer len: %d buf=[", fds[i].fd, len);
+                        for (debug_cnt=0; debug_cnt<len; debug_cnt++)
+                            printf("%d, ", buf[debug_cnt]);
+                        printf("]\n");
                         broadcast(ctxt.node_graph[i - 1], fds + 1, fd_limit - 1, buf, len);
                     }
                 }
             }
         }
-        printf("-%d", debug_cnt++);
     }
 }
 

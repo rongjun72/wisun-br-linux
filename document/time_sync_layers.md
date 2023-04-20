@@ -171,13 +171,40 @@ cmake -D COMPILE_SIMULATION_TOOLS=ON -G Ninja .
 ###################################################################################
 
 # run the following in sequence:  
-wssimserver /tmp/rf_driver
-wshwsim /tmp/rcp_socket /tmp/rf_driver -T rf,hdlc,hif
-sudo wsbrd -F examples/wsbrd.conf -u /dev/pts/2 -T 15.4-mngt,15.4,eap
-wshwsim /tmp/rcp_node_socket /tmp/rf_driver -T rf,hdlc,hif
+rm -f /tmp/rf_driver /tmp/wsbr_rcp_pty /tmp/wsnode_rcp_pty; wssimserver /tmp/rf_driver
+wshwsim /tmp/wsbr_rcp_pty /tmp/rf_driver -T rf,hdlc,hif
+sudo wsbrd -F examples/wsbrd.conf -u /dev/pts/6 -T 15.4-mngt,15.4,eap
+wshwsim /tmp/wsnode_rcp_pty /tmp/rf_driver -T rf,hdlc,hif
 sudo wsnode -F examples/wsnode.conf -u /dev/pts/8 -T 15.4-mngt,15.4,eap
 # each time the number /dev/pts/# is different depend on wshwsim
 ```
+
+### 1.1 wssimserver的作用
+
+```bash
+#
+#  BR_linux
+#     |   
+#  BR_RCP                                 Linux_node1
+#     |                                        |
+#     |                               |--- RCP_node1
+#     |                               |   
+#     |                               | socket[2]      Linux_node2
+#     |                               |                     |
+#     |                               |    |---------- RCP_node2 
+#     |             socket[0]         |    | 
+#     |      ====================     |    | socket[3]
+#     |         -  -  -  -  -   <-----|    |                  Linux_node3
+#     L------>    -  -  -  -    <----------|                       |
+#  socket[1]    -  -  -  -  -   <----------------------------- RCP_node3
+#            ====================        scoket[4]
+#
+```
+
+wssimserver应用会创建一个用于进程间通信的socket[0]这个socket用来模拟空中信道。
+这个socket会被绑定(bind)到一个本地文件，并且一直处于监听(listen)状态。
+每当系统中增加了一个设备(Wi-SUN node/BR)，该设备都会连接这个socket.0，server中会由此接收并生成一个连接它的socket[i]。
+当某个设备向空中发送信号时，相应的socket[j].revent事件响应中就会首先读入前面发送的信号然后把它通过socket[i](i!=j)广播给系统中其他的设备。
 
 ## 2. MAC sublayer上移的实施方法
 wshwsim就是在Linux host上运行的MAC sublayer，它与运行Wi-SUN应用层、网络层的wsbrd通过伪终端相连，而且都运行在linux host上。
@@ -185,3 +212,42 @@ MAC sublayer实际上本来就已经上移了。只是目前wshwsim只是个模�
 所以上移工作应该分两步：
  - 将基于socket连接的RF driver连接到真实的串口(ttyACMx)
  - 将wsbrd与wshwsim之间的适应层(spinel-uart-spinel)去除，变成一个appl->RPL/UDP/TCP->IPv6->6LowPAN->LLC->MACsublayer的完整应用。
+
+### 2.1 RF_driver连接真实射频前端
+```bash
+wshwsim /tmp/wsbr_rcp_pty /tmp/rf_driver
+```
+上面第二个参数是：socket_open(const char *path)的输入参数，这使得wshwsim的射频端与wssimserver的socket相连。
+把socket_open改为：pty_open(const char *dest_path, int bitrate, bool hardflow)可以将RF端与实际串口(或伪终端)相连。
+另外，我们需要通过串口连接的射频前端。这个可以通过Silabs的RAIL实现。
+
+**问题**：
+ - Host上运行的sl_wsrcp与射频前端通过串口连接，**传输时延**如何考虑？传输需要差错控制吗？
+ - FHSS如何实现？RCP中FHHS接收上层传来的广播和单播的确定参数(BDI, UDI, 广播、单播计划，time_stamp), 在每个数据帧发送接收时
+   按上面的参数确定当前帧发送或接收的时间和信道。 
+
+mac_mlme_rf_channel_change()
+phy_rf_tx()中会组织好PHY帧，其帧结构："xx" + data_len + channel + data(data length = data_len)
+一个完整的帧的发送分成连续的两次发送：
+ - 1. 帧头发送："xx" + data_len + channel
+ - 2. payload发送： data with length = data_len
+ 
+rf_init(void), nanostack_rf_phy_cmt2310a_init()
+in mbed-os\connectivity\drivers\802.15.4_RF\cmostek-cmt2310a-rf-driver\source\nanostack_rf_phy_cmt2310a.c
+
+rf_pin_init(rf_pin_t* interface, PinName spi_sdi, PinName spi_sdo, PinName spi_sclk, PinName spi_cs, PinName spi_sdn, PinName irq_pin, PinName gpio1)
+
+CMT2310A作为Wi-SUN BR的射频前端与国民技术的MCU EV board通过4-wire SPI和几个GPIO相连。CMT2310A主要实现15.4PHY功能，包括CSMA、自动跳频收发、RSSI估计等。
+Linux Host 只能通过ttyACMx方式与外部设备相连，无法向国民技术EVB+CMT2310A那样连接。Linux host还是要通过串口(需要spinel)与EVB相连而EVB上挂载RF前端。
+MCU只需要完成PHY-SAP的工作。
+```c
+    cmt2310a_phy_interface->_spi_sdi   = CMT2310A_SPI_SDI;
+    cmt2310a_phy_interface->_spi_sdo   = CMT2310A_SPI_SDO;
+    cmt2310a_phy_interface->_spi_sclk  = CMT2310A_SPI_SCLK;
+    cmt2310a_phy_interface->_spi_cs    = CMT2310A_SPI_CS;
+    cmt2310a_phy_interface->_spi_sdn   = CMT2310A_SPI_SDN;
+    cmt2310a_phy_interface->_spi_gpio0 = CMT2310A_SPI_GPIO0;
+    cmt2310a_phy_interface->_spi_gpio1 = CMT2310A_SPI_GPIO1;
+    cmt2310a_phy_interface->_spi_gpio2 = CMT2310A_SPI_GPIO2;
+    cmt2310a_phy_interface->_spi_gpio3 = CMT2310A_SPI_GPIO3;
+```

@@ -478,6 +478,75 @@ if(COMPILE_SIMULATION_TOOLS)
     endif()
     install(TARGETS wshwsim RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+    add_executable(wsmac
+        version.c
+        common/crc.c
+        common/bus_uart.c
+        common/hal_interrupt.c
+        common/os_scheduler.c
+        common/log.c
+        common/bits.c
+        common/rand.c
+        common/slist.c
+        common/spinel_buffer.c
+        stack-services/common_functions.c
+        stack-services/ip6string.c
+        stack-services/ns_list.c
+        stack-scheduler/source/event.c
+        app_wsmac/timer_sys_stub.c
+        app_wsmac/sl_wsmac.c
+        app_wsmac/sl_wsrcp_mac.c
+        app_wsmac/sl_rf_driver.c
+        app_wsmac/hal_fhss_timer.c
+        app_wsmac/mac/rf_driver_storage.c
+        app_wsmac/mac/ieee802154/mac_cca_threshold.c
+        app_wsmac/mac/ieee802154/mac_fhss_callbacks.c
+        app_wsmac/mac/ieee802154/mac_filter.c
+        app_wsmac/mac/ieee802154/mac_header_helper_functions.c
+        app_wsmac/mac/ieee802154/mac_indirect_data.c
+        app_wsmac/mac/ieee802154/mac_mcps_sap.c
+        app_wsmac/mac/ieee802154/mac_mlme.c
+        app_wsmac/mac/ieee802154/mac_pd_sap.c
+        app_wsmac/mac/ieee802154/mac_security_mib.c
+        app_wsmac/mac/ieee802154/mac_timer.c
+        app_wsmac/mac/ieee802154/sw_mac.c
+        app_wsmac/ccm/ccm_security.c
+        app_wsmac/ccm/mbedOS/aes_mbedtls_adapter.c
+        app_wsmac/fhss/channel_functions.c
+        app_wsmac/fhss/fhss_common.c
+        app_wsmac/fhss/fhss_configuration_interface.c
+        app_wsmac/fhss/fhss_statistics.c
+        app_wsmac/fhss/fhss_ws.c
+        app_wsmac/os_timer.c
+        # Excluded app_wsmac/fhss/fhss_test_api.c
+    )
+    target_include_directories(wsmac PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        app_wsmac/
+        stack-scheduler/
+        stack/
+    )
+    # target_compile_definitions(wsmac PRIVATE FHSS_CHANNEL_DEBUG)
+    # target_compile_definitions(wsmac PRIVATE TIMING_TOOL_TRACES)
+    # target_compile_definitions(wsmac PRIVATE EXTRA_DEBUG_INFO)
+    target_link_libraries(wsmac PRIVATE Threads::Threads)
+    target_link_libraries(wsmac PRIVATE MbedTLS::mbedtls)
+    target_link_libraries(wsmac PRIVATE util)
+    if(LIBPCAP_FOUND)
+        target_compile_definitions(wsmac PRIVATE HAVE_LIBPCAP)
+        target_link_libraries(wsmac PRIVATE PkgConfig::LIBPCAP)
+    endif()
+    if(BACKTRACE_FOUND)
+        target_compile_definitions(wsmac PRIVATE HAVE_BACKTRACE)
+        target_sources(wsmac PRIVATE common/backtrace_show.c)
+        target_link_libraries(wsmac PRIVATE backtrace)
+    endif()
+    if(LIBDL_FOUND)
+        target_compile_definitions(wsmac PRIVATE HAVE_LIBDL)
+        target_link_libraries(wsmac PRIVATE ${CMAKE_DL_LIBS})
+    endif()
+    install(TARGETS wsmac RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
     add_executable(wssimserver
         common/log.c
         common/bits.c

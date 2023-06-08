@@ -209,6 +209,7 @@ int main(int argc, char **argv)
     int on = 1;
     int ret, len;
     int fd_limit;
+    int debug_cnt;
     struct pollfd fds[MAX_NODES + 1] = { };
     struct ctxt ctxt = {
         .addr.sun_family = AF_UNIX
@@ -262,6 +263,7 @@ int main(int argc, char **argv)
                 }
             }
         }
+        printf("-%d", debug_cnt++);
     }
 }
 

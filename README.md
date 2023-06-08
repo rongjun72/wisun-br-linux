@@ -404,14 +404,33 @@ work. The hardware can also been simulated with `wshwsim`:
 
 Finally, you can link the `wshwsim` together using a third PTY:
 
-    socat -d -d pty,raw,echo=0 pty,raw,echo=0
-      -> return /dev/pts/1 and /dev/pts/2
-    socat -d -d pty,raw,echo=0 pty,raw,echo=0
-      -> return /dev/pts/3 and /dev/pts/4
-    socat -d -d pty,raw,echo=0 pty,raw,echo=0
-      -> return /dev/pts/5 and /dev/pts/6
-    ./wshwsim -u /dev/pts/3 /dev/pts/1
-    ./wsbrd -u /dev/pts/4 -A pki/ca_cert.pem -C pki/br_cert.pem -K pki/br_key.pem
-    ./wshwsim -u /dev/pts/5 /dev/pts/2
-    ./wsnode -u /dev/pts/6 -A pki/ca_cert.pem -C pki/node_cert.pem -K pki/node_key.pem
+```bash
+###################################################################################
+# Wi-SUN br & node simulation on Linux host
+#
+#                         tun0
+#---------------------------------------------------------------------------------
+#                   | application     |                    | application     |
+#                   | RPL/ICMPv6/IPv6 |                    | RPL/ICMPv6/IPv6 |
+#                   | 6LowPAN         |                    | 6LowPAN         |
+#   wsbrd:          | LLC             |            wsnode: | LLC             | 
+#---------------------------------------------------------------------------------
+#                           |                                        |
+#   PeudoTerminal       /dev/pts/m                              /dev/pts/n
+#                           |                                        |
+#---------------------------------------------------------------------------------
+#   wshwsim:br      | MAC sublayer    |      wshwsim:node   | MAC sublayer   |
+#---------------------------------------------------------------------------------
+#                           |                                        |
+#  wssimserver:             |____________socket_rf_driver____________|
+#
+###################################################################################
 
+# run the following in sequence:  
+wssimserver /tmp/rf_driver
+wshwsim /tmp/rcp_socket /tmp/rf_driver -T rf,hdlc,hif
+sudo wsbrd -F examples/wsbrd.conf -u /dev/pts/2 -T 15.4-mngt,15.4,eap
+wshwsim /tmp/rcp_node_socket /tmp/rf_driver -T rf,hdlc,hif
+sudo wsnode -F examples/wsnode.conf -u /dev/pts/8 -T 15.4-mngt,15.4,eap
+# each time the number /dev/pts/# is different depend on wshwsim
+```

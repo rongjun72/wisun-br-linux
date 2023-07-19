@@ -430,6 +430,8 @@ Read [RFC 8900][13] for more insights on the question.
 
 <br clear="right"/><!-- Right align the Wi-SUN Logo -->
 
+# Wi-SUN br & node simulation on Linux host
+
 The compilation also generate binary `wshwsim` that simulate a RF device.
 This binary is not installed by default, you will find it in your build
 directory.
@@ -482,4 +484,53 @@ sudo wsbrd -F examples/wsbrd.conf -u /dev/pts/2 -T 15.4-mngt,15.4,eap
 wshwsim /tmp/rcp_node_socket /tmp/rf_driver -T rf,hdlc,hif
 sudo wsnode -F examples/wsnode.conf -u /dev/pts/8 -T 15.4-mngt,15.4,eap
 # each time the number /dev/pts/# is different depend on wshwsim
+```
+
+# Set up wisun-br-linux + RCP on RaspberryPi4B
+
+ * burn a clean RaspIOS(desktop) on a TF card (>32G), using RaspberryPi imager 
+ * insert TF card into Pi4B start finshing remaining set up
+ * open a terminal on RaspPiIOS, Generating a new SSH key:
+```bash
+ssh-keygen -t ed25519 -C "rong72@yeah.net"
+cat .ssh/id_ed25519.pub 
+# then copy the crypto string to your github profile
+```
+ * update/upgrade and install essencial tools on RaspPiIOS as below:
+```bash
+sudo apt update -y; sudo apt upgrade -y
+sudo apt install git net-tools ssh traceroute g++ lm-sensors tcpdump -y
+sudo apt install libnl-3-dev libnl-route-3-dev libcap-dev libpcap-dev -y
+sudo apt install libsystemd-dev libdbus-1-dev cargo cmake ninja-build pkg-config lrzsz -y
+``` 
+ * enable ipv6 forward on RaspPi4B
+```bash
+# edit /etc/sysctl.conf as the following 2 lines
+# net.ipv4.ip_forward=1
+# net.ipv6.conf.all.forwarding=1
+sudo nano /etc/sysctl.conf
+# activate the changes immedialtely
+sudo sysctl -p
+```
+ * get and compile mbedtls (currently v3.0.0)
+```bash
+cd ~
+mkdir Git_repository
+cd Git_repository
+# clone, build and install mbedtls
+git clone --branch=v3.0.0 https://github.com/ARMmbed/mbedtls
+cd mbedtls
+cmake -G Ninja .
+ninja
+sudo ninja install
+```
+ * get, build and install wisun-br-linux
+```bash
+# clone, build and install wisun-linux-br
+cd ~/Git_repository
+git clone git@github.com:rongjun72/wisun-br-linux.git
+cd wisun-br-linux
+cmake -G Ninja .
+ninja
+sudo ninja install
 ```

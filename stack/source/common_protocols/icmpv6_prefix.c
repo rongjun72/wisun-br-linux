@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2017, 2019, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +21,7 @@
 #include <stdlib.h>
 #include "common/bits.h"
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 
 #include "common_protocols/icmpv6_prefix.h"
 
@@ -66,11 +67,3 @@ prefix_entry_t *icmpv6_prefix_compare(prefix_list_t *list, const uint8_t *addr, 
     return NULL;
 }
 
-
-void icmpv6_prefix_list_free(prefix_list_t *list)
-{
-    ns_list_foreach_safe(prefix_entry_t, cur, list) {
-        ns_list_remove(list, cur);
-        free(cur);
-    }
-}

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,12 +19,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include <inttypes.h>
+#include "common/endian.h"
 #include "common/trickle.h"
 #include "common/rand.h"
 #include "common/bits.h"
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
-#include "stack-services/common_functions.h"
+#include "common/ns_list.h"
+#include "common/serial_number_arithmetic.h"
 #include "stack/timers.h"
 
 #include "core/ns_buffer.h"
@@ -136,7 +138,7 @@ static uint8_t mpl_buffer_sequence(const mpl_buffered_message_t *message)
 
 static uint16_t mpl_buffer_size(const mpl_buffered_message_t *message)
 {
-    return IPV6_HDRLEN + common_read_16_bit(message->message + IPV6_HDROFF_PAYLOAD_LENGTH);
+    return IPV6_HDRLEN + read_be16(message->message + IPV6_HDROFF_PAYLOAD_LENGTH);
 }
 
 mpl_domain_t *mpl_domain_lookup(struct net_if *cur, const uint8_t address[16])
@@ -345,7 +347,7 @@ static void mpl_seed_advance_min_sequence(mpl_seed_t *seed, uint8_t min_sequence
 {
     seed->min_sequence = min_sequence;
     ns_list_foreach_safe(mpl_buffered_message_t, message, &seed->messages) {
-        if (common_serial_number_greater_8(min_sequence, mpl_buffer_sequence(message))) {
+        if (serial_number_cmp8(min_sequence, mpl_buffer_sequence(message))) {
             mpl_buffer_delete(seed, message);
         }
     }
@@ -412,7 +414,7 @@ static mpl_buffered_message_t *mpl_buffer_create(buffer_t *buf, mpl_domain_t *do
      *    accept this message. (If we forced min_sequence to 2, we'd end up processing
      *    message 3 again).
      */
-    if (common_serial_number_greater_8(seed->min_sequence, sequence)) {
+    if (serial_number_cmp8(seed->min_sequence, sequence)) {
         tr_debug("Can no longer accept %"PRIu8" < %"PRIu8, sequence, seed->min_sequence);
         return NULL;
     }
@@ -439,7 +441,7 @@ static mpl_buffered_message_t *mpl_buffer_create(buffer_t *buf, mpl_domain_t *do
     /* Messages held ordered - eg for benefit of mpl_seed_bm_len() */
     bool inserted = false;
     ns_list_foreach_reverse(mpl_buffered_message_t, m, &seed->messages) {
-        if (common_serial_number_greater_8(sequence, mpl_buffer_sequence(m))) {
+        if (serial_number_cmp8(sequence, mpl_buffer_sequence(m))) {
             ns_list_add_after(&seed->messages, m, message);
             inserted = true;
             break;
@@ -727,7 +729,7 @@ buffer_t *mpl_control_handler(buffer_t *buf, struct net_if *cur)
         seed->colour = new_colour;
         /* They are assumed to not be interested in messages lower than their min_seqno */
         ns_list_foreach(mpl_buffered_message_t, message, &seed->messages) {
-            if (common_serial_number_greater_8(min_seqno, mpl_buffer_sequence(message))) {
+            if (serial_number_cmp8(min_seqno, mpl_buffer_sequence(message))) {
                 message->colour = new_colour;
             }
         }
@@ -735,7 +737,7 @@ buffer_t *mpl_control_handler(buffer_t *buf, struct net_if *cur)
             if (bitrtest(ptr, i)) {
                 mpl_buffered_message_t *message = mpl_buffer_lookup(seed, min_seqno + i);
 
-                if (!message && common_serial_number_greater_8(min_seqno + i, seed->min_sequence)) {
+                if (!message && serial_number_cmp8(min_seqno + i, seed->min_sequence)) {
                     they_have_new_data = true;
                 } else if (message) {
                     message->colour = new_colour;
@@ -876,14 +878,14 @@ bool mpl_forwarder_process_message(buffer_t *buf, mpl_domain_t *domain, bool see
     /* If the M flag is set, we report an inconsistency against any messages with higher sequences */
     if ((opt_data[0] & MPL_OPT_M)) {
         ns_list_foreach(mpl_buffered_message_t, message, &seed->messages) {
-            if (common_serial_number_greater_8(mpl_buffer_sequence(message), sequence)) {
+            if (serial_number_cmp8(mpl_buffer_sequence(message), sequence)) {
                 mpl_buffer_inconsistent(domain, message);
             }
         }
     }
 
     /* Drop old messages (sequence < MinSequence) */
-    if (common_serial_number_greater_8(seed->min_sequence, sequence)) {
+    if (serial_number_cmp8(seed->min_sequence, sequence)) {
         tr_debug("Old MPL message %"PRIu8" < %"PRIu8, sequence, seed->min_sequence);
         return false;
     }
@@ -931,7 +933,7 @@ static void mpl_schedule_timer(void)
 {
     if (!mpl_timer_running) {
         mpl_timer_running = true;
-        timer_start(TIMER_MPL_FAST);
+        ws_timer_start(WS_TIMER_MPL_FAST);
     }
 }
 
@@ -1010,7 +1012,8 @@ static buffer_t *mpl_exthdr_provider(buffer_t *buf, ipv6_exthdr_stage_e stage, i
 
     /* Deal with simpler modify-already-created-header case first. Note that no error returns. */
     if (stage == IPV6_EXTHDR_MODIFY) {
-        if (!domain) {
+        if (!domain || buf->options.mpl_fwd_workaround) {
+            buf->options.mpl_fwd_workaround = false;
             *result = IPV6_EXTHDR_MODIFY_TUNNEL;
             memcpy(buf->dst_sa.address, ADDR_ALL_MPL_FORWARDERS, 16);
             buf->src_sa.addr_type = ADDR_NONE; // force auto-selection
@@ -1048,52 +1051,37 @@ static buffer_t *mpl_exthdr_provider(buffer_t *buf, ipv6_exthdr_stage_e stage, i
 
     const uint8_t *seed_id;
     uint8_t seed_id_len;
-    uint8_t seed_id_buf[16];
     if (domain->seed_id_mode > 0) {
         seed_id_len = domain->seed_id_mode;
         seed_id = domain->seed_id;
-    } else switch (domain->seed_id_mode) {
-            case MULTICAST_MPL_SEED_ID_MAC_SHORT: {
-                uint16_t addr = mac_helper_mac16_address_get(buf->interface);
-                if (addr < 0xfffe) {
-                    common_write_16_bit(addr, seed_id_buf);
-                    seed_id = seed_id_buf;
-                    seed_id_len = 2;
-                    break;
-                }
-            // Otherwise fall through to extended
-                case MULTICAST_MPL_SEED_ID_MAC:
-                    seed_id = buf->interface->mac;
-                    seed_id_len = 8;
-                    break;
+    } else {
+        switch (domain->seed_id_mode) {
+        case MULTICAST_MPL_SEED_ID_MAC_SHORT: // Not supported
+        case MULTICAST_MPL_SEED_ID_MAC:
+            seed_id = buf->interface->mac;
+            seed_id_len = 8;
+            break;
 
-                case MULTICAST_MPL_SEED_ID_IID_EUI64:
-                    seed_id = buf->interface->iid_eui64;
-                    seed_id_len = 8;
-                    break;
+        case MULTICAST_MPL_SEED_ID_IID_EUI64:
+            seed_id = buf->interface->iid_eui64;
+            seed_id_len = 8;
+            break;
 
-                case MULTICAST_MPL_SEED_ID_IID_SLAAC:
-                    seed_id = buf->interface->iid_slaac;
-                    seed_id_len = 8;
-                    break;
-                }
-
-            default:
-            case MULTICAST_MPL_SEED_ID_IPV6_SRC_FOR_DOMAIN:
-                seed_id = addr_select_source(buf->interface, domain->address, 0);
-                seed_id_len = 16;
-                break;
+        case MULTICAST_MPL_SEED_ID_IID_SLAAC:
+            seed_id = buf->interface->iid_slaac;
+            seed_id_len = 8;
+            break;
+        default:
+        case MULTICAST_MPL_SEED_ID_IPV6_SRC_FOR_DOMAIN:
+            seed_id = addr_select_source(buf->interface, domain->address, 0);
+            seed_id_len = 16;
+            break;
         }
+    }
 
     if (!seed_id) {
         tr_error("No MPL Seed ID");
         return buffer_free(buf);
-    }
-
-    /* "Compress" seed ID if it's the IPv6 source address */
-    /* (For Wi-sun, not support seed id address compression */
-    if (!ws_info(buf->interface) && seed_id_len == 16 && addr_ipv6_equal(seed_id, buf->src_sa.address)) {
-        seed_id_len = 0;
     }
 
     switch (stage) {

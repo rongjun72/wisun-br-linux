@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2013-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,8 +22,9 @@
 #include "common/rand.h"
 #include "common/bits.h"
 #include "common/named_values.h"
+#include "common/iobuf.h"
 #include "common/log_legacy.h"
-#include "stack-services/common_functions.h"
+#include "common/endian.h"
 
 #include "nwk_interface/protocol.h"
 #include "nwk_interface/protocol_stats.h"
@@ -67,7 +69,7 @@ static bool is_icmpv6_msg(buffer_t *buf)
     if (len < IPV6_HDRLEN) {
         return false;
     }
-    uint16_t ip_len = common_read_16_bit(ptr + IPV6_HDROFF_PAYLOAD_LENGTH);
+    uint16_t ip_len = read_be16(ptr + IPV6_HDROFF_PAYLOAD_LENGTH);
     uint8_t nh = ptr[IPV6_HDROFF_NH];
     ptr += IPV6_HDRLEN;
     len -= IPV6_HDRLEN;
@@ -187,7 +189,7 @@ buffer_t *icmpv6_error(buffer_t *buf, struct net_if *cur, uint8_t type, uint8_t 
         return NULL;
     }
     ptr = buffer_data_reserve_header(buf, 4);
-    ptr = common_write_32_bit(aux, ptr);
+    ptr = write_be32(ptr, aux);
     buf->options.traffic_class = 0;
     buf->options.type = type;
     buf->options.code = code;
@@ -195,6 +197,55 @@ buffer_t *icmpv6_error(buffer_t *buf, struct net_if *cur, uint8_t type, uint8_t 
     buf->info = (buffer_info_t)(B_FROM_ICMP | B_TO_ICMP | B_DIR_DOWN);
 
     return (buf);
+}
+
+static bool icmpv6_nd_options_validate(const uint8_t *data, size_t len)
+{
+    struct iobuf_read input = {
+        .data_size = len,
+        .data = data,
+    };
+    int opt_start, opt_len;
+
+    while (iobuf_remaining_size(&input)) {
+        opt_start = input.cnt;
+        iobuf_pop_u8(&input); // Type
+        opt_len = 8 * iobuf_pop_u8(&input);
+        if (!opt_len)
+            return false;
+        input.cnt = opt_start;
+        iobuf_pop_data_ptr(&input, opt_len);
+    }
+    return !input.err;
+}
+
+static bool icmpv6_nd_option_get(const uint8_t *data, size_t len, uint16_t option, struct iobuf_read *res)
+{
+    struct iobuf_read input = {
+        .data_size = len,
+        .data = data,
+    };
+    int opt_start, opt_len;
+    uint8_t opt_type;
+
+    memset(res, 0, sizeof(struct iobuf_read));
+    res->err = true;
+    while (iobuf_remaining_size(&input)) {
+        opt_start = input.cnt;
+        opt_type = iobuf_pop_u8(&input);
+        opt_len = 8 * iobuf_pop_u8(&input);
+        input.cnt = opt_start;
+        if (opt_type == option) {
+            res->data = iobuf_pop_data_ptr(&input, opt_len);
+            if (!res->data)
+                return false;
+            res->err = false;
+            res->data_size = opt_len;
+            return true;
+        }
+        iobuf_pop_data_ptr(&input, opt_len);
+    }
+    return false;
 }
 
 #ifdef HAVE_IPV6_PMTUD
@@ -272,7 +323,7 @@ buffer_t *icmpv6_packet_too_big_handler(buffer_t *buf)
     struct net_if *cur = buf->interface;
 
     const uint8_t *ptr = buffer_data_pointer(buf);
-    uint32_t mtu = common_read_32_bit(ptr);
+    uint32_t mtu = read_be32(ptr);
 
     /* RFC 8201 - ignore MTU smaller than minimum */
     if (mtu < IPV6_MIN_LINK_MTU) {
@@ -340,7 +391,7 @@ static void icmpv6_na_wisun_aro_handler(struct net_if *cur_interface, const uint
     uint16_t life_time;
     uint8_t nd_status  = *dptr;
     dptr += 4;
-    life_time = common_read_16_bit(dptr);
+    life_time = read_be16(dptr);
     dptr += 2;
     if (memcmp(dptr, cur_interface->mac, 8) != 0) {
         return;
@@ -360,7 +411,7 @@ static void icmpv6_na_aro_handler(struct net_if *cur_interface, const uint8_t *d
     uint16_t life_time;
     uint8_t nd_status  = *dptr;
     dptr += 4;
-    life_time = common_read_16_bit(dptr);
+    life_time = read_be16(dptr);
     dptr += 2;
     if (memcmp(dptr, cur_interface->mac, 8) != 0) {
         return;
@@ -400,6 +451,35 @@ static void icmpv6_na_aro_handler(struct net_if *cur_interface, const uint8_t *d
     }
 }
 
+// Wi-SUN allows to use an ARO without an SLLAO. This function builds a dummy
+// SLLAO using the information from the ARO, which can be processed using the
+// standard ND procedure.
+static bool icmpv6_nd_ws_sllao_dummy(struct iobuf_write *sllao, const uint8_t *aro_ptr, size_t aro_len)
+{
+    struct iobuf_read earo = {
+        .data = aro_ptr,
+        .data_size = aro_len,
+    };
+    const uint8_t *eui64;
+
+    iobuf_pop_u8(&earo);          // Type
+    iobuf_pop_u8(&earo);          // Length
+    iobuf_pop_u8(&earo);          // Status
+    iobuf_pop_data_ptr(&earo, 3); // Reserved
+    iobuf_pop_be16(&earo);        // Registration Lifetime
+    eui64 = iobuf_pop_data_ptr(&earo, 8);
+
+    BUG_ON(sllao->len);
+    iobuf_push_u8(sllao, ICMPV6_OPT_SRC_LL_ADDR);
+    iobuf_push_u8(sllao, 0); // Length (filled after)
+    iobuf_push_data(sllao, eui64, 8);
+    while (sllao->len % 8)
+        iobuf_push_u8(sllao, 0); // Padding
+    sllao->data[1] = sllao->len / 8;
+
+    return !earo.err;
+}
+
 /*
  *      Neighbor Solicitation Message Format
  *
@@ -433,69 +513,62 @@ static void icmpv6_na_aro_handler(struct net_if *cur_interface, const uint8_t *d
  */
 static buffer_t *icmpv6_ns_handler(buffer_t *buf)
 {
+    struct iobuf_read iobuf = {
+        .data_size = buffer_data_length(buf),
+        .data = buffer_data_pointer(buf),
+    };
+    struct ipv6_nd_opt_earo na_earo = { };
+    struct iobuf_write sllao_dummy = { };
+    bool has_earo, has_sllao;
+    struct iobuf_read sllao;
+    struct iobuf_read earo;
     struct net_if *cur;
     uint8_t target[16];
-    uint8_t dummy_sllao[16];
     bool proxy = false;
-    const uint8_t *sllao;
-    const uint8_t *aro;
-    uint8_t *dptr = buffer_data_pointer(buf);
-    aro_t aro_out = { .present = false };
+    buffer_t *na_buf;
 
     cur = buf->interface;
 
-    if (buf->options.code != 0 || buf->options.hop_limit != 255) {
-        goto drop;
+    iobuf_pop_data_ptr(&iobuf, 4); // Reserved
+    iobuf_pop_data(&iobuf, target, 16);
+
+    has_sllao = icmpv6_nd_option_get(iobuf_ptr(&iobuf), iobuf_remaining_size(&iobuf),
+                                     ICMPV6_OPT_SRC_LL_ADDR, &sllao);
+    has_earo = icmpv6_nd_option_get(iobuf_ptr(&iobuf), iobuf_remaining_size(&iobuf),
+                                    ICMPV6_OPT_ADDR_REGISTRATION, &earo);
+    if (!cur->ipv6_neighbour_cache.recv_addr_reg)
+        has_earo = false;
+    //   Wi-SUN - IPv6 Neighbor Discovery Optimizations
+    // Optional usage of SLLAO. The ARO already includes the EUI-64 that is the
+    // link-layer address of the node transmitting the Neighbor Solicitation.
+    // SLLAO provides a way to use a link layer address other than the EUI-64,
+    // but that comes at a 10 octet overhead, and is unnecessary as FAN assumes
+    // EUI-64 global uniqueness.
+    if (has_earo && !has_sllao && cur->ipv6_neighbour_cache.use_eui64_as_slla_in_aro) {
+        has_sllao = icmpv6_nd_ws_sllao_dummy(&sllao_dummy, earo.data, earo.data_size);
+        sllao.data_size = sllao_dummy.len;
+        sllao.data      = sllao_dummy.data;
+        sllao.err       = false;
+        sllao.cnt       = 0;
     }
 
-    if (!icmpv6_options_well_formed_in_buffer(buf, 20)) {
-        goto drop;
-    }
-
-    sllao = icmpv6_find_option_in_buffer(buf, 20, ICMPV6_OPT_SRC_LL_ADDR, 0);
-
-    /* If no SLLAO, ignore ARO (RFC 6775 6.5) */
-    /* This rule can be bypassed by setting flag "use_eui64_as_slla_in_aro" to true */
-    if (cur->ipv6_neighbour_cache.recv_addr_reg &&
-            (cur->ipv6_neighbour_cache.use_eui64_as_slla_in_aro || sllao)) {
-        aro = icmpv6_find_option_in_buffer(buf, 20, ICMPV6_OPT_ADDR_REGISTRATION, 0);
-    } else {
-        aro = NULL;
-    }
-
-    /* ARO's length must be 2 and status must be 0 */
-    if (aro && (aro[1] != 2 || aro[2] != 0)) {
-        goto drop;
-    }
-
-    /* If there was no SLLAO on ARO, use mac address to create dummy one... */
-    if (aro && !sllao && cur->ipv6_neighbour_cache.use_eui64_as_slla_in_aro) {
-        dummy_sllao[0] = ICMPV6_OPT_SRC_LL_ADDR;    // Type
-        dummy_sllao[1] = 2;                         // Length = 2x8 bytes
-        memcpy(dummy_sllao + 2, aro + 8, 8);        // EUI-64
-        memset(dummy_sllao + 10, 0, 6);             // Padding
-
-        sllao = dummy_sllao;
-    }
-    // Skip the 4 reserved bytes
-    dptr += 4;
-
-    // Copy the target IPv6 address
-    memcpy(target, dptr, 16);
-    dptr += 16;
-
-    if (addr_is_ipv6_multicast(target)) {
-        goto drop;
-    }
-
+    //   RFC 4861 Section 7.1.1 - Validation of Neighbor Solicitations
+    // A node MUST silently discard any received Neighbor Solicitation
+    // messages that do not satisfy all of the following validity checks:
+    if (buf->options.hop_limit != 255)
+        goto drop; // The IP Hop Limit field has a value of 255
+    if (buf->options.code != 0)
+        goto drop; // ICMP Code is 0.
+    if (addr_is_ipv6_multicast(target))
+        goto drop; // Target Address is not a multicast address.
+    if (!icmpv6_nd_options_validate(iobuf_ptr(&iobuf), iobuf_remaining_size(&iobuf)))
+        goto drop; // All included options have a length that is greater than zero.
     if (addr_is_ipv6_unspecified(buf->src_sa.address)) {
-        /* Dest must be to solicited-node multicast, without source LL-addr */
-        if (sllao || memcmp(buf->dst_sa.address, ADDR_MULTICAST_SOLICITED, 13) != 0) {
-            goto drop;
-        }
-
-        /* If unspecified source, ignore ARO (RFC 6775 6.5) */
-        aro = NULL;
+        // If the IP source address is the unspecified address,
+        if (!memcmp(buf->dst_sa.address, ADDR_MULTICAST_SOLICITED, sizeof(ADDR_MULTICAST_SOLICITED)))
+            goto drop; // the IP destination address is a solicited-node multicast address.
+        if (has_sllao)
+            goto drop; // there is no source link-layer address option in the message.
     }
 
     /* See RFC 4862 5.4.3 - hook for Duplicate Address Detection */
@@ -521,32 +594,34 @@ static buffer_t *icmpv6_ns_handler(buffer_t *buf)
         }
     }
 
-    if (aro) {
+    if (has_earo) {
         /* If it had an ARO, and we're paying attention to it, possibilities:
          * 1) No reply to NS now, we need to contact border router (false return)
          * 2) Reply to NS now, with ARO (true return, aro_out.present true)
          * 3) Reply to NS now, without ARO (true return, aro_out.present false)
          */
-        if (!nd_ns_aro_handler(cur, aro, sllao, buf->src_sa.address, &aro_out)) {
+        if (!nd_ns_earo_handler(cur, earo.data, earo.data_size,
+                                has_sllao ? sllao.data : NULL,
+                                buf->src_sa.address, target, &na_earo))
             goto drop;
-        }
     }
 
     /* If we're returning an ARO, then we assume the ARO handler has done the
      * necessary to the Neighbour Cache. Otherwise, normal RFC 4861 processing. */
-    if (!aro_out.present &&
-            sllao && cur->if_llao_parse(cur, sllao, &buf->dst_sa)) {
+    if (!na_earo.present && has_sllao && cur->if_llao_parse(cur, sllao.data, &buf->dst_sa))
         ipv6_neighbour_update_unsolicited(&cur->ipv6_neighbour_cache, buf->src_sa.address, buf->dst_sa.addr_type, buf->dst_sa.address);
-    }
 
-    buffer_t *na_buf = icmpv6_build_na(cur, true, !proxy, addr_is_ipv6_multicast(buf->dst_sa.address), target, aro_out.present ? &aro_out : NULL, buf->src_sa.address);
+    na_buf = icmpv6_build_na(cur, true, !proxy, addr_is_ipv6_multicast(buf->dst_sa.address), target,
+                             na_earo.present ? &na_earo : NULL, buf->src_sa.address);
 
     buffer_free(buf);
+    iobuf_free(&sllao_dummy);
 
     return na_buf;
 
 drop:
     buf = buffer_free(buf);
+    iobuf_free(&sllao_dummy);
 
     return buf;
 
@@ -567,17 +642,6 @@ int icmpv6_slaac_prefix_update(struct net_if *cur, const uint8_t *prefix_ptr, ui
     return ret_val;
 }
 
-void icmpv6_slaac_prefix_register_trig(struct net_if *cur, uint8_t *prefix_ptr, uint8_t prefix_len)
-{
-
-    //Validate first current list If prefix is already defined adress
-    ns_list_foreach(if_address_entry_t, e, &cur->ip_addresses) {
-        if (e->source == ADDR_SOURCE_SLAAC && (e->prefix_len == prefix_len) && !bitcmp(e->address, prefix_ptr, prefix_len)) {
-            e->state_timer = 150;
-        }
-    }
-}
-
 if_address_entry_t *icmpv6_slaac_address_add(struct net_if *cur, const uint8_t *prefix_ptr, uint8_t prefix_len, uint32_t valid_lifetime, uint32_t preferred_lifetime, bool skip_dad, slaac_src_e slaac_src)
 {
     if_address_entry_t *address_entry;
@@ -586,10 +650,6 @@ if_address_entry_t *icmpv6_slaac_address_add(struct net_if *cur, const uint8_t *
 
     if (prefix_len != 64) {
         return NULL;
-    }
-
-    if (slaac_src == SLAAC_IID_DEFAULT && cur->opaque_slaac_iids && addr_opaque_iid_key_is_set()) {
-        slaac_src = SLAAC_IID_OPAQUE;
     }
 
     memcpy(ipv6_address, prefix_ptr, 8);
@@ -601,15 +661,9 @@ if_address_entry_t *icmpv6_slaac_address_add(struct net_if *cur, const uint8_t *
         case SLAAC_IID_EUI64:
             memcpy(ipv6_address + 8, cur->iid_eui64, 8);
             break;
-        case SLAAC_IID_OPAQUE:
-            addr_generate_opaque_iid(cur, ipv6_address);
-            break;
         case SLAAC_IID_6LOWPAN_SHORT:
-            if (cur->nwk_id != IF_6LoWPAN) {
-                return NULL;
-            }
             memcpy(ipv6_address + 8, ADDR_SHORT_ADR_SUFFIC, 6);
-            common_write_16_bit(cur->lowpan_desired_short_address, ipv6_address + 14);
+            write_be16(ipv6_address + 14, cur->lowpan_desired_short_address);
             break;
 
         default:
@@ -631,16 +685,6 @@ void icmpv6_recv_ra_routes(struct net_if *cur, bool enable)
         cur->recv_ra_routes = enable;
         if (!enable) {
             ipv6_route_table_remove_info(cur->id, ROUTE_RADV, NULL);
-        }
-    }
-}
-
-void icmpv6_recv_ra_prefixes(struct net_if *cur, bool enable)
-{
-    if (cur->recv_ra_prefixes != enable) {
-        cur->recv_ra_prefixes = enable;
-        if (!enable) {
-            addr_set_non_preferred(cur, ADDR_SOURCE_SLAAC);
         }
     }
 }
@@ -672,7 +716,7 @@ static buffer_t *icmpv6_redirect_handler(buffer_t *buf, struct net_if *cur)
         goto drop;
     }
 
-    const uint8_t *tllao = icmpv6_find_option_in_buffer(buf, 36, ICMPV6_OPT_TGT_LL_ADDR, 0);
+    const uint8_t *tllao = icmpv6_find_option_in_buffer(buf, 36, ICMPV6_OPT_TGT_LL_ADDR);
     if (tllao) {
         cur->if_llao_parse(cur, tllao, &tgt_ll);
     }
@@ -734,14 +778,14 @@ static buffer_t *icmpv6_na_handler(buffer_t *buf)
         goto drop;
     }
 
-    const uint8_t *aro = icmpv6_find_option_in_buffer(buf, 20, ICMPV6_OPT_ADDR_REGISTRATION, 2);
+    const uint8_t *aro = icmpv6_find_option_in_buffer(buf, 20, ICMPV6_OPT_ADDR_REGISTRATION);
+    if (aro && aro[1] != 2)
+        aro = NULL;
     if (aro) {
         if (cur->ipv6_neighbour_cache.recv_na_aro) {
             icmpv6_na_aro_handler(cur, aro, buf->dst_sa.address);
         }
-        if (ws_info(cur)) {
-            icmpv6_na_wisun_aro_handler(cur, aro, buf->src_sa.address);
-        }
+        icmpv6_na_wisun_aro_handler(cur, aro, buf->src_sa.address);
     }
 
     /* No need to create a neighbour cache entry if one doesn't already exist */
@@ -750,13 +794,13 @@ static buffer_t *icmpv6_na_handler(buffer_t *buf)
         goto drop;
     }
 
-    tllao = icmpv6_find_option_in_buffer(buf, 20, ICMPV6_OPT_TGT_LL_ADDR, 0);
+    tllao = icmpv6_find_option_in_buffer(buf, 20, ICMPV6_OPT_TGT_LL_ADDR);
     if (!tllao || !cur->if_llao_parse(cur, tllao, &buf->dst_sa)) {
         buf->dst_sa.addr_type = ADDR_NONE;
     }
 
     ipv6_neighbour_update_from_na(&cur->ipv6_neighbour_cache, neighbour_entry, flags, buf->dst_sa.addr_type, buf->dst_sa.address);
-    if (ws_info(cur) && neighbour_entry->state == IP_NEIGHBOUR_REACHABLE) {
+    if (neighbour_entry->state == IP_NEIGHBOUR_REACHABLE) {
         tr_debug("NA neigh update");
         ws_common_neighbor_update(cur, target);
     }
@@ -797,29 +841,37 @@ void trace_icmp(buffer_t *buf, bool is_rx)
         { " ack",   ICMPV6_CODE_RPL_DAO_ACK },
         { NULL },
     };
+    struct iobuf_read ns_earo_buf;
     char frame_type[40] = "";
-    int trace_domain;
+    const char *ns_aro_str;
+    uint8_t ns_earo_flags;
 
-    if (buf->interface->nwk_id == IF_6LoWPAN) {
-        trace_domain = TR_ICMP_RF;
-    } else {
-        strncat(frame_type, "(tun) ", sizeof(frame_type) - strlen(frame_type) - 1);
-        trace_domain = TR_ICMP_TUN;
-    }
     strncat(frame_type, val_to_str(buf->options.type, icmp_frames, "[UNK]"),
             sizeof(frame_type) - strlen(frame_type) - 1);
     if (buf->options.type == ICMPV6_TYPE_INFO_RPL_CONTROL)
         strncat(frame_type, val_to_str(buf->options.code, rpl_frames, "[UNK]"),
                 sizeof(frame_type) - strlen(frame_type) - 1);
-    if (buf->options.type == ICMPV6_TYPE_INFO_NS)
-        if (icmpv6_options_well_formed_in_buffer(buf, 20) &&
-            icmpv6_find_option_in_buffer(buf, 20, ICMPV6_OPT_ADDR_REGISTRATION, 0))
-            strncat(frame_type, " w/ aro",
-                    sizeof(frame_type) - strlen(frame_type) - 1);
+    if (buf->options.type == ICMPV6_TYPE_INFO_NS) {
+        if (buffer_data_length(buf) > 20 &&
+            icmpv6_nd_option_get(buffer_data_pointer(buf) + 20, buffer_data_length(buf) - 20,
+                                 ICMPV6_OPT_ADDR_REGISTRATION, &ns_earo_buf)) {
+            iobuf_pop_u8(&ns_earo_buf); // Type
+            iobuf_pop_u8(&ns_earo_buf); // Length
+            iobuf_pop_u8(&ns_earo_buf); // Status
+            iobuf_pop_u8(&ns_earo_buf); // Opaque
+            ns_earo_flags = iobuf_pop_u8(&ns_earo_buf);
+            if (FIELD_GET(IPV6_ND_OPT_EARO_FLAGS_R_MASK, ns_earo_flags) &&
+                FIELD_GET(IPV6_ND_OPT_EARO_FLAGS_T_MASK, ns_earo_flags))
+                ns_aro_str = " w/ earo";
+            else
+                ns_aro_str = " w/ aro";
+            strncat(frame_type, ns_aro_str, sizeof(frame_type) - strlen(frame_type) - 1);
+        }
+    }
     if (is_rx)
-        TRACE(trace_domain, "rx-icmp %-9s src:%s", frame_type, tr_ipv6(buf->src_sa.address));
+        TRACE(TR_ICMP, "rx-icmp %-9s src:%s", frame_type, tr_ipv6(buf->src_sa.address));
     else
-        TRACE(trace_domain, "tx-icmp %-9s dst:%s", frame_type, tr_ipv6(buf->dst_sa.address));
+        TRACE(TR_ICMP, "tx-icmp %-9s dst:%s", frame_type, tr_ipv6(buf->dst_sa.address));
 }
 
 buffer_t *icmpv6_up(buffer_t *buf)
@@ -842,10 +894,9 @@ buffer_t *icmpv6_up(buffer_t *buf)
     buf->options.code = *dptr++;
 
     if (buf->options.ll_security_bypass_rx) {
-        if (!ws_info(buf->interface)
-                || (buf->options.type == ICMPV6_TYPE_INFO_RPL_CONTROL
-                    && (buf->options.code != ICMPV6_CODE_RPL_DIO
-                        && buf->options.code != ICMPV6_CODE_RPL_DIS))) {
+        if (buf->options.type == ICMPV6_TYPE_INFO_RPL_CONTROL &&
+            (buf->options.code != ICMPV6_CODE_RPL_DIO &&
+             buf->options.code != ICMPV6_CODE_RPL_DIS)) {
             tr_warn("Drop: ICMP EP unsecured packet");
             goto drop;
         }
@@ -925,24 +976,11 @@ buffer_t *icmpv6_up(buffer_t *buf)
             buf = mpl_control_handler(buf, cur);
             break;
 
-#ifdef HAVE_WS_BORDER_ROUTER
         case ICMPV6_TYPE_INFO_DAR:
-
-            if (cur->nwk_id == IF_6LoWPAN) {
-                if (cur->bootstrap_mode == ARM_NWK_BOOTSTRAP_MODE_6LoWPAN_BORDER_ROUTER) {
-                    buf = nd_dar_parse(buf, cur);
-                    break;
-                }
-            }
+            // FIXME: forward to Linux?
             goto drop;
-#endif
         case ICMPV6_TYPE_INFO_DAC:
-            if (cur->nwk_id == IF_6LoWPAN) {
-                if (cur->lowpan_info & INTERFACE_NWK_BOOTSTRAP_ADDRESS_REGISTER_READY) {
-                    buf = nd_dac_handler(buf, cur);
-                    break;
-                }
-            }
+            // FIXME: forward to Linux?
             goto drop;
 
     }
@@ -976,8 +1014,8 @@ buffer_t *icmpv6_down(buffer_t *buf)
 
         *dptr++ = buf->options.type;
         *dptr++ = buf->options.code;
-        common_write_16_bit(0, dptr);
-        common_write_16_bit(buffer_ipv6_fcf(buf, IPV6_NH_ICMPV6), dptr);
+        write_be16(dptr, 0);
+        write_be16(dptr, buffer_ipv6_fcf(buf, IPV6_NH_ICMPV6));
         buf->options.type = IPV6_NH_ICMPV6;
         buf->options.code = 0;
         buf->options.traffic_class &= ~IP_TCLASS_ECN_MASK;
@@ -985,106 +1023,10 @@ buffer_t *icmpv6_down(buffer_t *buf)
     return (buf);
 }
 
-buffer_t *icmpv6_build_rs(struct net_if *cur, const uint8_t *dest)
-{
-
-    buffer_t *buf = buffer_get(127);
-    if (!buf) {
-        return NULL;
-    }
-
-    const uint8_t *src_address;
-    uint8_t *ptr = buffer_data_pointer(buf);
-
-    memcpy(buf->dst_sa.address, dest ? dest : ADDR_LINK_LOCAL_ALL_ROUTERS, 16);
-    buf->dst_sa.addr_type = ADDR_IPV6;
-
-    //select Address by Interface pointer and destination
-    src_address = addr_select_source(cur, buf->dst_sa.address, 0);
-    if (!src_address) {
-        tr_debug("No source address defined");
-        return buffer_free(buf);
-    }
-
-    memcpy(buf->src_sa.address, src_address, 16);
-    buf->src_sa.addr_type = ADDR_IPV6;
-
-    buf->options.type = ICMPV6_TYPE_INFO_RS;
-    buf->options.code = 0;
-    buf->options.hop_limit = 255;
-    ptr = common_write_32_bit(0, ptr);
-
-    /* RFC 6775 mandates SLLAO in RS */
-    ptr = icmpv6_write_icmp_lla(cur, ptr, ICMPV6_OPT_SRC_LL_ADDR, true, src_address);
-
-    buf->buf_end = ptr - buf->buf;
-    buf->interface = cur;
-    buf->info = (buffer_info_t)(B_FROM_ICMP | B_TO_ICMP | B_DIR_DOWN);
-    return buf;
-}
-
 uint8_t *icmpv6_write_icmp_lla(struct net_if *cur, uint8_t *dptr, uint8_t icmp_opt, bool must, const uint8_t *ip_addr)
 {
     dptr += cur->if_llao_write(cur, dptr, icmp_opt, must, ip_addr);
 
-    return dptr;
-}
-
-/*
- * Write either an ICMPv6 Prefix Information Option for a Router Advertisement
- * (RFC4861+6275), or an RPL Prefix Information Option (RFC6550).
- * Same payload, different type/len.
- */
-uint8_t *icmpv6_write_prefix_option(const prefix_list_t *prefixes,  uint8_t *dptr, uint8_t rpl_prefix, struct net_if *cur)
-{
-    uint8_t flags;
-
-    ns_list_foreach(prefix_entry_t, prefix_ptr, prefixes) {
-        flags = prefix_ptr->options;
-        if (prefix_ptr->prefix_len == 64) {
-            /* XXX this seems dubious - shouldn't get_address_with_prefix be called every time? What if the address changes or is deleted? */
-            if (prefix_ptr->options & PIO_R) {
-                const uint8_t *addr = addr_select_with_prefix(cur, prefix_ptr->prefix, prefix_ptr->prefix_len, 0);
-                if (addr) {
-                    memcpy(prefix_ptr->prefix, addr, 16);
-                } else {
-                    flags &= ~PIO_R;
-                }
-            }
-        }
-        if (rpl_prefix) {
-            *dptr++ = RPL_PREFIX_INFO_OPTION;
-            *dptr++ = 30; // Length in bytes, excluding these 2
-        } else {
-            *dptr++ = ICMPV6_OPT_PREFIX_INFO;
-            *dptr++ = 4; // Length in 8-byte units
-        }
-
-        *dptr++ = prefix_ptr->prefix_len; //length
-        *dptr++ = flags; //Flags
-        dptr = common_write_32_bit(prefix_ptr->lifetime, dptr);
-        dptr = common_write_32_bit(prefix_ptr->preftime, dptr);
-        dptr = common_write_32_bit(0, dptr); // Reserved2
-        memcpy(dptr, prefix_ptr->prefix, 16);
-        dptr += 16;
-    }
-    return dptr;
-}
-
-/* 0                   1                   2                   3
- * 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
- * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- * |     Type      |    Length     |           Reserved            |
- * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- * |                              MTU                              |
- * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- */
-uint8_t *icmpv6_write_mtu_option(uint32_t mtu, uint8_t *dptr)
-{
-    *dptr++ = ICMPV6_OPT_MTU;
-    *dptr++ = 1; // length
-    dptr = common_write_16_bit(0, dptr);
-    dptr = common_write_32_bit(mtu, dptr);
     return dptr;
 }
 
@@ -1117,9 +1059,7 @@ void ack_receive_cb(struct buffer *buffer_ptr, uint8_t status)
         ipv6_neighbour_update_from_na(&buffer_ptr->interface->ipv6_neighbour_cache, neighbour_entry, NA_S, buffer_ptr->dst_sa.addr_type, buffer_ptr->dst_sa.address);
     }
 
-    if (ws_info(buffer_ptr->interface)) {
-        ws_common_neighbor_update(buffer_ptr->interface, ll_target);
-    }
+    ws_common_neighbor_update(buffer_ptr->interface, ll_target);
 }
 void ack_remove_neighbour_cb(struct buffer *buffer_ptr, uint8_t status)
 {
@@ -1139,10 +1079,7 @@ void ack_remove_neighbour_cb(struct buffer *buffer_ptr, uint8_t status)
         tr_warn("wrong address %d %s", buffer_ptr->dst_sa.addr_type, trace_array(buffer_ptr->dst_sa.address, 16));
         return;
     }
-    if (ws_info(buffer_ptr->interface)) {
-        ws_common_neighbor_remove(buffer_ptr->interface, ll_target);
-    }
-
+    ws_common_neighbor_remove(buffer_ptr->interface, ll_target);
 }
 
 static void icmpv6_aro_cb(buffer_t *buf, uint8_t status)
@@ -1164,7 +1101,8 @@ static void icmpv6_aro_cb(buffer_t *buf, uint8_t status)
     }
 }
 
-buffer_t *icmpv6_build_ns(struct net_if *cur, const uint8_t target_addr[16], const uint8_t *prompting_src_addr, bool unicast, bool unspecified_source, const aro_t *aro)
+buffer_t *icmpv6_build_ns(struct net_if *cur, const uint8_t target_addr[16], const uint8_t *prompting_src_addr,
+                          bool unicast, bool unspecified_source, const struct ipv6_nd_opt_earo *aro)
 {
     if (!cur || addr_is_ipv6_multicast(target_addr)) {
         return NULL;
@@ -1180,7 +1118,7 @@ buffer_t *icmpv6_build_ns(struct net_if *cur, const uint8_t target_addr[16], con
     buf->options.hop_limit = 255;
 
     uint8_t *ptr = buffer_data_pointer(buf);
-    ptr = common_write_32_bit(0, ptr);
+    ptr = write_be32(ptr, 0);
     memcpy(ptr, target_addr, 16);
     ptr += 16;
 
@@ -1189,8 +1127,8 @@ buffer_t *icmpv6_build_ns(struct net_if *cur, const uint8_t target_addr[16], con
         *ptr++ = 2;
         *ptr++ = aro->status; /* Should be ARO_SUCCESS in an NS */
         *ptr++ = 0;
-        ptr = common_write_16_bit(0, ptr);
-        ptr = common_write_16_bit(aro->lifetime, ptr);
+        ptr = write_be16(ptr, 0);
+        ptr = write_be16(ptr, aro->lifetime);
         memcpy(ptr, aro->eui64, 8);
         ptr += 8;
     }
@@ -1268,40 +1206,6 @@ buffer_t *icmpv6_build_ns(struct net_if *cur, const uint8_t target_addr[16], con
     return buf;
 }
 
-void icmpv6_build_echo_req(struct net_if *cur, const uint8_t target_addr[16])
-{
-    const uint8_t *src;
-    buffer_t *buf = buffer_get(127);
-    if (!buf) {
-        return;
-    }
-
-    buf->options.type = ICMPV6_TYPE_INFO_ECHO_REQUEST;
-    buf->options.code = 0;
-    buf->options.hop_limit = 255;
-
-    uint8_t *ptr = buffer_data_pointer(buf);
-    memcpy(ptr, target_addr, 16);
-    ptr += 16;
-
-    memcpy(buf->dst_sa.address, target_addr, 16);
-    buf->dst_sa.addr_type = ADDR_IPV6;
-    //Select Address By Destination
-    src = addr_select_source(cur, buf->dst_sa.address, 0);
-    if (src) {
-        memcpy(buf->src_sa.address, src, 16);
-    } else {
-        tr_debug("No address for NS");
-        buffer_free(buf);
-        return;
-    }
-    buf->src_sa.addr_type = ADDR_IPV6;
-    buffer_data_end_set(buf, ptr);
-    buf->interface = cur;
-    buf->info = (buffer_info_t)(B_FROM_ICMP | B_TO_ICMP | B_DIR_DOWN);
-    protocol_push(buf);
-}
-
 buffer_t *icmpv6_build_dad(struct net_if *cur, buffer_t *buf, uint8_t type, const uint8_t dest_addr[16], const uint8_t eui64[8], const uint8_t reg_addr[16], uint8_t status, uint16_t lifetime)
 {
     if (!cur) {
@@ -1322,7 +1226,7 @@ buffer_t *icmpv6_build_dad(struct net_if *cur, buffer_t *buf, uint8_t type, cons
 
     *ptr++ = status;
     *ptr++ = 0;
-    ptr = common_write_16_bit(lifetime, ptr);
+    ptr = write_be16(ptr, lifetime);
     memcpy(ptr, eui64, 8);
     ptr += 8;
     memcpy(ptr, reg_addr, 16);
@@ -1372,18 +1276,21 @@ buffer_t *icmpv6_build_dad(struct net_if *cur, buffer_t *buf, uint8_t type, cons
  *    O              Override flag.
  */
 
-buffer_t *icmpv6_build_na(struct net_if *cur, bool solicited, bool override, bool tllao_required, const uint8_t target[static 16], const aro_t *aro, const uint8_t src_addr[static 16])
+buffer_t *icmpv6_build_na(struct net_if *cur, bool solicited, bool override, bool tllao_required,
+                          const uint8_t target[static 16], const struct ipv6_nd_opt_earo *earo,
+                          const uint8_t src_addr[static 16])
 {
     uint8_t *ptr;
     uint8_t flags;
 
     /* Check if ARO response and status == success, then sending can be omitted with flag */
-    if (aro && cur->ipv6_neighbour_cache.omit_na_aro_success && aro->status == ARO_SUCCESS) {
+    if (cur->ipv6_neighbour_cache.omit_na_aro_success && earo &&
+        !(earo->r && earo->t) && earo->status == ARO_SUCCESS) {
         tr_debug("Omit NA ARO success");
         return NULL;
     }
     /* All other than ARO NA messages are omitted and MAC ACK is considered as success */
-    if (!tllao_required && (!aro && cur->ipv6_neighbour_cache.omit_na)) {
+    if (!tllao_required && (!earo && cur->ipv6_neighbour_cache.omit_na)) {
         return NULL;
     }
 
@@ -1416,9 +1323,9 @@ buffer_t *icmpv6_build_na(struct net_if *cur, bool solicited, bool override, boo
 
         /* See RFC 6775 6.5.2 - errors are sent to LL64 address
          * derived from EUI-64, success to IP source address */
-        if (aro && aro->status != ARO_SUCCESS) {
+        if (earo && earo->status != ARO_SUCCESS) {
             memcpy(buf->dst_sa.address, ADDR_LINK_LOCAL_PREFIX, 8);
-            memcpy(buf->dst_sa.address + 8, aro->eui64, 8);
+            memcpy(buf->dst_sa.address + 8, earo->eui64, 8);
             buf->dst_sa.address[8] ^= 2;
         } else {
             memcpy(buf->dst_sa.address, src_addr, 16);
@@ -1446,7 +1353,7 @@ buffer_t *icmpv6_build_na(struct net_if *cur, bool solicited, bool override, boo
     }
     buf->src_sa.addr_type = ADDR_IPV6;
 
-    ptr = common_write_32_bit((uint32_t) flags << 24, ptr);
+    ptr = write_be32(ptr, (uint32_t) flags << 24);
     // Set the target IPv6 address
     memcpy(ptr, target, 16);
     ptr += 16;
@@ -1454,19 +1361,22 @@ buffer_t *icmpv6_build_na(struct net_if *cur, bool solicited, bool override, boo
     // Set the target Link-Layer address
     ptr = icmpv6_write_icmp_lla(cur, ptr, ICMPV6_OPT_TGT_LL_ADDR, tllao_required, target);
 
-    if (aro) {
+    if (earo) {
         *ptr++ = ICMPV6_OPT_ADDR_REGISTRATION;
         *ptr++ = 2;
-        *ptr++ = aro->status;
-        *ptr++ = 0;
-        ptr = common_write_16_bit(0, ptr);
-        ptr = common_write_16_bit(aro->lifetime, ptr);
-        memcpy(ptr, aro->eui64, 8);
+        *ptr++ = earo->status;
+        *ptr++ = earo->opaque;
+        *ptr++ = FIELD_PREP(IPV6_ND_OPT_EARO_FLAGS_I_MASK, earo->i)
+               | FIELD_PREP(IPV6_ND_OPT_EARO_FLAGS_R_MASK, earo->r)
+               | FIELD_PREP(IPV6_ND_OPT_EARO_FLAGS_T_MASK, earo->t);
+        *ptr++ = earo->tid;
+        ptr = write_be16(ptr, earo->lifetime);
+        memcpy(ptr, earo->eui64, 8);
         ptr += 8;
     }
-    if (ws_info(cur) && aro && (aro->status != ARO_SUCCESS && aro->status != ARO_TOPOLOGICALLY_INCORRECT)) {
+    if (earo && (earo->status != ARO_SUCCESS && earo->status != ARO_TOPOLOGICALLY_INCORRECT)) {
         /*If Aro failed we will kill the neigbour after we have succeeded in sending message*/
-        if (!ws_common_negative_aro_mark(cur, aro->eui64)) {
+        if (!ws_common_negative_aro_mark(cur, earo->eui64)) {
             tr_debug("Neighbour removed for negative response send");
             return buffer_free(buf);
         }
@@ -1484,61 +1394,26 @@ buffer_t *icmpv6_build_na(struct net_if *cur, bool solicited, bool override, boo
     return (buf);
 }
 
-
-/* Check whether the options section of an ICMPv6 message is well-formed */
-bool icmpv6_options_well_formed(const uint8_t *dptr, uint_fast16_t dlen)
-{
-    if (dlen % 8) {
-        return false;
-    }
-
-    while (dlen) {
-        uint_fast16_t opt_len = dptr[1] * 8;
-        if (opt_len == 0 || opt_len > dlen) {
-            return false;
-        }
-        dptr += opt_len;
-        dlen -= opt_len;
-    }
-
-    return true;
-}
-
+// TODO: remove this function, and call directly icmpv6_nd_options_validate()
+// after popping the fields before offset from the packet.
 bool icmpv6_options_well_formed_in_buffer(const buffer_t *buf, uint16_t offset)
 {
     if (buffer_data_length(buf) < offset) {
         return false;
     }
 
-    return icmpv6_options_well_formed(buffer_data_pointer(buf) + offset,
+    return icmpv6_nd_options_validate(buffer_data_pointer(buf) + offset,
                                       buffer_data_length(buf) - offset);
 }
 
-/*
- * Search for the first option of the specified type (and optionally length).
- * Caller must have already checked the options are well-formed.
- * If optlen is non-zero, then options with different lengths are ignored.
- * Note that optlen is in 8-octet units.
- */
-const uint8_t *icmpv6_find_option(const uint8_t *dptr, uint_fast16_t dlen, uint8_t option, uint8_t optlen)
+// TODO: remove this function and use directly icmpv6_nd_option_get()
+const uint8_t *icmpv6_find_option_in_buffer(const buffer_t *buf, uint_fast16_t offset, uint8_t option)
 {
-    while (dlen) {
-        uint8_t type = dptr[0];
-        uint8_t len  = dptr[1];
+    struct iobuf_read res;
 
-        if (type == option && (optlen == 0 || optlen == len)) {
-            return dptr;
-        } else {
-            dptr += len * 8;
-            dlen -= len * 8;
-        }
-    }
-    return NULL;
-
-}
-
-const uint8_t *icmpv6_find_option_in_buffer(const buffer_t *buf, uint_fast16_t offset, uint8_t option, uint8_t optlen)
-{
-    return icmpv6_find_option(buffer_data_pointer(buf) + offset,
-                              buffer_data_length(buf) - offset, option, optlen);
+    icmpv6_nd_option_get(buffer_data_pointer(buf) + offset, buffer_data_length(buf) - offset, option, &res);
+    if (res.err)
+        return NULL;
+    else
+        return res.data;
 }

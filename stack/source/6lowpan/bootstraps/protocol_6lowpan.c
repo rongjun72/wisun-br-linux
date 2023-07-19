@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2013-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,13 +21,14 @@
 #include <stdlib.h>
 #include "common/rand.h"
 #include "common/log_legacy.h"
-#include "stack-services/common_functions.h"
+#include "common/endian.h"
 #include "service_libs/etx/etx.h"
 #include "service_libs/mac_neighbor_table/mac_neighbor_table.h"
 #include "stack/net_6lowpan_parameter.h"
 #include "stack/net_rpl.h"
 #include "stack/mac/sw_mac.h"
 
+#include "app_wsbrd/rcp_api.h"
 #include "legacy/udp.h"
 #include "legacy/ns_socket.h"
 #include "nwk_interface/protocol.h"
@@ -202,32 +204,20 @@ static uint8_t protocol_6lowpan_llao_write(struct net_if *cur, uint8_t *opt_out,
     if (!must && addr_is_ipv6_link_local(ip_addr)) {
         return 0;
     }
-    uint16_t mac16 = mac_helper_mac16_address_get(cur);
 
-    /* Even if we have a short address, use long address if the IP address's IID matches it */
-    if (mac16 >= 0xfffe || addr_iid_matches_eui64(ip_addr + 8, cur->mac)) {
-        if (opt_out) {
-            opt_out[0] = opt_type;
-            opt_out[1] = 2;
-            memcpy(opt_out + 2, cur->mac, 8);
-            memset(opt_out + 10, 0, 6);
-        }
-        return 16;
-    } else {
-        if (opt_out) {
-            opt_out[0] = opt_type;
-            opt_out[1] = 1;
-            common_write_16_bit(mac16, opt_out + 2);
-            memset(opt_out + 4, 0, 4);
-        }
-        return 8;
+    if (opt_out) {
+        opt_out[0] = opt_type;
+        opt_out[1] = 2;
+        memcpy(opt_out + 2, cur->mac, 8);
+        memset(opt_out + 10, 0, 6);
     }
+    return 16;
 }
 
 /* Parse, and return actual size, or 0 if error */
 static uint8_t protocol_6lowpan_llao_parse(struct net_if *cur, const uint8_t *opt_in, sockaddr_t *ll_addr_out)
 {
-    common_write_16_bit(cur->mac_parameters.pan_id, ll_addr_out->address + 0);
+    write_be16(ll_addr_out->address + 0, cur->mac_parameters.pan_id);
 
     switch (opt_in[1]) {
         case 1:
@@ -251,7 +241,7 @@ static bool protocol_6lowpan_map_ip_to_link_addr(struct net_if *cur, const uint8
     /* RFC 6775 says link-local addresses are based on extended MAC (LL64) */
     /* ZigBee IP and Thread both also have link-local addresses based on short MAC (LL16) */
     /* Our old IP stack assumed all addresses were based on MAC; this is available as an option */
-    if (cur->iids_map_to_mac || addr_is_ipv6_link_local(ip_addr)) {
+    if (addr_is_ipv6_link_local(ip_addr)) {
         if (memcmp(&ip_addr[8], ADDR_SHORT_ADR_SUFFIC, 6) == 0) {
             *ll_type = ADDR_802_15_4_SHORT;
             memcpy(&ll_addr[2], &ip_addr[14], 2);
@@ -263,7 +253,7 @@ static bool protocol_6lowpan_map_ip_to_link_addr(struct net_if *cur, const uint8
     }
 
     if (*ll_type != ADDR_NONE) {
-        common_write_16_bit(cur->mac_parameters.pan_id, &ll_addr[0]);
+        write_be16(&ll_addr[0], cur->mac_parameters.pan_id);
         *ll_addr_out = ll_addr;
         return true;
     } else {
@@ -283,7 +273,7 @@ static bool protocol_6lowpan_map_link_addr_to_ip(struct net_if *cur, addrtype_e 
             ip_addr_out[8] ^= 0x02;
             return true;
         case ADDR_802_15_4_SHORT:
-            if (common_read_16_bit(ll_addr + 2) > 0xfffd) {
+            if (read_be16(ll_addr + 2) > 0xfffd) {
                 return false;
             }
             memcpy(ip_addr_out, ADDR_LINK_LOCAL_PREFIX, 8);
@@ -302,11 +292,8 @@ void protocol_6lowpan_configure_core(struct net_if *cur)
     cur->ipv6_neighbour_cache.link_mtu = LOWPAN_MTU;
     cur->ipv6_neighbour_cache.send_nud_probes = nd_params.send_nud_probes;
     cur->ipv6_neighbour_cache.probe_avoided_routers = nd_params.send_nud_probes;
-    cur->iids_map_to_mac = nd_params.iids_map_to_mac;
-    cur->ip_multicast_as_mac_unicast_to_parent = false;
     cur->max_link_mtu = LOWPAN_MAX_MTU;
     cur->send_mld = false;
-    nd_6lowpan_set_radv_params(cur);
 }
 
 void protocol_6lowpan_register_handlers(struct net_if *cur)
@@ -333,8 +320,8 @@ void protocol_6lowpan_release_short_link_address_from_neighcache(struct net_if *
 {
     uint8_t temp_ll[4];
     uint8_t *ptr = temp_ll;
-    ptr = common_write_16_bit(cur->mac_parameters.pan_id, ptr);
-    ptr = common_write_16_bit(shortAddress, ptr);
+    ptr = write_be16(ptr, cur->mac_parameters.pan_id);
+    ptr = write_be16(ptr, shortAddress);
     ipv6_neighbour_invalidate_ll_addr(&cur->ipv6_neighbour_cache,
                                       ADDR_802_15_4_SHORT, temp_ll);
     nd_remove_registration(cur, ADDR_802_15_4_SHORT, temp_ll);
@@ -344,7 +331,7 @@ void protocol_6lowpan_release_long_link_address_from_neighcache(struct net_if *c
 {
     uint8_t temp_ll[10];
     uint8_t *ptr = temp_ll;
-    ptr = common_write_16_bit(cur->mac_parameters.pan_id, ptr);
+    ptr = write_be16(ptr, cur->mac_parameters.pan_id);
     memcpy(ptr, mac64, 8);
     ipv6_neighbour_invalidate_ll_addr(&cur->ipv6_neighbour_cache,
                                       ADDR_802_15_4_LONG, temp_ll);
@@ -360,7 +347,7 @@ uint16_t protocol_6lowpan_neighbor_priority_set(int8_t interface_id, addrtype_e 
         return 0;
     }
 
-    mac_neighbor_table_entry_t *entry = mac_neighbor_table_address_discover(mac_neighbor_info(cur), addr_ptr + PAN_ID_LEN, addr_type);
+    mac_neighbor_table_entry_t *entry = mac_neighbor_table_address_discover(cur->mac_parameters.mac_neighbor_table, addr_ptr + PAN_ID_LEN, addr_type);
 
     if (entry) {
 
@@ -373,11 +360,8 @@ uint16_t protocol_6lowpan_neighbor_priority_set(int8_t interface_id, addrtype_e 
         }
         entry->link_role = PRIORITY_PARENT_NEIGHBOUR;
 
-
-        uint8_t temp[2];
-        common_write_16_bit(entry->mac16, temp);
-        mac_helper_coordinator_address_set(cur, ADDR_802_15_4_SHORT, temp);
-        mac_helper_coordinator_address_set(cur, ADDR_802_15_4_LONG, entry->mac64);
+        rcp_set_coordinator_mac16(entry->mac16);
+        rcp_set_coordinator_mac64(entry->mac64);
         if (etx_entry) {
             protocol_stats_update(STATS_ETX_1ST_PARENT, etx_entry->etx >> 4);
         }
@@ -400,7 +384,7 @@ uint16_t protocol_6lowpan_neighbor_second_priority_set(int8_t interface_id, addr
         return 0;
     }
 
-    mac_neighbor_table_entry_t *entry = mac_neighbor_table_address_discover(mac_neighbor_info(cur), addr_ptr + PAN_ID_LEN, addr_type);
+    mac_neighbor_table_entry_t *entry = mac_neighbor_table_address_discover(cur->mac_parameters.mac_neighbor_table, addr_ptr + PAN_ID_LEN, addr_type);
 
     if (entry) {
         bool new_secondary = false;
@@ -431,7 +415,7 @@ void protocol_6lowpan_neighbor_priority_clear_all(int8_t interface_id, neighbor_
     if (!cur) {
         return;
     }
-    mac_neighbor_table_list_t *mac_table_list = &mac_neighbor_info(cur)->neighbour_list;
+    mac_neighbor_table_list_t *mac_table_list = &cur->mac_parameters.mac_neighbor_table->neighbour_list;
 
     ns_list_foreach(mac_neighbor_table_entry_t, entry, mac_table_list) {
         if (priority == PRIORITY_1ST && entry->link_role == PRIORITY_PARENT_NEIGHBOUR) {
@@ -450,32 +434,15 @@ void protocol_6lowpan_neighbor_priority_clear_all(int8_t interface_id, neighbor_
 
 int8_t protocol_6lowpan_neighbor_address_state_synch(struct net_if *cur, const uint8_t eui64[8], const uint8_t iid[8])
 {
-    int8_t ret_val = -1;
+    mac_neighbor_table_entry_t *entry = mac_neighbor_table_address_discover(cur->mac_parameters.mac_neighbor_table, eui64, ADDR_802_15_4_LONG);
 
-    mac_neighbor_table_entry_t *entry = mac_neighbor_table_address_discover(mac_neighbor_info(cur), eui64, ADDR_802_15_4_LONG);
-    if (entry) {
-        if (memcmp(iid, ADDR_SHORT_ADR_SUFFIC, 6) == 0) {
-            iid += 6;
-            //Set Short Address to MLE
-            entry->mac16 = common_read_16_bit(iid);
-        }
-        if (!entry->ffd_device) {
-            if (entry->connected_device) {
-                mac_neighbor_table_neighbor_refresh(mac_neighbor_info(cur), entry, entry->link_lifetime);
-            }
-            ret_val = 1;
-        } else {
-            ret_val = 0;
-        }
-    }
-    return ret_val;
-}
+    if (!entry)
+        return -1;
 
-int8_t protocol_6lowpan_neighbor_remove(struct net_if *cur, uint8_t *address_ptr, addrtype_e type)
-{
-    mac_neighbor_table_entry_t *entry = mac_neighbor_table_address_discover(mac_neighbor_info(cur), address_ptr, type);
-    if (entry) {
-        mac_neighbor_table_neighbor_remove(mac_neighbor_info(cur), entry);
+    if (memcmp(iid, ADDR_SHORT_ADR_SUFFIC, 6) == 0) {
+        iid += 6;
+        //Set Short Address to MLE
+        entry->mac16 = read_be16(iid);
     }
     return 0;
 }
@@ -495,159 +462,4 @@ void protocol_6lowpan_interface_common_init(struct net_if *cur)
     // Putting a multicast route to ff00::/8 makes sure we can always transmit multicast.
     // Interface metric will determine which interface is actually used, if we have multiple.
     ipv6_route_add(ADDR_LINK_LOCAL_ALL_NODES, 8, cur->id, NULL, ROUTE_STATIC, 0xFFFFFFFF, -1);
-}
-
-int8_t protocol_6lowpan_interface_get_mac_coordinator_address(struct net_if *cur, sockaddr_t *adr_ptr)
-{
-    common_write_16_bit(cur->mac_parameters.pan_id, adr_ptr->address + 0);
-
-    adr_ptr->addr_type = mac_helper_coordinator_address_get(cur, adr_ptr->address + 2);
-    if (adr_ptr->addr_type == ADDR_NONE) {
-        return -1;
-    }
-    return 0;
-}
-
-int16_t protocol_6lowpan_rpl_global_priority_get(void)
-{
-    uint8_t instance_id_list[10];
-    uint8_t rpl_instance_count;
-    uint8_t instance_id = RPL_INSTANCE_LOCAL;
-    uint8_t instance_id_new;
-    uint8_t instance_index;
-    rpl_instance_count = rpl_instance_list_read(&instance_id_list[0], sizeof(instance_id_list));
-
-    /* Find lowest global instance ID (assumption: RPL instance with lowest instance ID has
-           most generic routing rule and its rank should be indicated in beacon) */
-    for (instance_index = 0; instance_index < rpl_instance_count; instance_index++) {
-        instance_id_new = instance_id_list[instance_index];
-
-        if ((instance_id_new & RPL_INSTANCE_LOCAL) == RPL_INSTANCE_LOCAL) {
-            break;
-        } else {
-            if (instance_id_new < instance_id) {
-                instance_id = instance_id_new;
-            }
-        }
-    }
-
-    // Get DAG rank
-    if (instance_id == RPL_INSTANCE_LOCAL) {
-        return 255;
-    }
-
-    rpl_dodag_info_t rpl_dodag_info;
-    if (!rpl_read_dodag_info(&rpl_dodag_info, instance_id)) {
-        return 255;
-    }
-
-    if (rpl_dodag_info.curent_rank == RPL_RANK_INFINITE) {
-        return 255;
-    }
-
-    // Default implementation is
-    // 32 * (7 - DODAGPreference) + 3 * (DAGRank - 1)
-    int16_t priority;
-    priority = 32 * (7 - RPL_DODAG_PREF(rpl_dodag_info.flags));
-    priority += 3 * (rpl_dodag_info.curent_rank / rpl_dodag_info.dag_min_hop_rank_inc - 1);
-
-    return priority;
-}
-
-bool protocol_6lowpan_latency_estimate_get(int8_t interface_id, uint32_t *latency)
-{
-    struct net_if *cur_interface = protocol_stack_interface_info_get_by_id(interface_id);
-    uint32_t latency_estimate = 0;
-
-    if (!cur_interface) {
-        return false;
-    }
-
-    if (cur_interface->eth_mac_api) {
-        // either PPP or Ethernet interface.
-        latency_estimate = 1000;
-    } else if (ws_info(cur_interface)) {
-        latency_estimate = ws_common_latency_estimate_get(cur_interface);
-    } else {
-        // 6LoWPAN ND
-        latency_estimate = 20000;
-    }
-
-    if (latency_estimate != 0) {
-        *latency = latency_estimate;
-        return true;
-    }
-
-    return false;
-}
-
-bool protocol_6lowpan_stagger_estimate_get(int8_t interface_id, uint32_t data_amount, uint16_t *stagger_min, uint16_t *stagger_max, uint16_t *stagger_rand)
-{
-    size_t network_size;
-    uint32_t datarate;
-    uint32_t stagger_value;
-    struct net_if *cur_interface = protocol_stack_interface_info_get_by_id(interface_id);
-
-    if (!cur_interface) {
-        return false;
-    }
-
-    if (cur_interface->eth_mac_api) {
-        // either PPP or Ethernet interface.
-        network_size = 1;
-        datarate = 1000000;
-    } else if (ws_info(cur_interface)) {
-        network_size = ws_common_network_size_estimate_get(cur_interface);
-        datarate = ws_common_usable_application_datarate_get(cur_interface);
-    } else {
-        // 6LoWPAN ND
-        network_size = 1000;
-        datarate = 250000;
-    }
-
-    if (data_amount == 0) {
-        // If no data amount given, use 1kB
-        data_amount = 1;
-    }
-    if (datarate < 25000) {
-        // Minimum data rate used in calculations is 25kbs to prevent invalid values
-        datarate = 25000;
-    }
-
-    /*
-     * Do not occupy whole bandwidth, leave space for network formation etc...
-     */
-    if (ws_info(cur_interface) &&
-            (ws_common_connected_time_get(cur_interface) > STAGGER_STABLE_NETWORK_TIME || ws_common_authentication_time_get(cur_interface) == 0)) {
-        // After four hours of network connected full bandwidth is given to application
-        // Authentication has not been required during bootstrap so network load is much smaller
-    } else {
-        // Smaller data rate allowed as we have just joined to the network and Authentication was made
-        datarate = STAGGER_DATARATE_FOR_APPL(datarate);
-    }
-
-    // For small networks sets 10 seconds stagger
-    if (ws_info(cur_interface) && (network_size <= 100 || ws_test_proc_auto_trg(cur_interface))) {
-        stagger_value = 10;
-    } else {
-        stagger_value = 1 + ((data_amount * 1024 * 8 * network_size) / datarate);
-    }
-    /**
-     * Example:
-     * Maximum stagger value to send 1kB to 100 device network using data rate of 50kbs:
-     * 1 + (1 * 1024 * 8 * 100) / (50000*0.25) = 66s
-     */
-
-    *stagger_min = stagger_value / 5;   // Minimum stagger value is 1/5 of the max
-
-    if (stagger_value > 0xFFFF) {
-        *stagger_max = 0xFFFF;
-    } else {
-        *stagger_max = (uint16_t)stagger_value + *stagger_min;
-    }
-
-    // Randomize stagger value
-    *stagger_rand = rand_get_random_in_range(*stagger_min, *stagger_max);
-
-    return true;
 }

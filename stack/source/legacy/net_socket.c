@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2014-2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,14 +26,18 @@
 #include <string.h>
 #include <stdlib.h>
 #include "common/log_legacy.h"
-#include "stack-services/common_functions.h"
+#include "common/endian.h"
+#include "common/rand.h"
 #include "stack/mac/platform/arm_hal_phy.h"
+#include "stack/ws_management_api.h"
 #include "stack/ns_address.h"
 
 #include "nwk_interface/protocol.h"
 #include "common_protocols/ipv6_constants.h"
 #include "common_protocols/ipv6_flow.h"
 #include "6lowpan/bootstraps/protocol_6lowpan.h"
+#include "6lowpan/ws/ws_cfg_settings.h"
+#include "6lowpan/ws/ws_common.h"
 
 #include "udp.h"
 #include "ns_socket.h"
@@ -848,6 +853,89 @@ int8_t socket_setsockopt(int8_t socket, uint8_t level, uint8_t opt_name, const v
     }
 }
 
+uint32_t ws_common_latency_estimate_get(struct net_if *cur)
+{
+    uint32_t latency = 0;
+
+    if (ws_cfg_network_config_get(cur) <= CONFIG_SMALL) {
+        // Also has the certificate settings
+        latency = 5000;
+    } else if (ws_cfg_network_config_get(cur) <= CONFIG_MEDIUM) {
+        latency = 10000;
+    } else if (ws_cfg_network_config_get(cur) <= CONFIG_LARGE) {
+        latency = 20000;
+    } else  {
+        latency = 30000;
+    }
+
+    return latency;
+}
+
+static uint32_t ws_common_network_size_estimate_get(struct net_if *cur)
+{
+    uint32_t network_size_estimate = 100;
+
+    if ((cur->ws_info.cfg->gen.network_size != NETWORK_SIZE_AUTOMATIC) &&
+            (cur->ws_info.cfg->gen.network_size != NETWORK_SIZE_CERTIFICATE)) {
+        network_size_estimate = cur->ws_info.cfg->gen.network_size * 100;
+    }
+
+    return network_size_estimate;
+}
+
+static uint32_t ws_common_usable_application_datarate_get(struct net_if *cur)
+{
+    /* Usable data rate is a available data rate when removed ACK and wait times required to send a packet
+     *
+     * Estimated to be around 70% with following assumptions with 150kbs data rate
+     * Average ACK size 48 bytes
+     * Average tACK 2ms
+     * Average CCA check time + processing 7ms
+     * Delays in bytes with 150kbs data rate 168 + 48 bytes for ACK 216 bytes
+     * Usable data rate is 1 - 216/(216 + 500) about 70%
+     */
+    return 70 * ws_common_datarate_get_from_phy_mode(cur->ws_info.hopping_schedule.phy_mode_id, cur->ws_info.hopping_schedule.operating_mode) / 100;
+}
+
+static uint32_t ws_common_connected_time_get(struct net_if *cur)
+{
+    if (cur->ws_info.connected_time == 0) {
+        // We are not connected
+        return 0;
+    }
+    return cur->ws_info.uptime - cur->ws_info.connected_time;
+}
+
+uint32_t ws_common_authentication_time_get(struct net_if *cur)
+{
+    if (cur->ws_info.authentication_time == 0) {
+        // Authentication was not done when joined to network so time is not known
+        return 0;
+    }
+    return cur->ws_info.uptime - cur->ws_info.authentication_time;
+}
+
+#define ws_test_proc_auto_trg(cur) ((cur)->ws_info.test_proc_trg.auto_trg_enabled == true)
+
+static bool protocol_6lowpan_latency_estimate_get(int8_t interface_id, uint32_t *latency)
+{
+    struct net_if *cur_interface = protocol_stack_interface_info_get_by_id(interface_id);
+    uint32_t latency_estimate = 0;
+
+    if (!cur_interface) {
+        return false;
+    }
+
+    latency_estimate = ws_common_latency_estimate_get(cur_interface);
+
+    if (latency_estimate != 0) {
+        *latency = latency_estimate;
+        return true;
+    }
+
+    return false;
+}
+
 static bool socket_latency_get(const uint8_t dest_addr[static 16], uint32_t *latency)
 {
     ipv6_route_t *route = ipv6_route_choose_next_hop(dest_addr, -1, NULL);
@@ -856,6 +944,73 @@ static bool socket_latency_get(const uint8_t dest_addr[static 16], uint32_t *lat
     }
 
     return protocol_6lowpan_latency_estimate_get(route->info.interface_id, latency);
+}
+
+/* Data rate for application used in Stagger calculation */
+#define STAGGER_DATARATE_FOR_APPL(n) ((n)*75/100)
+
+/* Time after network is considered stable and smaller stagger values can be given*/
+#define STAGGER_STABLE_NETWORK_TIME 3600*4
+
+static bool protocol_6lowpan_stagger_estimate_get(int8_t interface_id, uint32_t data_amount, uint16_t *stagger_min, uint16_t *stagger_max, uint16_t *stagger_rand)
+{
+    size_t network_size;
+    uint32_t datarate;
+    uint32_t stagger_value;
+    struct net_if *cur_interface = protocol_stack_interface_info_get_by_id(interface_id);
+
+    if (!cur_interface) {
+        return false;
+    }
+
+    network_size = ws_common_network_size_estimate_get(cur_interface);
+    datarate = ws_common_usable_application_datarate_get(cur_interface);
+
+    if (data_amount == 0) {
+        // If no data amount given, use 1kB
+        data_amount = 1;
+    }
+    if (datarate < 25000) {
+        // Minimum data rate used in calculations is 25kbs to prevent invalid values
+        datarate = 25000;
+    }
+
+    /*
+     * Do not occupy whole bandwidth, leave space for network formation etc...
+     */
+    if (ws_common_connected_time_get(cur_interface) > STAGGER_STABLE_NETWORK_TIME ||
+        !ws_common_authentication_time_get(cur_interface)) {
+        // After four hours of network connected full bandwidth is given to application
+        // Authentication has not been required during bootstrap so network load is much smaller
+    } else {
+        // Smaller data rate allowed as we have just joined to the network and Authentication was made
+        datarate = STAGGER_DATARATE_FOR_APPL(datarate);
+    }
+
+    // For small networks sets 10 seconds stagger
+    if (network_size <= 100 || ws_test_proc_auto_trg(cur_interface)) {
+        stagger_value = 10;
+    } else {
+        stagger_value = 1 + ((data_amount * 1024 * 8 * network_size) / datarate);
+    }
+    /**
+     * Example:
+     * Maximum stagger value to send 1kB to 100 device network using data rate of 50kbs:
+     * 1 + (1 * 1024 * 8 * 100) / (50000*0.25) = 66s
+     */
+
+    *stagger_min = stagger_value / 5;   // Minimum stagger value is 1/5 of the max
+
+    if (stagger_value > 0xFFFF) {
+        *stagger_max = 0xFFFF;
+    } else {
+        *stagger_max = (uint16_t)stagger_value + *stagger_min;
+    }
+
+    // Randomize stagger value
+    *stagger_rand = rand_get_random_in_range(*stagger_min, *stagger_max);
+
+    return true;
 }
 
 static bool socket_stagger_value_get(const uint8_t dest_addr[static 16], uint32_t data_amount, uint16_t *stagger_min, uint16_t *stagger_max, uint16_t *stagger_rand)

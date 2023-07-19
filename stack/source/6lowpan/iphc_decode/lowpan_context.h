@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2017, 2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,14 +31,12 @@
 #define LOWPAN_CONTEXT_DEFINE_H_
 #include <stdint.h>
 #include <stdbool.h>
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 
 /* Flags for decode or encode to context's information to 8-bit data from message or to message (cid_flags)*/
 #define LOWPAN_CONTEXT_C        0x10        // Compression
 #define LOWPAN_CONTEXT_CID_MASK 0x0F        // Context ID MASK
 #define LOWPAN_MAX_CONTEXT_COUNT 16
-
-struct net_if;
 
 typedef struct lowpan_context {
     uint32_t lifetime;      // Remaining lifetime (100ms ticks)
@@ -51,20 +50,6 @@ typedef struct lowpan_context {
 } lowpan_context_t;
 
 typedef NS_LIST_HEAD(lowpan_context_t, link) lowpan_context_list_t;
-
-/**
- * \brief Update lowpan current context or add new one
- *
- * \param list pointer to linked list for context
- * \param cid_flags Define context id (LOWPAN_CONTEXT_CID_MASK) and Context compression mode (LOWPAN_CONTEXT_C)
- * \param lifetime in minutes for context 0 delete contexts
- * \param prefix pointer to context prefix
- * \param len prefin length in bits
- *
- * \return 0 Update OK
- * \return -2 Update fail Out of memory reason
- */
-int_fast8_t lowpan_context_update(lowpan_context_list_t *list, uint8_t cid_flags, uint16_t lifetime, const uint8_t *prefix, uint_fast8_t len, bool stable);
 
 /**
  * \brief Cleand free full linked list about context

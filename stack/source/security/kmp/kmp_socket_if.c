@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016-2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,9 +24,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <net/if.h>
+#include "common/endian.h"
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
-#include "stack-services/common_functions.h"
+#include "common/ns_list.h"
 #include "stack/ns_address.h"
 
 #include "nwk_interface/protocol.h"
@@ -114,14 +115,12 @@ int8_t kmp_socket_if_register(kmp_service_t *service, uint8_t *instance_id, bool
                 close(socket_if->kmp_socket_id);
             }
             socket_if->kmp_socket_id = socket(AF_INET6, SOCK_DGRAM, 0);
-            setsockopt(socket_if->kmp_socket_id, SOL_SOCKET, SO_BINDTODEVICE, ctxt->config.tun_dev, IF_NAMESIZE);
-            if (bind(socket_if->kmp_socket_id, (struct sockaddr *) &sockaddr, sizeof(sockaddr)) < 0) {
-                tr_error("could not create socket_if->kmp_socket_id socket: %m");
-            }
-            if (socket_if->kmp_socket_id < 0) {
-                free(socket_if);
-                return -1;
-            }
+            if (socket_if->kmp_socket_id < 0)
+                FATAL(1, "%s: socket: %m", __func__);
+            if (setsockopt(socket_if->kmp_socket_id, SOL_SOCKET, SO_BINDTODEVICE, ctxt->config.tun_dev, IF_NAMESIZE) < 0)
+                FATAL(1, "%s: setsocketopt: %m", __func__);
+            if (bind(socket_if->kmp_socket_id, (struct sockaddr *) &sockaddr, sizeof(sockaddr)) < 0)
+                FATAL(1, "%s: bind: %m", __func__);
         }
     } else {
         if ((socket_if->kmp_socket_id < 1)) {
@@ -132,19 +131,11 @@ int8_t kmp_socket_if_register(kmp_service_t *service, uint8_t *instance_id, bool
             memcpy(&socket_if->remote_sockaddr, remote_addr, sizeof(struct sockaddr_storage));
             ((struct sockaddr_in *) &socket_if->remote_sockaddr)->sin_port = htons(remote_port);
             socket_if->kmp_socket_id = socket(socket_if->remote_sockaddr.ss_family, SOCK_DGRAM, 0);
-
-            if (socket_if->kmp_socket_id < 0) {
-                free(socket_if);
-                return -1;
-            }
-
+            if (socket_if->kmp_socket_id < 0)
+                FATAL(1, "%s: socket: %m", __func__);
             radius_cli_bind.ss_family = ((struct sockaddr_storage *) remote_addr)->ss_family;
-            if (bind(socket_if->kmp_socket_id,
-                     (struct sockaddr *)&radius_cli_bind,
-                     sizeof(radius_cli_bind)) < 0) {
-                free(socket_if);
-                return -1;
-            }
+            if (bind(socket_if->kmp_socket_id, (struct sockaddr *)&radius_cli_bind, sizeof(radius_cli_bind)) < 0)
+                FATAL(1, "%s: bind: %m", __func__);
         }
     }
 
@@ -213,7 +204,7 @@ static int8_t kmp_socket_if_send(kmp_service_t *service, uint8_t instance_id, km
         uint8_t *ptr = pdu;
         memcpy(ptr, addr->relay_address, 16);
         ptr += 16;
-        ptr = common_write_16_bit(addr->port, ptr);
+        ptr = write_be16(ptr, addr->port);
         memcpy(ptr, kmp_address_eui_64_get(addr), 8);
         ptr += 8;
         *ptr = kmp_id;
@@ -223,6 +214,8 @@ static int8_t kmp_socket_if_send(kmp_service_t *service, uint8_t instance_id, km
         ret = sendto(socket_if->kmp_socket_id, pdu, size, 0, (struct sockaddr *)&sockaddr, sizeof(struct sockaddr_in6));
     else if (instance_id == KMP_RADIUS_INSTANCE_INDEX)
         ret = sendto(socket_if->kmp_socket_id, pdu, size, 0, (struct sockaddr *)&socket_if->remote_sockaddr, sizeof(socket_if->remote_sockaddr));
+    else
+        ret = -1;
 
     if (ret < 0 || ret != size) {
         tr_error("kmp_socket_if_send, instance_id = %d sendto: %m", instance_id);
@@ -278,7 +271,7 @@ void kmp_socket_if_pae_socket_cb(int fd)
         addr.type = KMP_ADDR_EUI_64_AND_IP;
         memcpy(addr.relay_address, data_ptr, 16);
         data_ptr += 16;
-        addr.port = common_read_16_bit(data_ptr);
+        addr.port = read_be16(data_ptr);
         data_ptr += 2;
         memcpy(addr.eui_64, data_ptr, 8);
         data_ptr += 8;

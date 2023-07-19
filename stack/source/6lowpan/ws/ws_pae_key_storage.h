@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -78,5 +79,6 @@ bool ws_pae_key_storage_supp_delete(const void *instance, const uint8_t *eui64);
 uint16_t ws_pae_key_storage_storing_interval_get(void);
 
 int ws_pae_key_storage_list(uint8_t eui64[][8], int len);
+bool ws_pae_key_storage_supp_exists(const uint8_t eui64[8]);
 
 #endif

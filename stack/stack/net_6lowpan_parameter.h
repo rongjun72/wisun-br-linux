@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2014-2015, 2017, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,14 +58,7 @@ typedef struct nd_parameters {
     uint16_t ns_retry_interval_min;         /**< Define Retry interval in 6LoWPAN bootstrap timer ticks waiting for NA. */
     uint16_t ns_retry_linear_backoff;       /**< Define Retry interval linear backoff in bootstrap timer ticks. */
     bool multihop_dad;                      /**< Define whether to perform duplicate address detection with border router or locally. */
-    bool iids_map_to_mac;                   /**< Define whether IPv6 IIDs can be assumed to be based on MAC address (so no address resolution by routers). */
     bool send_nud_probes;                   /**< Define whether IPv6 NUD probes are enabled (disabling may limit fault detection). */
-    uint16_t ra_interval_min;               /**< Define initial transmission interval for Router Advertisements in standard timer ticks. */
-    uint8_t ra_transmits;                   /**< Define number of RA transmissions. */
-    uint8_t ra_cur_hop_limit;               /**< Define the value of current hop limit in RAs. */
-    uint32_t ra_link_mtu;                   /**< Define the value of link MTU in RAs. */
-    uint32_t ra_reachable_time;             /**< Define the value of reachable time in RAs (in milliseconds). */
-    uint32_t ra_retrans_timer;              /**< Define the value of retrans timer in RAs (in milliseconds). */
     uint16_t ns_forward_timeout;            /**< Define timeout when forwarding NS messages - if reached, our own address discovery process is restarted. */
 } nd_parameters_s;
 
@@ -86,23 +80,6 @@ typedef struct nd_parameters {
  *
  */
 int8_t net_6lowpan_nd_parameter_set(const nd_parameters_s *parameter_ptr);
-
-/**
- * \brief Function to change 6LoWPAN bootstrap base tick 100ms multiplier.
- *
- * Note: This function MUST be called after net_init_core(). Do not change this
- * unless you really want 6LoWPAN bootstrap working slower than normally.
- *
- * This only affects the bootstrap timers.
- *
- * \param base_tick_x_100ms Tick resolution in 100ms units.
- *        Max value 10 --> 10 times slower functionality
- *
- * \return 0, Change OK.
- * \return -1, Invalid value (<1 or >10).
- *
- */
-int8_t net_6lowpan_nd_timer_base_tick_set(uint8_t base_tick_x_100ms);
 
 /**
  * \brief Function to read 6LoWPAN ND bootstrap parameters.

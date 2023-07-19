@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2020-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,11 +21,14 @@
 #include <stdlib.h>
 #include <mbedtls/sha256.h>
 #include <mbedtls/md5.h>
+#if MBEDTLS_VERSION_MAJOR > 2
+#include <mbedtls/compat-2.x.h>
+#endif
+#include "common/endian.h"
 #include "common/rand.h"
 #include "common/trickle.h"
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
-#include "stack-services/common_functions.h"
+#include "common/ns_list.h"
 #include "service_libs/hmac/hmac_md.h"
 #include "stack/mac/fhss_config.h"
 
@@ -130,8 +134,8 @@ static int8_t radius_client_sec_prot_receive_check(sec_prot_t *prot, const void 
 static int8_t radius_client_sec_prot_init_radius_eap_tls(sec_prot_t *prot);
 static void radius_client_sec_prot_radius_eap_tls_deleted(sec_prot_t *prot);
 static uint16_t radius_client_sec_prot_eap_avps_handle(uint16_t avp_length, uint8_t *avp_ptr, uint8_t *copy_to_ptr);
-static int8_t radius_client_sec_prot_receive(sec_prot_t *prot, void *pdu, uint16_t size, uint8_t conn_number);
-static int8_t radius_client_sec_prot_radius_eap_receive(sec_prot_t *prot, void *pdu, uint16_t size);
+static int8_t radius_client_sec_prot_receive(sec_prot_t *prot, const void *pdu, uint16_t size, uint8_t conn_number);
+static int8_t radius_client_sec_prot_radius_eap_receive(sec_prot_t *prot, const void *pdu, uint16_t size);
 static void radius_client_sec_prot_allocate_and_create_radius_message(sec_prot_t *prot);
 static int8_t radius_client_sec_prot_radius_msg_send(sec_prot_t *prot);
 static void radius_client_sec_prot_radius_msg_free(sec_prot_t *prot);
@@ -140,8 +144,8 @@ static void radius_client_sec_prot_identifier_free(sec_prot_t *prot);
 static uint8_t radius_client_sec_prot_hex_to_ascii(uint8_t value);
 static int8_t radius_client_sec_prot_eui_64_hash_generate(uint8_t *eui_64, uint8_t *hashed_eui_64);
 static void radius_client_sec_prot_station_id_generate(uint8_t *eui_64, uint8_t *station_id_ptr);
-static int8_t radius_client_sec_prot_message_authenticator_calc(sec_prot_t *prot, uint16_t msg_len, uint8_t *msg_ptr, uint8_t *auth_ptr);
-static int8_t radius_client_sec_prot_response_authenticator_calc(sec_prot_t *prot, uint16_t msg_len, uint8_t *msg_ptr, uint8_t *auth_ptr);
+static int8_t radius_client_sec_prot_message_authenticator_calc(sec_prot_t *prot, uint16_t msg_len, const uint8_t *msg_ptr, uint8_t *auth_ptr);
+static int8_t radius_client_sec_prot_response_authenticator_calc(sec_prot_t *prot, uint16_t msg_len, const uint8_t *msg_ptr, uint8_t *auth_ptr);
 static int8_t radius_client_sec_prot_ms_mppe_recv_key_pmk_decrypt(sec_prot_t *prot, uint8_t *recv_key, uint8_t recv_key_len, uint8_t *request_authenticator, uint8_t *pmk_ptr);
 static void radius_client_sec_prot_finished_send(sec_prot_t *prot);
 static void radius_client_sec_prot_state_machine(sec_prot_t *prot);
@@ -367,7 +371,7 @@ static uint16_t radius_client_sec_prot_eap_avps_handle(uint16_t avp_length, uint
     return eap_len;
 }
 
-static int8_t radius_client_sec_prot_receive(sec_prot_t *prot, void *pdu, uint16_t size, uint8_t conn_number)
+static int8_t radius_client_sec_prot_receive(sec_prot_t *prot, const void *pdu, uint16_t size, uint8_t conn_number)
 {
     (void) conn_number;
 
@@ -377,7 +381,7 @@ static int8_t radius_client_sec_prot_receive(sec_prot_t *prot, void *pdu, uint16
         return -1;
     }
 
-    uint8_t *radius_msg_ptr = pdu;
+    uint8_t *radius_msg_ptr = (uint8_t *)pdu; // FIXME
 
     uint8_t code = *radius_msg_ptr++;
     if (code != RADIUS_ACCESS_ACCEPT && code != RADIUS_ACCESS_REJECT && code != RADIUS_ACCESS_CHALLENGE) {
@@ -392,7 +396,7 @@ static int8_t radius_client_sec_prot_receive(sec_prot_t *prot, void *pdu, uint16
         return -1;
     }
 
-    uint16_t length = common_read_16_bit(radius_msg_ptr);
+    uint16_t length = read_be16(radius_msg_ptr);
     radius_msg_ptr += 2;
 
     if (length < RADIUS_MSG_FIXED_LENGTH) {
@@ -530,12 +534,12 @@ static int8_t radius_client_sec_prot_receive(sec_prot_t *prot, void *pdu, uint16
     return 0;
 }
 
-static int8_t radius_client_sec_prot_radius_eap_receive(sec_prot_t *prot, void *pdu, uint16_t size)
+static int8_t radius_client_sec_prot_radius_eap_receive(sec_prot_t *prot, const void *pdu, uint16_t size)
 {
     radius_client_sec_prot_int_t *data = radius_client_sec_prot_get(prot);
 
     data->recv_eap_msg_len = size;
-    data->recv_eap_msg = pdu;
+    data->recv_eap_msg = (uint8_t *)pdu; // FIXME
 
     prot->state_machine(prot);
 
@@ -672,7 +676,7 @@ static void radius_client_sec_prot_allocate_and_create_radius_message(sec_prot_t
     *radius_msg_ptr++ = RADIUS_ACCESS_REQUEST;                                // code
     data->radius_identifier = radius_client_sec_prot_identifier_allocate(prot, data->radius_identifier);
     *radius_msg_ptr++ = data->radius_identifier;                              // identifier
-    radius_msg_ptr = common_write_16_bit(radius_msg_length, radius_msg_ptr);  // length
+    radius_msg_ptr = write_be16(radius_msg_ptr, radius_msg_length);  // length
 
     rand_get_n_bytes_random(data->request_authenticator, 16);
     memcpy(radius_msg_ptr, data->request_authenticator, 16);                  // request authenticator
@@ -710,7 +714,7 @@ static void radius_client_sec_prot_allocate_and_create_radius_message(sec_prot_t
 
     // Write eap fragments
     eap_len = eap_hdr->msg.eap.length;
-    uint8_t *eap_ptr = eap_hdr->packet_body;
+    const uint8_t *eap_ptr = eap_hdr->packet_body;
     while (true) {
         if (eap_len > AVP_VALUE_MAX_LEN) {
             eap_len -= AVP_VALUE_MAX_LEN;
@@ -785,31 +789,19 @@ static int8_t radius_client_sec_prot_eui_64_hash_generate(uint8_t *eui_64, uint8
 
     mbedtls_sha256_init(&ctx);
 
-#if (MBEDTLS_VERSION_MAJOR >= 3)
-    if (mbedtls_sha256_starts(&ctx, 0) != 0) {
-#else
     if (mbedtls_sha256_starts_ret(&ctx, 0) != 0) {
-#endif
         ret_val = -1;
         goto error;
     }
 
-#if (MBEDTLS_VERSION_MAJOR >= 3)
-    if (mbedtls_sha256_update(&ctx, hashed_string, 24) != 0) {
-#else
     if (mbedtls_sha256_update_ret(&ctx, hashed_string, 24) != 0) {
-#endif
         ret_val = -1;
         goto error;
     }
 
     uint8_t output[32];
 
-#if (MBEDTLS_VERSION_MAJOR >= 3)
-    if (mbedtls_sha256_finish(&ctx, output) != 0) {
-#else
     if (mbedtls_sha256_finish_ret(&ctx, output) != 0) {
-#endif
         ret_val = -1;
         goto error;
     }
@@ -844,7 +836,7 @@ static void radius_client_sec_prot_station_id_generate(uint8_t *eui_64, uint8_t 
     }
 }
 
-static int8_t radius_client_sec_prot_message_authenticator_calc(sec_prot_t *prot, uint16_t msg_len, uint8_t *msg_ptr, uint8_t *auth_ptr)
+static int8_t radius_client_sec_prot_message_authenticator_calc(sec_prot_t *prot, uint16_t msg_len, const uint8_t *msg_ptr, uint8_t *auth_ptr)
 {
     if (prot->sec_cfg->radius_cfg->radius_shared_secret == NULL || prot->sec_cfg->radius_cfg->radius_shared_secret_len == 0) {
         return -1;
@@ -864,7 +856,7 @@ static int8_t radius_client_sec_prot_message_authenticator_calc(sec_prot_t *prot
     return 0;
 }
 
-static int8_t radius_client_sec_prot_response_authenticator_calc(sec_prot_t *prot, uint16_t msg_len, uint8_t *msg_ptr, uint8_t *auth_ptr)
+static int8_t radius_client_sec_prot_response_authenticator_calc(sec_prot_t *prot, uint16_t msg_len, const uint8_t *msg_ptr, uint8_t *auth_ptr)
 {
 #ifdef MBEDTLS_MD5_C
     if (prot->sec_cfg->radius_cfg->radius_shared_secret == NULL || prot->sec_cfg->radius_cfg->radius_shared_secret_len == 0) {
@@ -883,37 +875,17 @@ static int8_t radius_client_sec_prot_response_authenticator_calc(sec_prot_t *pro
 
     mbedtls_md5_init(&ctx);
 
-#if (MBEDTLS_VERSION_MAJOR >= 3)
-    if (mbedtls_md5_starts(&ctx) != 0) {
-#else
-    if (mbedtls_md5_starts_ret(&ctx) != 0) {
-#endif
+    if (mbedtls_md5_starts_ret(&ctx))
         goto end;
-    }
 
-#if (MBEDTLS_VERSION_MAJOR >= 3)
-    if (mbedtls_md5_update(&ctx, msg_ptr, msg_len) != 0) {
-#else
-    if (mbedtls_md5_update_ret(&ctx, msg_ptr, msg_len) != 0) {
-#endif
+    if (mbedtls_md5_update_ret(&ctx, msg_ptr, msg_len))
         goto end;
-    }
 
-#if (MBEDTLS_VERSION_MAJOR >= 3)
-    if (mbedtls_md5_update(&ctx, key, key_len) != 0) {
-#else
-    if (mbedtls_md5_update_ret(&ctx, key, key_len) != 0) {
-#endif
+    if (mbedtls_md5_update_ret(&ctx, key, key_len))
         goto end;
-    }
 
-#if (MBEDTLS_VERSION_MAJOR >= 3)
-    if (mbedtls_md5_finish(&ctx, auth_ptr) != 0) {
-#else
-    if (mbedtls_md5_finish_ret(&ctx, auth_ptr) != 0) {
-#endif
+    if (mbedtls_md5_finish_ret(&ctx, auth_ptr))
         goto end;
-    }
 
     ret_value = 0;
 
@@ -967,59 +939,35 @@ static int8_t radius_client_sec_prot_ms_mppe_recv_key_pmk_decrypt(sec_prot_t *pr
     while (cipher_text_len >= MS_MPPE_RECV_KEY_BLOCK_LEN) {
         mbedtls_md5_init(&ctx);
 
-#if (MBEDTLS_VERSION_MAJOR >= 3)
-        if (mbedtls_md5_starts(&ctx) != 0) {
-#else
         if (mbedtls_md5_starts_ret(&ctx) != 0) {
-#endif
             md5_failed = true;
             break;
         }
 
-#if (MBEDTLS_VERSION_MAJOR >= 3)
-        if (mbedtls_md5_update(&ctx, key, key_len) != 0) {
-#else
         if (mbedtls_md5_update_ret(&ctx, key, key_len) != 0) {
-#endif
             md5_failed = true;
             break;
         }
 
         if (first_interm_b_value) {
             // b(1) = MD5(secret + request-authenticator + salt)
-#if (MBEDTLS_VERSION_MAJOR >= 3)
-            if (mbedtls_md5_update(&ctx, request_authenticator, MS_MPPE_RECV_KEY_BLOCK_LEN) != 0) {
-#else
             if (mbedtls_md5_update_ret(&ctx, request_authenticator, MS_MPPE_RECV_KEY_BLOCK_LEN) != 0) {
-#endif
                 md5_failed = true;
                 break;
             }
-#if (MBEDTLS_VERSION_MAJOR >= 3)
-            if (mbedtls_md5_update(&ctx, salt_ptr, MS_MPPE_RECV_KEY_SALT_LEN) != 0) {
-#else
             if (mbedtls_md5_update_ret(&ctx, salt_ptr, MS_MPPE_RECV_KEY_SALT_LEN) != 0) {
-#endif
                 md5_failed = true;
                 break;
             }
         } else {
             // b(i) = MD5(secret + cipher_text(i - 1))
-#if (MBEDTLS_VERSION_MAJOR >= 3)
-            if (mbedtls_md5_update(&ctx, cipher_text_ptr - MS_MPPE_RECV_KEY_BLOCK_LEN, MS_MPPE_RECV_KEY_BLOCK_LEN) != 0) {
-#else
             if (mbedtls_md5_update_ret(&ctx, cipher_text_ptr - MS_MPPE_RECV_KEY_BLOCK_LEN, MS_MPPE_RECV_KEY_BLOCK_LEN) != 0) {
-#endif
                 md5_failed = true;
                 break;
             }
         }
 
-#if (MBEDTLS_VERSION_MAJOR >= 3)
-        if (mbedtls_md5_finish(&ctx, interm_b_val) != 0) {
-#else
         if (mbedtls_md5_finish_ret(&ctx, interm_b_val) != 0) {
-#endif
             md5_failed = true;
             break;
         }

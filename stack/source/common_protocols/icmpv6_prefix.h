@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2017, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,13 +23,12 @@
  * API:
  *  * ADD / UPDATE, icmpv6_prefix_add()
  *  * Discover prefix from the list, icmpv6_prefix_compare()
- *  * Free Linked list, icmpv6_prefix_list_free()
  *
  */
 
 #ifndef ICMPV6_PREFIX_DEFINITION_H_
 #define ICMPV6_PREFIX_DEFINITION_H_
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 
 /* Prefix Information option bits (RFC4861) */
 #define PIO_L 0x80  /* On-link flag */
@@ -49,7 +49,5 @@ typedef NS_LIST_HEAD(prefix_entry_t, link) prefix_list_t;
 prefix_entry_t *icmpv6_prefix_add(prefix_list_t *list, const uint8_t *prefixPtr, uint8_t prefix_len, uint32_t lifeTime, uint32_t prefTime, uint8_t flags);
 
 prefix_entry_t *icmpv6_prefix_compare(prefix_list_t *list, const uint8_t *addr, uint8_t prefix_len);
-
-void icmpv6_prefix_list_free(prefix_list_t *list);
 
 #endif /* ICMPV6_PREFIX_DEFINITION_H_ */

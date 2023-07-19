@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +20,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 
 #include "nwk_interface/protocol.h"
 #include "common_protocols/ipv6_constants.h"
@@ -577,7 +578,7 @@ int8_t kmp_service_msg_if_register(kmp_service_t *service, uint8_t instance_id, 
     return 0;
 }
 
-int8_t kmp_service_msg_if_receive(kmp_service_t *service, uint8_t instance_id, kmp_type_e type, const kmp_addr_t *addr, void *pdu, uint16_t size, uint8_t connection_num)
+int8_t kmp_service_msg_if_receive(kmp_service_t *service, uint8_t instance_id, kmp_type_e type, const kmp_addr_t *addr, const void *pdu, uint16_t size, uint8_t connection_num)
 {
     if (!service) {
         return -1;

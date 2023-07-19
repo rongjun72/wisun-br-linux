@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +18,7 @@
 
 #ifndef WS_CONFIG_H_
 #define WS_CONFIG_H_
-
+#include <stdint.h>
 
 /*RPL parameters for DIO messages
  *

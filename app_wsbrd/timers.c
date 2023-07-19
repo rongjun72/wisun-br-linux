@@ -1,4 +1,5 @@
 #include <sys/timerfd.h>
+#include <inttypes.h>
 #include <unistd.h>
 
 #include "stack/timers.h"
@@ -10,8 +11,8 @@ void wsbr_common_timer_init(struct wsbr_ctxt *ctxt)
 {
     int ret;
     struct itimerspec parms = {
-        .it_value.tv_nsec = TIMER_GLOBAL_PERIOD_MS * 1000 * 1000,
-        .it_interval.tv_nsec = TIMER_GLOBAL_PERIOD_MS * 1000 * 1000,
+        .it_value.tv_nsec = WS_TIMER_GLOBAL_PERIOD_MS * 1000 * 1000,
+        .it_interval.tv_nsec = WS_TIMER_GLOBAL_PERIOD_MS * 1000 * 1000,
     };
 
     ctxt->timerfd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK);
@@ -27,11 +28,6 @@ void wsbr_common_timer_process(struct wsbr_ctxt *ctxt)
 
     ret = read(ctxt->timerfd, &val, sizeof(val));
     WARN_ON(ret < sizeof(val), "cancelled timer?");
-    WARN_ON(val != 1, "missing timers: %u", (unsigned int)val - 1);
-    timer_global_tick();
-}
-
-void wsbr_spinel_replay_timers(struct spinel_buffer *buf)
-{
-    WARN("%s: not implemented", __func__);
+    WARN_ON(val != 1, "missing timers: %"PRIu64, val - 1);
+    ws_timer_global_tick();
 }

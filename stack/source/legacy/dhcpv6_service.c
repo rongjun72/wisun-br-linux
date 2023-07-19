@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2013-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,12 +23,12 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <net/if.h>
+#include "common/endian.h"
 #include "common/log.h"
 #include "common/rand.h"
 #include "common/named_values.h"
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
-#include "stack-services/common_functions.h"
+#include "common/ns_list.h"
 #include "stack/net_interface.h"
 #include "stack/timers.h"
 
@@ -108,7 +109,7 @@ typedef struct dhcp_service_class {
     relay_instance_list_t relay_list;
     relay_notify_list_t notify_list;
     tr_list_t tr_list;
-    int8_t dhcp_server_socket;
+    int    dhcp_server_socket;
     int8_t dhcp_client_socket;
     int8_t dhcp_relay_socket;
     int8_t dhcpv6_socket_service_tasklet;
@@ -137,7 +138,7 @@ void dhcp_service_timer_cb(int ticks)
 {
     if (dhcp_service_timer_tick(ticks)) {
         dhcpv6_socket_timeout_timer_active = true;
-        timer_start(TIMER_DHCPV6_SOCKET);
+        ws_timer_start(WS_TIMER_DHCPV6_SOCKET);
     } else {
         dhcpv6_socket_timeout_timer_active = false;
     }
@@ -155,7 +156,7 @@ bool dhcp_service_allocate(void)
             dhcp_service->dhcp_client_socket = -1;
             dhcp_service->dhcp_server_socket = -1;
             dhcp_service->dhcp_relay_socket = -1;
-            timer_start(TIMER_DHCPV6_SOCKET);
+            ws_timer_start(WS_TIMER_DHCPV6_SOCKET);
             dhcpv6_socket_timeout_timer_active = true;
         }
     }
@@ -235,7 +236,7 @@ void dhcp_tr_set_retry_timers(msg_tr_t *msg_ptr, uint8_t msg_type)
 
         msg_ptr->timeout = msg_ptr->timeout_init;
         if (!dhcpv6_socket_timeout_timer_active) {
-            timer_start(TIMER_DHCPV6_SOCKET);
+            ws_timer_start(WS_TIMER_DHCPV6_SOCKET);
             dhcpv6_socket_timeout_timer_active = true;
         }
     }
@@ -310,7 +311,6 @@ void recv_dhcp_server_msg()
     uint8_t msg_type;
     struct sockaddr_in6 src_addr;
     socklen_t src_addr_len = sizeof(struct sockaddr_in6);
-    relay_notify_t *neigh_notify = NULL;
 
     msg_tr_ptr = dhcp_tr_create();
     msg_ptr = msg;
@@ -343,38 +343,17 @@ void recv_dhcp_server_msg()
     } else if (msg_type == DHCPV6_RELAY_REPLY) {
         tr_error("Relay reply drop at server");
         goto cleanup;
-    } else {
-        //Search only for direct messages here
-        neigh_notify = dhcp_service_notify_find(IF_IPV6);
     }
 
     //TODO use real function from lib also call validity check
-    msg_tr_ptr->message_tr_id = common_read_24_bit(&msg_ptr[1]);
+    msg_tr_ptr->message_tr_id = read_be24(&msg_ptr[1]);
 
     if (0 != libdhcpv6_message_malformed_check(msg_ptr, msg_len)) {
         tr_error("Malformed packet");
         goto cleanup;
     }
 
-    if (neigh_notify && neigh_notify->recv_notify_cb) {
-        neigh_notify->recv_notify_cb(IF_IPV6, msg_tr_ptr->addr.address);
-    }
-
     msg_tr_ptr->socket = dhcp_service->dhcp_server_socket;
-    // call all receivers until found.
-    ns_list_foreach(server_instance_t, cur_ptr, &dhcp_service->srv_list) {
-        if (cur_ptr->interface_id == IF_IPV6 && cur_ptr->recv_req_cb != NULL) {
-            msg_tr_ptr->instance_id = cur_ptr->instance_id;
-            msg_tr_ptr->interface_id = IF_IPV6;
-            if ((RET_MSG_ACCEPTED ==
-                    cur_ptr->recv_req_cb(cur_ptr->instance_id, msg_tr_ptr->msg_tr_id, msg_type, msg_ptr + 4, msg_len - 4))) {
-                // should not modify pointers but library requires.
-                msg_tr_ptr = NULL;
-                srv_ptr = cur_ptr;
-                break;
-            }
-        }
-    }
 
 cleanup:
     dhcp_tr_delete(msg_tr_ptr);
@@ -558,7 +537,7 @@ void recv_dhcp_client_msg(void *cb_res)
     }
     msg_len = socket_read(sckt_data->socket_id, &address, msg_ptr, sckt_data->d_len);
 
-    tr_id = common_read_24_bit(&msg_ptr[1]);
+    tr_id = read_be24(&msg_ptr[1]);
     msg_tr_ptr = dhcp_tr_find(tr_id);
     TRACE(TR_DHCP, "rx-dhcp %-9s src:%s",
           val_to_str(*msg_ptr, dhcp_frames, "[UNK]"), tr_ipv6(address.address));
@@ -606,9 +585,10 @@ uint16_t dhcp_service_init(int8_t interface_id, dhcp_instance_type_e instance_ty
             tr_error("dhcp Server socket can't open because Agent open already");
         }
         dhcp_service->dhcp_server_socket = socket(AF_INET6, SOCK_DGRAM, 0);
-        if (bind(dhcp_service->dhcp_server_socket, (struct sockaddr *) &sockaddr, sizeof(sockaddr)) < 0) {
-            FATAL(1, "could not create dhcp server socket: %m");
-        }
+        if (dhcp_service->dhcp_server_socket < 0)
+            FATAL(1, "%s: socket: %m", __func__);
+        if (bind(dhcp_service->dhcp_server_socket, (struct sockaddr *) &sockaddr, sizeof(sockaddr)) < 0)
+            FATAL(1, "%s: bind: %m", __func__);
     }
 
     if (instance_type == DHCP_INTANCE_RELAY_AGENT && dhcp_service->dhcp_relay_socket < 0) {
@@ -771,7 +751,7 @@ uint32_t dhcp_service_send_req(uint16_t instance_id, uint8_t options, void *ptr,
     msg_tr_ptr->first_transmit_time = 0;
     msg_tr_ptr->transmit_time = 0;
     dhcp_tr_set_retry_timers(msg_tr_ptr, msg_tr_ptr->msg_ptr[0]);
-    common_write_24_bit(msg_tr_ptr->msg_tr_id, &msg_tr_ptr->msg_ptr[1]);
+    write_be24(&msg_tr_ptr->msg_ptr[1], msg_tr_ptr->msg_tr_id);
 
     dhcp_service_send_message(msg_tr_ptr);
     return msg_tr_ptr->msg_tr_id;
@@ -843,7 +823,7 @@ void dhcp_service_send_message(msg_tr_t *msg_tr_ptr)
         } else {
             cs = (uint16_t) t * 10;
         }
-        common_write_16_bit(cs, elapsed_time.msg_ptr);
+        write_be16(elapsed_time.msg_ptr, cs);
     }
 
     if ((msg_tr_ptr->options & TX_OPT_USE_SHORT_ADDR) == TX_OPT_USE_SHORT_ADDR) {

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,9 +23,8 @@
 #include "common/log_legacy.h"
 #include "common/rand.h"
 #include "common/utils.h"
-#include "stack-services/ns_list.h"
-#include "stack-scheduler/eventOS_event.h"
-#include "stack-scheduler/eventOS_scheduler.h"
+#include "common/ns_list.h"
+#include "common/events_scheduler.h"
 #include "stack/mac/fhss_config.h"
 #include "stack/ws_management_api.h"
 #include "stack/ns_address.h"
@@ -35,6 +35,7 @@
 #include "security/kmp/kmp_addr.h"
 #include "security/kmp/kmp_api.h"
 #include "security/kmp/kmp_socket_if.h"
+#include "security/eapol/eapol_helper.h"
 #include "security/protocols/sec_prot_certs.h"
 #include "security/protocols/sec_prot_keys.h"
 #include "security/protocols/key_sec_prot/key_sec_prot.h"
@@ -116,7 +117,7 @@ typedef struct pae_auth {
     supp_list_t active_supp_list;                            /**< List of active supplicants */
     supp_list_t waiting_supp_list;                           /**< List of waiting supplicants */
     shared_comp_list_t shared_comp_list;                     /**< Shared component list */
-    arm_event_storage_t *timer;                              /**< Timer */
+    struct event_storage *timer;                              /**< Timer */
     pae_auth_gtk_t gtks;                                     /**< Material for GTKs */
     pae_auth_gtk_t lgtks;                                    /**< Material for LGTKs */
     const sec_prot_certs_t *certs;                           /**< Certificates */
@@ -136,8 +137,9 @@ static void ws_pae_auth_free(pae_auth_t *pae_auth);
 static pae_auth_t *ws_pae_auth_get(struct net_if *interface_ptr);
 static pae_auth_t *ws_pae_auth_by_kmp_service_get(kmp_service_t *service);
 static int8_t ws_pae_auth_event_send(kmp_service_t *service, void *data);
-static void ws_pae_auth_tasklet_handler(arm_event_s *event);
+static void ws_pae_auth_tasklet_handler(struct event_payload *event);
 static uint32_t ws_pae_auth_lifetime_key_frame_cnt_check(pae_auth_t *pae_auth, uint8_t gtk_index, uint16_t seconds);
+static void ws_pae_auth_gtk_insert(sec_prot_gtk_keys_t *gtks, const uint8_t gtk[GTK_LEN], int lifetime, bool is_lgtk);
 static void ws_pae_auth_gtk_key_insert(sec_prot_gtk_keys_t *gtks, sec_prot_gtk_keys_t *next_gtks, uint32_t lifetime, bool is_lgtk);
 static int8_t ws_pae_auth_new_gtk_activate(sec_prot_gtk_keys_t *gtks);
 static int8_t ws_pae_auth_timer_if_start(kmp_service_t *service, kmp_api_t *kmp);
@@ -293,7 +295,7 @@ int8_t ws_pae_auth_init(struct net_if *interface_ptr,
     }
 
     if (tasklet_id < 0) {
-        tasklet_id = eventOS_event_handler_create(ws_pae_auth_tasklet_handler, PAE_TASKLET_INIT);
+        tasklet_id = event_handler_create(ws_pae_auth_tasklet_handler, PAE_TASKLET_INIT);
         if (tasklet_id < 0) {
             goto error;
         }
@@ -505,7 +507,7 @@ int8_t ws_pae_auth_node_keys_remove(struct net_if *interface_ptr, uint8_t *eui_6
     return ret_value;
 }
 
-int8_t ws_pae_auth_node_access_revoke_start(struct net_if *interface_ptr, bool is_lgtk)
+int8_t ws_pae_auth_node_access_revoke_start(struct net_if *interface_ptr, bool is_lgtk, uint8_t new_gtk[GTK_LEN])
 {
     sec_timer_gtk_cfg_t *timer_cfg;
     sec_prot_gtk_keys_t *key_nw_info, *key_nw_info_next;
@@ -570,7 +572,10 @@ int8_t ws_pae_auth_node_access_revoke_start(struct net_if *interface_ptr, bool i
     }
 
     // Adds new GTK
-    ws_pae_auth_gtk_key_insert(key_nw_info, key_nw_info_next, timer_cfg->expire_offset, is_lgtk);
+    if (new_gtk)
+        ws_pae_auth_gtk_insert(key_nw_info, new_gtk, timer_cfg->expire_offset, is_lgtk);
+    else
+        ws_pae_auth_gtk_key_insert(key_nw_info, key_nw_info_next, timer_cfg->expire_offset, is_lgtk);
     ws_pae_auth_network_keys_from_gtks_set(pae_auth, false, is_lgtk);
 
     // Update keys to NVM as needed
@@ -739,7 +744,7 @@ static int8_t ws_pae_auth_event_send(kmp_service_t *service, void *data)
         return -1;
     }
 
-    arm_event_s event = {
+    struct event_payload event = {
         .receiver = tasklet_id,
         .sender = 0,
         .event_id = pae_auth->interface_ptr->id,
@@ -748,14 +753,14 @@ static int8_t ws_pae_auth_event_send(kmp_service_t *service, void *data)
         .priority = ARM_LIB_LOW_PRIORITY_EVENT,
     };
 
-    if (eventOS_event_send(&event) != 0) {
+    if (event_send(&event) != 0) {
         return -1;
     }
 
     return 0;
 }
 
-static void ws_pae_auth_tasklet_handler(arm_event_s *event)
+static void ws_pae_auth_tasklet_handler(struct event_payload *event)
 {
     if (event->event_type == PAE_TASKLET_INIT) {
 
@@ -985,11 +990,29 @@ static uint32_t ws_pae_auth_lifetime_key_frame_cnt_check(pae_auth_t *pae_auth, u
     return decrement_seconds;
 }
 
+static void ws_pae_auth_gtk_insert(sec_prot_gtk_keys_t *gtks, const uint8_t gtk[GTK_LEN], int lifetime, bool is_lgtk)
+{
+    int i_install, i_last;
+
+    // Gets latest installed key lifetime and adds GTK expire offset to it
+    i_last = sec_prot_keys_gtk_install_order_last_index_get(gtks);
+    if (i_last >= 0)
+        lifetime += sec_prot_keys_gtk_lifetime_get(gtks, i_last);
+
+    // Installs the new key
+    i_install = sec_prot_keys_gtk_install_index_get(gtks, is_lgtk);
+    sec_prot_keys_gtk_clear(gtks, i_install);
+    sec_prot_keys_gtk_set(gtks, i_install, gtk, lifetime);
+
+    // Authenticator keys are always fresh
+    sec_prot_keys_gtk_status_all_fresh_set(gtks);
+
+    tr_info("%s install new index: %i, lifetime: %"PRIu32" system time: %"PRIu32"",
+            is_lgtk ? "LGTK" : "GTK", i_install, lifetime, g_monotonic_time_100ms / 10);
+}
+
 static void ws_pae_auth_gtk_key_insert(sec_prot_gtk_keys_t *gtks, sec_prot_gtk_keys_t *next_gtks, uint32_t lifetime, bool is_lgtk)
 {
-    // Gets index to install the key
-    uint8_t install_index = sec_prot_keys_gtk_install_index_get(gtks, is_lgtk);
-
     // Key to install
     uint8_t gtk_value[GTK_LEN];
 
@@ -1008,21 +1031,7 @@ static void ws_pae_auth_gtk_key_insert(sec_prot_gtk_keys_t *gtks, sec_prot_gtk_k
         } while (sec_prot_keys_gtk_valid_check(gtk_value) < 0);
     }
 
-    // Gets latest installed key lifetime and adds GTK expire offset to it
-    int8_t last_index = sec_prot_keys_gtk_install_order_last_index_get(gtks);
-    if (last_index >= 0) {
-        lifetime += sec_prot_keys_gtk_lifetime_get(gtks, last_index);
-    }
-
-    // Installs the new key
-    sec_prot_keys_gtk_clear(gtks, install_index);
-    sec_prot_keys_gtk_set(gtks, install_index, gtk_value, lifetime);
-
-    // Authenticator keys are always fresh
-    sec_prot_keys_gtk_status_all_fresh_set(gtks);
-
-    tr_info("%s install new index: %i, lifetime: %"PRIu32" system time: %"PRIu32"",
-            is_lgtk ? "LGTK" : "GTK", install_index, lifetime, g_monotonic_time_100ms / 10);
+    ws_pae_auth_gtk_insert(gtks, gtk_value, lifetime, is_lgtk);
 }
 
 static int8_t ws_pae_auth_new_gtk_activate(sec_prot_gtk_keys_t *gtks)
@@ -1288,7 +1297,25 @@ static kmp_api_t *ws_pae_auth_kmp_incoming_ind(kmp_service_t *service, uint8_t m
     // Search for existing KMP for supplicant
     kmp_api_t *kmp = ws_pae_lib_kmp_list_type_get(&supp_entry->kmp_list, kmp_type_to_search);
     if (kmp) {
-        return kmp;
+        struct eapol_pdu recv_eapol_pdu;
+        kmp_api_t *kmp_tls;
+
+        if (kmp_type_to_search != IEEE_802_1X_MKA)
+            // Found KMP for 4WH or GKH
+            return kmp;
+        if (eapol_parse_pdu_header(pdu, size, &recv_eapol_pdu)) {
+            if (recv_eapol_pdu.packet_type == EAPOL_EAP_TYPE) {
+                // Received EAP packet, found corresponding KMP
+                return kmp;
+            } else if (recv_eapol_pdu.packet_type == EAPOL_KEY_TYPE) {
+                // Received KEY packet for MKA: allow EAP exchange restart by wiping corresponding KMPs
+                tr_info("MKA already ongoing; delete previous, eui-64: %s", trace_array(supp_entry->addr.eui_64, 8));
+                ws_pae_lib_kmp_list_delete(&supp_entry->kmp_list, kmp);
+                kmp_tls = ws_pae_lib_kmp_list_type_get(&supp_entry->kmp_list, TLS_PROT);
+                if (kmp_tls)
+                    ws_pae_lib_kmp_list_delete(&supp_entry->kmp_list, kmp_tls);
+            }
+        }
     }
 
     // Create a new KMP for initial eapol-key
@@ -1384,8 +1411,8 @@ static bool ws_pae_auth_next_kmp_trigger(pae_auth_t *pae_auth, supp_entry_t *sup
             /* For other types than GTK, only one ongoing negotiation at the same time,
                for GTK there can be previous terminating and the new one for next key index */
             if (next_type != IEEE_802_11_GKH) {
-                tr_info("KMP already ongoing; ignored, eui-64: %s", tr_eui64(supp_entry->addr.eui_64));
-                return false;
+                tr_info("KMP already ongoing; delete previous, eui-64: %s", tr_eui64(supp_entry->addr.eui_64));
+                ws_pae_auth_kmp_api_finished(api);
             }
         }
     }
@@ -1634,5 +1661,26 @@ int ws_pae_auth_supp_list(int8_t interface_id, uint8_t eui64[][8], int len)
     return len_ret;
 }
 
-#endif /* HAVE_PAE_AUTH */
+void ws_pae_auth_gtk_install(int8_t interface_id, const uint8_t key[GTK_LEN], bool is_lgtk)
+{
+    struct net_if *interface_ptr;
+    sec_prot_gtk_keys_t *keys;
+    pae_auth_t *pae_auth;
+    int lifetime;
 
+    interface_ptr = protocol_stack_interface_info_get_by_id(interface_id);
+    BUG_ON(!interface_ptr);
+    pae_auth = ws_pae_auth_get(interface_ptr);
+    BUG_ON(!pae_auth);
+    if (is_lgtk) {
+        keys     = pae_auth->sec_keys_nw_info->lgtks;
+        lifetime = pae_auth->sec_cfg->timer_cfg.lgtk.expire_offset;
+    } else {
+        keys     = pae_auth->sec_keys_nw_info->gtks;
+        lifetime = pae_auth->sec_cfg->timer_cfg.gtk.expire_offset;
+    }
+    ws_pae_auth_gtk_insert(keys, key, lifetime, is_lgtk);
+    ws_pae_auth_network_keys_from_gtks_set(pae_auth, false, is_lgtk);
+}
+
+#endif /* HAVE_PAE_AUTH */

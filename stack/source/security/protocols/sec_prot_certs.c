@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016-2019, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +20,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 
 #include "nwk_interface/protocol.h"
 #include "common_protocols/ipv6_constants.h"

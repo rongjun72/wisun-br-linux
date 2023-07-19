@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016-2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +21,7 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 #include "stack/mac/fhss_config.h"
 #include "stack/ws_management_api.h"
 
@@ -48,74 +49,29 @@ void ws_pae_timers_settings_init(sec_timer_cfg_t *timer_settings, ws_sec_timer_c
 
     timer_settings->pmk_lifetime = new_timer_settings->pmk_lifetime * SECONDS_IN_MINUTE;
     timer_settings->ptk_lifetime = new_timer_settings->ptk_lifetime * SECONDS_IN_MINUTE;
-    timer_settings->gtk.request_imin = new_timer_settings->gtk_request_imin * SECONDS_IN_MINUTE;
-    timer_settings->gtk.request_imax = new_timer_settings->gtk_request_imax * SECONDS_IN_MINUTE;
     timer_settings->gtk.expire_offset = new_timer_settings->gtk_expire_offset * SECONDS_IN_MINUTE;
     timer_settings->gtk.new_act_time = new_timer_settings->gtk_new_act_time;
-    timer_settings->gtk.max_mismatch = new_timer_settings->gtk_max_mismatch * SECONDS_IN_MINUTE;
     timer_settings->gtk.new_install_req = new_timer_settings->gtk_new_install_req;
     timer_settings->gtk.revocat_lifetime_reduct = new_timer_settings->ffn_revocat_lifetime_reduct;
-    timer_settings->lgtk.request_imin = 0;
-    timer_settings->lgtk.request_imax = 0;
     timer_settings->lgtk.expire_offset = new_timer_settings->lgtk_expire_offset * SECONDS_IN_MINUTE;
     timer_settings->lgtk.new_act_time = new_timer_settings->lgtk_new_act_time;
-    timer_settings->lgtk.max_mismatch = new_timer_settings->lgtk_max_mismatch * SECONDS_IN_MINUTE;
     timer_settings->lgtk.new_install_req = new_timer_settings->lgtk_new_install_req;
     timer_settings->lgtk.revocat_lifetime_reduct = new_timer_settings->lfn_revocat_lifetime_reduct;
+#ifdef HAVE_PAE_SUPP
+    timer_settings->gtk.request_imin = new_timer_settings->gtk_request_imin * SECONDS_IN_MINUTE;
+    timer_settings->gtk.request_imax = new_timer_settings->gtk_request_imax * SECONDS_IN_MINUTE;
+    timer_settings->gtk.max_mismatch = new_timer_settings->gtk_max_mismatch * SECONDS_IN_MINUTE;
+    timer_settings->lgtk.request_imin = 0;
+    timer_settings->lgtk.request_imax = 0;
+    timer_settings->lgtk.max_mismatch = new_timer_settings->lgtk_max_mismatch * SECONDS_IN_MINUTE;
+#endif
 
     ws_pae_timers_calculate(&timer_settings->gtk);
     ws_pae_timers_calculate(&timer_settings->lgtk);
-}
-
-void ws_pae_timers_lifetime_set(sec_timer_cfg_t *timer_settings, uint32_t gtk_lifetime, uint32_t lgtk_lifetime, uint32_t pmk_lifetime, uint32_t ptk_lifetime)
-{
-    if (gtk_lifetime) {
-        timer_settings->gtk.expire_offset = gtk_lifetime * 60;
-    }
-    if (lgtk_lifetime) {
-        timer_settings->lgtk.expire_offset = lgtk_lifetime * 60;
-    }
-    if (pmk_lifetime) {
-        timer_settings->pmk_lifetime = pmk_lifetime * 60;
-    }
-    if (ptk_lifetime) {
-        timer_settings->ptk_lifetime = ptk_lifetime * 60;
-    }
-    ws_pae_timers_calculate(&timer_settings->gtk);
-    ws_pae_timers_calculate(&timer_settings->lgtk);
-}
-
-void ws_pae_timers_gtk_time_settings_set(struct sec_timer_gtk_cfg *timer_gtk_cfg, uint8_t revocat_lifetime_reduct, uint8_t new_activation_time, uint8_t new_install_req, uint32_t max_mismatch)
-{
-    if (revocat_lifetime_reduct) {
-        timer_gtk_cfg->revocat_lifetime_reduct = revocat_lifetime_reduct;
-    }
-    if (new_activation_time) {
-        timer_gtk_cfg->new_act_time = new_activation_time;
-    }
-    if (new_install_req) {
-        timer_gtk_cfg->new_install_req = new_install_req;
-    }
-    if (max_mismatch) {
-        timer_gtk_cfg->max_mismatch = max_mismatch * 60;
-    }
-    ws_pae_timers_calculate(timer_gtk_cfg);
 }
 
 static void ws_pae_timers_calculate(struct sec_timer_gtk_cfg *timer_gtk_settings)
 {
-    // Calculate GTK_NEW_INSTALL_REQUIRED < 100 * (1 - 1 / REVOCATION_LIFETIME_REDUCTION)
-    uint8_t calc_gtk_new_install_req = 100 - (100 / timer_gtk_settings->revocat_lifetime_reduct);
-
-    if (timer_gtk_settings->expire_offset < 3600) {
-        // For very short GTKs give some more time to distribute the new GTK key to network, tune this if needed
-        calc_gtk_new_install_req = calc_gtk_new_install_req * 60 / 100;
-    }
-
-    if (timer_gtk_settings->new_install_req > calc_gtk_new_install_req) {
-        tr_info("(L)GTK new install required adjusted %i", calc_gtk_new_install_req);
-        timer_gtk_settings->new_install_req = calc_gtk_new_install_req;
-    }
     uint32_t gtk_revocation_lifetime = timer_gtk_settings->expire_offset / timer_gtk_settings->revocat_lifetime_reduct;
     uint32_t new_gtk_activation_time = timer_gtk_settings->expire_offset / timer_gtk_settings->new_act_time;
 
@@ -123,9 +79,10 @@ static void ws_pae_timers_calculate(struct sec_timer_gtk_cfg *timer_gtk_settings
     if (gtk_revocation_lifetime > new_gtk_activation_time) {
         time_to_gtk_update = gtk_revocation_lifetime - new_gtk_activation_time;
     }
-    tr_info("(L)GTK timers revocation lifetime: %"PRIu32", new activation time: %"PRIu32", max mismatch %i, time to update: %"PRIu32"",
-            gtk_revocation_lifetime, new_gtk_activation_time, timer_gtk_settings->max_mismatch, time_to_gtk_update);
+    tr_info("(L)GTK timers revocation lifetime: %"PRIu32", new activation time: %"PRIu32", time to update: %"PRIu32"",
+            gtk_revocation_lifetime, new_gtk_activation_time, time_to_gtk_update);
 
+#ifdef HAVE_PAE_SUPP
     // If time to update results smaller GTK request Imax use it for calculation otherwise use GTK max mismatch
     if (time_to_gtk_update < timer_gtk_settings->max_mismatch) {
         // If time to update is smaller than GTK request Imax update GTK request values
@@ -152,17 +109,14 @@ static void ws_pae_timers_calculate(struct sec_timer_gtk_cfg *timer_gtk_settings
         timer_gtk_settings->request_imax = timer_gtk_settings->max_mismatch;
         tr_info("GTK request timers adjusted Imin: %i, Imax: %i", timer_gtk_settings->request_imin, timer_gtk_settings->request_imax);
     }
+#endif
 }
 
 bool ws_pae_timers_gtk_new_install_required(struct sec_timer_gtk_cfg *timer_gtk_cfg, uint32_t seconds)
 {
     uint32_t gtk_new_install_req_seconds = timer_gtk_cfg->expire_offset - timer_gtk_cfg->new_install_req * timer_gtk_cfg->expire_offset / 100;
 
-    if (seconds < gtk_new_install_req_seconds) {
-        return true;
-    } else {
-        return false;
-    }
+    return timer_gtk_cfg->new_install_req > 0 && seconds < gtk_new_install_req_seconds;
 }
 
 bool ws_pae_timers_gtk_new_activation_time(struct sec_timer_gtk_cfg *timer_gtk_cfg, uint32_t seconds)

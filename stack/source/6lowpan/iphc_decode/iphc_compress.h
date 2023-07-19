@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2014-2017, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +19,10 @@
 #define IPHC_COMPRESS_H_
 #include <stdint.h>
 #include <stdbool.h>
+
+#include "6lowpan/iphc_decode/lowpan_context.h"
+
+typedef struct buffer buffer_t;
 
 buffer_t *iphc_compress(const lowpan_context_list_t *context_list, buffer_t *buf, uint16_t hc_space, bool stable_only);
 

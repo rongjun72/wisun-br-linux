@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2008, 2010-2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,13 +25,11 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include "common/endian.h"
 #include "common/log.h"
 #include "common/rand.h"
 #include "common/bits.h"
 #include "common/log_legacy.h"
-#include "stack-services/ip6string.h"
-#include "stack-services/ns_sha256.h"
-#include "stack-services/common_functions.h"
 
 #include "common_protocols/ipv6_constants.h"
 #include "common_protocols/icmpv6.h"
@@ -86,10 +85,6 @@ const uint8_t ADDR_6TO4[16]                     = { 0x20, 0x02 }; /*Can be used 
 
 #define ADDR_MULTICAST_LINK_PREFIX              ADDR_LINK_LOCAL_ALL_NODES /* ff02::xx */
 #define ADDR_MULTICAST_REALM_PREFIX             ADDR_ALL_MPL_FORWARDERS /* ff03::xx */
-
-static const uint8_t *addr_iid_secret_key;
-static const uint8_t *addr_initial_iid;
-static uint8_t addr_iid_secret_key_len;
 
 static bool addr_am_implicit_group_member(const uint8_t group[static 16])
 {
@@ -250,11 +245,9 @@ int_fast8_t addr_policy_table_delete_entry(const uint8_t *prefix, uint8_t len)
 /// @TODO do we need this test print anymore ?
 void addr_policy_table_print(void)
 {
-    ns_list_foreach(addr_policy_table_entry_t, entry, &addr_policy_table) {
-        char addr[40];
-        ip6tos(entry->prefix, addr);
-        tr_debug("%3d %3d %s/%u", entry->precedence, entry->label, addr, entry->prefix_len);
-    }
+    ns_list_foreach(addr_policy_table_entry_t, entry, &addr_policy_table)
+        tr_debug("%3d %3d %s", entry->precedence, entry->label,
+                 tr_ipv6_prefix(entry->prefix, entry->prefix_len));
 }
 
 static void addr_policy_table_reset(void)
@@ -302,24 +295,14 @@ static const addr_policy_table_entry_t *addr_get_policy(const uint8_t addr[stati
 /* RFC 6724 CommonPrefixLen(S, D) */
 static uint_fast8_t addr_common_prefix_len(const uint8_t src[static 16], uint_fast8_t src_prefix_len, const uint8_t dst[static 16])
 {
-    uint_fast8_t common = 0;
+    uint_fast8_t i = 0;
 
-    while (src_prefix_len >= 8 && *src == *dst) {
-        common += 8;
-        src_prefix_len -= 8;
-        ++src;
-        ++dst;
+    while (i < src_prefix_len) {
+        if (bittest(src, i) != bittest(dst, i))
+            return i;
+        i++;
     }
-
-    if (src_prefix_len) {
-        uint8_t trail = common_count_leading_zeros_8(*src ^ *dst);
-        if (trail > src_prefix_len) {
-            trail = src_prefix_len;
-        }
-        common += trail;
-    }
-
-    return common;
+    return i;
 }
 
 if_address_entry_t *addr_get_entry(const struct net_if *interface, const uint8_t addr[static 16])
@@ -694,7 +677,7 @@ void addr_delete_entry(struct net_if *cur, if_address_entry_t *addr)
 /* ticks is in 1/10s */
 void addr_fast_timer(int ticks)
 {
-    struct net_if *cur = protocol_stack_interface_info_get(IF_6LoWPAN);
+    struct net_if *cur = protocol_stack_interface_info_get();
 
     /* Fast timers only run while the interface is active. */
     if (!(cur->lowpan_info & INTERFACE_NWK_ACTIVE)) {
@@ -760,7 +743,7 @@ void addr_fast_timer(int ticks)
 
 void addr_slow_timer(int seconds)
 {
-    struct net_if *cur = protocol_stack_interface_info_get(IF_6LoWPAN);
+    struct net_if *cur = protocol_stack_interface_info_get();
 
     /* Slow (lifetime) timers run whether the interface is active or not */
     ns_list_foreach_safe(if_address_entry_t, addr, &cur->ip_addresses) {
@@ -882,16 +865,6 @@ void addr_delete_matching(struct net_if *cur, const uint8_t *prefix, uint8_t pre
         }
     }
 
-}
-
-void addr_set_non_preferred(struct net_if *cur, if_address_source_e source)
-{
-    ns_list_foreach_safe(if_address_entry_t, e, &cur->ip_addresses) {
-        if (e->source == source) {
-            // Sets preferred lifetime to zero or deletes tentative addresses
-            addr_set_preferred_lifetime(cur, e, 0);
-        }
-    }
 }
 
 void addr_duplicate_detected(struct net_if *interface, const uint8_t addr[static 16])
@@ -1023,113 +996,10 @@ bool addr_iid_matches_lowpan_short(const uint8_t iid[static 8], uint16_t short_a
     return true;
 }
 
-bool addr_iid_reserved(const uint8_t iid[static 8])
-{
-    static const uint8_t reserved_iana[5] = { 0x02, 0x00, 0x5e, 0xff, 0xfe };
-    static const uint8_t reserved_subnet_anycast[7] = { 0xfd, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
-
-    if (memcmp(iid, ADDR_UNSPECIFIED + 8, 8) == 0) {
-        return true; // subnet-router anycast
-    }
-
-    if (memcmp(iid, reserved_iana, 5) == 0) {
-        return true;
-    }
-
-    if (memcmp(iid, reserved_subnet_anycast, 7) == 0 && iid[7] >= 0x80) {
-        return true;
-    }
-
-    return false;
-}
-
-int_fast8_t addr_opaque_iid_key_set(const void *secret_key, uint8_t key_len)
-{
-    /* Delete existing info */
-    if (addr_iid_secret_key) {
-        free((void *) addr_iid_secret_key);
-        addr_iid_secret_key = NULL;
-        addr_iid_secret_key_len = 0;
-    }
-
-    /* If disabling, that's it */
-    if (secret_key == NULL) {
-        return 0;
-    }
-    /* Attempt to copy new info */
-    uint8_t *copy = malloc(key_len);
-    if (!copy) {
-        return -1;
-    }
-    addr_iid_secret_key = memcpy(copy, secret_key, key_len);
-    addr_iid_secret_key_len = key_len;
-    return 0;
-}
-
-int_fast8_t addr_opaque_initial_iid_set(const void *iid)
-{
-    /* Delete existing info */
-    if (addr_initial_iid) {
-        free((void *) addr_initial_iid);
-        addr_initial_iid = NULL;
-    }
-    if (!iid) {
-        return 0;
-    }
-    /* Attempt to copy new info */
-    uint8_t *copy = malloc(8);
-    if (!copy) {
-        return -1;
-    }
-    addr_initial_iid = memcpy(copy, iid, 8);
-    return 0;
-}
-
-bool addr_opaque_iid_key_is_set(void)
-{
-    return addr_iid_secret_key != NULL;
-}
-
-/* RFC 7217 generation: addr must be prepopulated with 8-byte prefix, and secret key must be set */
-void addr_generate_opaque_iid(struct net_if *cur, uint8_t addr[static 16])
-{
-opaque_retry:
-
-    if (addr_initial_iid && !cur->dad_failures) {
-        // This is test implementations use only normally should not need this.
-        memcpy(addr + 8, addr_initial_iid, 8);
-        return;
-    }
-    {
-        // Limit scope to try to minimise stack, given the goto
-        ns_sha256_context ctx;
-        ns_sha256_init(&ctx);
-        ns_sha256_starts(&ctx);
-        ns_sha256_update(&ctx, addr, 8);
-        if (cur->interface_name) {
-            /* This isn't ideal - there's no guarantee each instance of a driver has a distinct name */
-            ns_sha256_update(&ctx, cur->interface_name, strlen(cur->interface_name));
-        } else {
-            ns_sha256_update(&ctx, &cur->id, sizeof cur->id);
-        }
-        ns_sha256_update(&ctx, &cur->dad_failures, sizeof cur->dad_failures);
-        ns_sha256_update(&ctx, addr_iid_secret_key, addr_iid_secret_key_len);
-        ns_sha256_finish_nbits(&ctx, addr + 8, 64);
-        ns_sha256_free(&ctx);
-    }
-    /* Note that we only check for reserved IIDs - as per RFC 7217,
-     * there's no restriction on U/G bits.
-     */
-    if (addr_iid_reserved(addr + 8)) {
-        cur->dad_failures++;
-        goto opaque_retry;
-    }
-}
-
 /* Write a LoWPAN IPv6 address, based on a prefix and short address */
 uint8_t *addr_ipv6_write_from_lowpan_short(uint8_t dst[static 16], const uint8_t prefix[static 8], uint16_t short_addr)
 {
-    common_write_16_bit(short_addr, dst + 14);
+    write_be16(dst + 14, short_addr);
     memcpy(dst + 8, ADDR_SHORT_ADR_SUFFIC, 6);
     return memcpy(dst, prefix, 8);
 }
@@ -1191,7 +1061,7 @@ int8_t addr_interface_get_ll_address(struct net_if *cur, uint8_t *address_ptr, u
 
     ns_list_foreach(if_address_entry_t, e, &cur->ip_addresses) {
         if (!e->tentative && addr_is_ipv6_link_local(e->address)) {
-            if (cur->nwk_id == IF_6LoWPAN && memcmp(e->address + 8, ADDR_SHORT_ADR_SUFFIC, 6) == 0) {
+            if (memcmp(e->address + 8, ADDR_SHORT_ADR_SUFFIC, 6) == 0) {
                 short_addr = e->address;
             } else {
                 long_addr = e->address;

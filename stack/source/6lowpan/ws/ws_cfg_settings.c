@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2020-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,10 +22,11 @@
 #include "common/bits.h"
 #include "common/ws_regdb.h"
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
-#include "stack-scheduler/eventOS_event.h"
+#include "common/ns_list.h"
+#include "common/events_scheduler.h"
 #include "stack/net_interface.h"
 #include "stack/ws_management_api.h"
+#include "stack/mac/fhss_config.h"
 
 #include "nwk_interface/protocol.h"
 #include "mpl/mpl.h"
@@ -590,30 +592,30 @@ int8_t ws_cfg_phy_set(struct net_if *cur, ws_phy_cfg_t *new_cfg, uint8_t flags)
     if (cur) {
         // Set operating mode for FSK if given with PHY mode ID
         if ((new_cfg->phy_mode_id == 1) || (new_cfg->phy_mode_id == 17)) {
-            cur->ws_info->hopping_schedule.operating_mode = OPERATING_MODE_1a;
+            cur->ws_info.hopping_schedule.operating_mode = OPERATING_MODE_1a;
         } else if ((new_cfg->phy_mode_id == 2) || (new_cfg->phy_mode_id == 18)) {
-            cur->ws_info->hopping_schedule.operating_mode = OPERATING_MODE_1b;
+            cur->ws_info.hopping_schedule.operating_mode = OPERATING_MODE_1b;
         } else if ((new_cfg->phy_mode_id == 3) || (new_cfg->phy_mode_id == 19)) {
-            cur->ws_info->hopping_schedule.operating_mode = OPERATING_MODE_2a;
+            cur->ws_info.hopping_schedule.operating_mode = OPERATING_MODE_2a;
         } else if ((new_cfg->phy_mode_id == 4) || (new_cfg->phy_mode_id == 20)) {
-            cur->ws_info->hopping_schedule.operating_mode = OPERATING_MODE_2b;
+            cur->ws_info.hopping_schedule.operating_mode = OPERATING_MODE_2b;
         } else if ((new_cfg->phy_mode_id == 5) || (new_cfg->phy_mode_id == 21)) {
-            cur->ws_info->hopping_schedule.operating_mode = OPERATING_MODE_3;
+            cur->ws_info.hopping_schedule.operating_mode = OPERATING_MODE_3;
         } else if ((new_cfg->phy_mode_id == 6) || (new_cfg->phy_mode_id == 22)) {
-            cur->ws_info->hopping_schedule.operating_mode = OPERATING_MODE_4a;
+            cur->ws_info.hopping_schedule.operating_mode = OPERATING_MODE_4a;
         } else if ((new_cfg->phy_mode_id == 7) || (new_cfg->phy_mode_id == 23)) {
-            cur->ws_info->hopping_schedule.operating_mode = OPERATING_MODE_4b;
+            cur->ws_info.hopping_schedule.operating_mode = OPERATING_MODE_4b;
         } else if ((new_cfg->phy_mode_id == 8) || (new_cfg->phy_mode_id == 24)) {
-            cur->ws_info->hopping_schedule.operating_mode = OPERATING_MODE_5;
+            cur->ws_info.hopping_schedule.operating_mode = OPERATING_MODE_5;
         } else {
-            cur->ws_info->hopping_schedule.operating_mode = new_cfg->operating_mode;
+            cur->ws_info.hopping_schedule.operating_mode = new_cfg->operating_mode;
         }
-        cur->ws_info->hopping_schedule.phy_mode_id = new_cfg->phy_mode_id;
-        cur->ws_info->hopping_schedule.channel_plan_id = new_cfg->channel_plan_id;
-        cur->ws_info->hopping_schedule.regulatory_domain = new_cfg->regulatory_domain;
-        cur->ws_info->hopping_schedule.operating_class = new_cfg->operating_class;
+        cur->ws_info.hopping_schedule.phy_mode_id = new_cfg->phy_mode_id;
+        cur->ws_info.hopping_schedule.channel_plan_id = new_cfg->channel_plan_id;
+        cur->ws_info.hopping_schedule.regulatory_domain = new_cfg->regulatory_domain;
+        cur->ws_info.hopping_schedule.operating_class = new_cfg->operating_class;
 
-        if (ws_common_regulatory_domain_config(cur, &cur->ws_info->hopping_schedule) < 0) {
+        if (ws_common_regulatory_domain_config(cur, &cur->ws_info.hopping_schedule) < 0) {
             return CFG_SETTINGS_ERROR_PHY_CONF;
         }
     }
@@ -692,10 +694,10 @@ int8_t ws_cfg_timing_set(struct net_if *cur, ws_timing_cfg_t *new_cfg, uint8_t f
     }
 
     if (cur) {
-        cur->ws_info->trickle_params_pan_discovery.Imin = new_cfg->disc_trickle_imin * 10;
-        cur->ws_info->trickle_params_pan_discovery.Imax = new_cfg->disc_trickle_imax * 10;
-        cur->ws_info->trickle_params_pan_discovery.k = new_cfg->disc_trickle_k;
-        cur->ws_info->trickle_params_pan_discovery.TimerExpirations = TRICKLE_EXPIRATIONS_INFINITE;
+        cur->ws_info.mngt.trickle_params.Imin = new_cfg->disc_trickle_imin * 10;
+        cur->ws_info.mngt.trickle_params.Imax = new_cfg->disc_trickle_imax * 10;
+        cur->ws_info.mngt.trickle_params.k = new_cfg->disc_trickle_k;
+        cur->ws_info.mngt.trickle_params.TimerExpirations = TRICKLE_EXPIRATIONS_INFINITE;
         ws_pae_controller_configure(cur, NULL, NULL, new_cfg);
     }
 
@@ -870,7 +872,6 @@ int8_t ws_cfg_fhss_default_set(ws_fhss_cfg_t *cfg)
     cfg->lfn_bc_interval = 60000; // 1min
     cfg->lfn_bc_sync_period = 5;
     bitfill(cfg->fhss_channel_mask, true, 0, 255);
-
     return CFG_SETTINGS_OK;
 }
 
@@ -964,16 +965,18 @@ static int8_t ws_cfg_sec_timer_default_set(ws_sec_timer_cfg_t *cfg)
     cfg->ptk_lifetime = DEFAULT_PTK_LIFETIME;
     cfg->gtk_expire_offset = DEFAULT_GTK_EXPIRE_OFFSET;
     cfg->gtk_new_act_time = DEFAULT_GTK_NEW_ACTIVATION_TIME;
-    cfg->gtk_request_imin = DEFAULT_GTK_REQUEST_IMIN;
-    cfg->gtk_request_imax = DEFAULT_GTK_REQUEST_IMAX;
-    cfg->gtk_max_mismatch = DEFAULT_GTK_MAX_MISMATCH;
     cfg->gtk_new_install_req = DEFAULT_GTK_NEW_INSTALL_REQUIRED;
     cfg->ffn_revocat_lifetime_reduct = DEFAULT_FFN_REVOCATION_LIFETIME_REDUCTION;
     cfg->lgtk_expire_offset = DEFAULT_LGTK_EXPIRE_OFFSET;
     cfg->lgtk_new_act_time = DEFAULT_LGTK_NEW_ACTIVATION_TIME;
-    cfg->lgtk_max_mismatch = DEFAULT_LGTK_MAX_MISMATCH;
     cfg->lgtk_new_install_req = DEFAULT_LGTK_NEW_INSTALL_REQUIRED;
     cfg->lfn_revocat_lifetime_reduct = DEFAULT_LFN_REVOCATION_LIFETIME_REDUCTION;
+#ifdef HAVE_PAE_SUPP
+    cfg->gtk_request_imin = DEFAULT_GTK_REQUEST_IMIN;
+    cfg->gtk_request_imax = DEFAULT_GTK_REQUEST_IMAX;
+    cfg->gtk_max_mismatch = DEFAULT_GTK_MAX_MISMATCH;
+    cfg->lgtk_max_mismatch = DEFAULT_LGTK_MAX_MISMATCH;
+#endif
 
     return CFG_SETTINGS_OK;
 }
@@ -992,19 +995,23 @@ int8_t ws_cfg_sec_timer_validate(ws_sec_timer_cfg_t *new_cfg)
         cfg->ptk_lifetime != new_cfg->ptk_lifetime ||
         cfg->gtk_expire_offset != new_cfg->gtk_expire_offset ||
         cfg->gtk_new_act_time != new_cfg->gtk_new_act_time ||
-        cfg->gtk_request_imin != new_cfg->gtk_request_imin ||
-        cfg->gtk_request_imax != new_cfg->gtk_request_imax ||
-        cfg->gtk_max_mismatch != new_cfg->gtk_max_mismatch ||
         cfg->gtk_new_install_req != new_cfg->gtk_new_install_req ||
         cfg->ffn_revocat_lifetime_reduct != new_cfg->ffn_revocat_lifetime_reduct ||
         cfg->lgtk_expire_offset != new_cfg->lgtk_expire_offset ||
         cfg->lgtk_new_act_time != new_cfg->lgtk_new_act_time ||
-        cfg->lgtk_max_mismatch != new_cfg->lgtk_max_mismatch ||
         cfg->lgtk_new_install_req != new_cfg->lgtk_new_install_req ||
         cfg->lfn_revocat_lifetime_reduct != new_cfg->lfn_revocat_lifetime_reduct) {
 
         return CFG_SETTINGS_CHANGED;
     }
+
+#ifdef HAVE_PAE_SUPP
+    if (cfg->gtk_request_imin != new_cfg->gtk_request_imin ||
+        cfg->gtk_request_imax != new_cfg->gtk_request_imax ||
+        cfg->gtk_max_mismatch != new_cfg->gtk_max_mismatch ||
+        cfg->lgtk_max_mismatch != new_cfg->lgtk_max_mismatch)
+        return CFG_SETTINGS_CHANGED;
+#endif
 
     return CFG_SETTINGS_OK;
 }
@@ -1137,7 +1144,7 @@ int8_t ws_cfg_settings_interface_set(struct net_if *cur)
 {
     int8_t ret_value = 0;
 
-    cur->ws_info->cfg = &ws_cfg;
+    cur->ws_info.cfg = &ws_cfg;
 
     // Set new configuration values
     for (uint8_t index = 0; index < CFG_CB_NUM; index++) {
@@ -1220,13 +1227,19 @@ int8_t ws_cfg_settings_set(struct net_if *cur, ws_cfg_t *new_cfg)
     return ret_value;
 }
 
-uint32_t ws_cfg_neighbour_temporary_lifetime_get(void)
+uint32_t ws_cfg_neighbour_temporary_lifetime_get(uint8_t role)
 {
     if (ws_test_temporary_entry_lifetime) {
         return ws_test_temporary_entry_lifetime;
+    } else if (role == WS_NR_ROLE_ROUTER) {
+        return WS_NEIGHBOUR_TEMPORARY_ENTRY_LIFETIME;
+    } else if (role == WS_NR_ROLE_LFN) {
+        return WS_NEIGHBOUR_TEMPORARY_NEIGH_MAX_LIFETIME;
+    } else {
+        BUG();
     }
-    return WS_NEIGHBOUR_TEMPORARY_ENTRY_LIFETIME;
 }
+
 void ws_cfg_neighbour_temporary_lifetime_set(uint32_t lifetime)
 {
     if (lifetime > WS_NEIGHBOUR_TEMPORARY_NEIGH_MAX_LIFETIME || lifetime == 0) {

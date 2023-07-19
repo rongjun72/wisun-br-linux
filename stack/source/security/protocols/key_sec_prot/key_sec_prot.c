@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +21,7 @@
 #include <stdlib.h>
 #include "common/log.h"
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 #include "stack/mac/fhss_config.h"
 
 #include "nwk_interface/protocol.h"
@@ -65,7 +66,7 @@ static void key_sec_prot_create_request(sec_prot_t *prot, sec_prot_keys_t *sec_k
 static void key_sec_prot_create_response(sec_prot_t *prot, sec_prot_result_e result);
 static void key_sec_prot_delete(sec_prot_t *prot);
 static int8_t key_sec_prot_initial_key_send(sec_prot_t *prot, sec_prot_keys_t *sec_keys);
-static int8_t key_sec_prot_receive(sec_prot_t *prot, void *pdu, uint16_t size);
+static int8_t key_sec_prot_receive(sec_prot_t *prot, const void *pdu, uint16_t size);
 static int8_t key_sec_prot_tx_status_ind(sec_prot_t *prot, sec_prot_tx_status_e tx_status);
 static void key_sec_prot_timer_timeout(sec_prot_t *prot, uint16_t ticks);
 
@@ -251,7 +252,7 @@ initial_key_exit:
     return result;
 }
 
-static int8_t key_sec_prot_receive(sec_prot_t *prot, void *pdu, uint16_t size)
+static int8_t key_sec_prot_receive(sec_prot_t *prot, const void *pdu, uint16_t size)
 {
     eapol_pdu_t eapol_pdu;
     key_sec_prot_int_t *data = key_sec_prot_get(prot);
@@ -313,7 +314,8 @@ static int8_t key_sec_prot_receive(sec_prot_t *prot, void *pdu, uint16_t size)
 
         // Get the Node Role that supplicant indicates
         uint8_t node_role;
-        if (kde_node_role_read(kde, kde_len, &node_role) >= 0) {
+        if (kde_node_role_read(kde, kde_len, &node_role) >= 0 &&
+            ws_common_is_valid_nr(node_role)) {
             prot->sec_keys->node_role = node_role;
         } else {
             prot->sec_keys->node_role = WS_NR_ROLE_UNKNOWN;

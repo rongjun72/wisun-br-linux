@@ -14,25 +14,16 @@
 #define LOG_LEGACY_H
 #include "common/log.h"
 
+/*
+ * Ensure compatibility with legacy code from the Nanostack. Don't use for new
+ * code (use log.h instead).
+ */
+
 #define tr_debug(MSG, ...) __PRINT(90, "[DBG ][%-4s]: " MSG, TRACE_GROUP, ##__VA_ARGS__)
 #define tr_info(MSG, ...)  __PRINT(39, "[INFO][%-4s]: " MSG, TRACE_GROUP, ##__VA_ARGS__)
 #define tr_warn(MSG, ...)  __PRINT(33, "[WARN][%-4s]: " MSG, TRACE_GROUP, ##__VA_ARGS__)
 #define tr_error(MSG, ...) __PRINT(31, "[ERR ][%-4s]: " MSG, TRACE_GROUP, ##__VA_ARGS__)
 
 #define trace_array       tr_key
-
-static inline void vtracef(uint8_t dlevel, const char *grp, const char *fmt, va_list ap)
-{
-    if (dlevel == 0 && g_enable_color_traces)
-        fprintf(g_trace_stream, "\x1b[90m[DBG ][%-4s]:", grp);
-    else if (dlevel == 0)
-        fprintf(g_trace_stream, "[DBG ][%-4s]:", grp);
-    else
-        fprintf(g_trace_stream, "[INFO][%-4s]:", grp);
-    vfprintf(g_trace_stream, fmt, ap);
-    if (dlevel == 0 && g_enable_color_traces)
-        fprintf(g_trace_stream, "\x1b[0m");
-    fprintf(g_trace_stream, "\n");
-}
 
 #endif

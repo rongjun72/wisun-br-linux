@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Silicon Laboratories Inc. (www.silabs.com)
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  *
  * The licensor of this software is Silicon Laboratories Inc. Your use of this
  * software is governed by the terms of the Silicon Labs Master Software License
@@ -10,10 +10,14 @@
  *
  * [1]: https://www.silabs.com/about-us/legal/master-software-license-agreement
  */
-#ifndef PARSERS_H
-#define PARSERS_H
+#ifndef COMMON_PARSERS_H
+#define COMMON_PARSERS_H
 #include <stdint.h>
 #include <sys/socket.h>
+
+/*
+ * A collection of functions to convert strings in binary structures.
+ */
 
 int parse_bitmask(uint8_t *out, int size, const char *str);
 int parse_escape_sequences(char *out, const char *in, size_t max_len);

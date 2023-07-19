@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016-2018, 2020-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -65,7 +66,7 @@ typedef enum mac_data_priority          mac_data_priority_e;
  * \enum mlme_primitive_e
  * \brief Enum for MLME primitive types.
  */
-typedef enum {
+typedef enum mlme_primitive {
     MLME_ASSOCIATE,
     MLME_DISASSOCIATE,
     MLME_BEACON_NOTIFY,

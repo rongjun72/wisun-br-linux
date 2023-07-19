@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016-2019, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +21,7 @@
 #include <mbedtls/version.h>
 #include <mbedtls/nist_kw.h>
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 #include "service_libs/nist_aes_kw/nist_aes_kw.h"
 
 #define TRACE_GROUP "naes"
@@ -29,32 +30,6 @@ int8_t nist_aes_key_wrap(uint8_t is_wrap, const uint8_t *key, int16_t key_bits, 
 {
     int8_t ret_val = 0;
     mbedtls_nist_kw_context ctx;
-
-#ifdef EXTRA_DEBUG_INFO
-    const uint8_t *print_data = key;
-    uint16_t print_data_len = key_bits / 8;
-    while (true) {
-        tr_debug("nist_aes_key_wrap key %s", trace_array(print_data, print_data_len > 32 ? 32 : print_data_len));
-        if (print_data_len > 32) {
-            print_data_len -= 32;
-            print_data += 32;
-        } else {
-            break;
-        }
-    }
-
-    print_data = input;
-    print_data_len = input_len;
-    while (true) {
-        tr_debug("nist_aes_key_wrap in %s", trace_array(print_data, print_data_len > 32 ? 32 : print_data_len));
-        if (print_data_len > 32) {
-            print_data_len -= 32;
-            print_data += 32;
-        } else {
-            break;
-        }
-    }
-#endif
 
     mbedtls_nist_kw_init(&ctx);
 
@@ -76,20 +51,6 @@ int8_t nist_aes_key_wrap(uint8_t is_wrap, const uint8_t *key, int16_t key_bits, 
             goto error;
         }
     }
-
-#ifdef EXTRA_DEBUG_INFO
-    print_data = output;
-    print_data_len = *output_len;
-    while (true) {
-        tr_debug("nist_aes_key_wrap out %s", trace_array(print_data, print_data_len > 32 ? 32 : print_data_len));
-        if (print_data_len > 32) {
-            print_data_len -= 32;
-            print_data += 32;
-        } else {
-            break;
-        }
-    }
-#endif
 
 error:
     mbedtls_nist_kw_free(&ctx);

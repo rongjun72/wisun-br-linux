@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,12 +18,12 @@
 
 #ifndef WS_NEIGHBOR_CLASS_H_
 #define WS_NEIGHBOR_CLASS_H_
+#include <time.h>
 
 #include "stack/mac/fhss_ws_extension.h"
 
 #include "6lowpan/ws/ws_common_defines.h"
 
-struct mcps_data_ie_list;
 struct net_if;
 
 #define RSL_UNITITIALIZED 0x7fff
@@ -33,11 +34,13 @@ typedef struct ws_neighbor_class_entry {
     uint16_t rsl_out;                                      /*!< RSL EWMA heard by neighbour*/
     uint16_t routing_cost;                                 /*!< ETX to border Router. */
     uint8_t last_DSN;
+    int rssi;
     bool candidate_parent: 1;
     bool broadcast_timing_info_stored: 1;
     bool broadcast_schedule_info_stored: 1;
     bool synch_done : 1;
     bool unicast_data_rx : 1;
+    struct timespec host_rx_timestamp;
 } ws_neighbor_class_entry_t;
 
 /**
@@ -101,57 +104,32 @@ uint8_t ws_neighbor_class_entry_index_get(ws_neighbor_class_t *class_data, ws_ne
  */
 void ws_neighbor_class_entry_remove(ws_neighbor_class_t *class_data, uint8_t attribute_index);
 
-/**
- * ws_neighbor_class_neighbor_unicast_time_info_update a function for update neighbor unicast time information
- *
- * \param ws_neighbor pointer to neighbor
- * \param ws_utt Unicast time IE data
- * \param timestamp timestamp for received data
- *
- */
-void ws_neighbor_class_neighbor_unicast_time_info_update(ws_neighbor_class_entry_t *ws_neighbor, ws_utt_ie_t *ws_utt, uint32_t timestamp, uint8_t address[8]);
+// Unicast Timing update
+void ws_neighbor_class_ut_update(ws_neighbor_class_entry_t *neighbor, uint24_t ufsi,
+                                 uint32_t tstamp_us, const uint8_t eui64[8]);
+// Broadcast Timing update
+void ws_neighbor_class_bt_update(ws_neighbor_class_entry_t *neighbor, uint16_t slot_number,
+                                 uint24_t interval_offset, uint32_t timestamp);
+// LFN Unicast timing update
+void ws_neighbor_class_lut_update(ws_neighbor_class_entry_t *neighbor,
+                                  uint16_t slot_number, uint24_t interval_offset,
+                                  uint32_t tstamp_us, const uint8_t eui64[8]);
+// LFN Network Discovery update
+void ws_neighbor_class_lnd_update(ws_neighbor_class_entry_t *neighbor, const struct ws_lnd_ie *ie_lnd, uint32_t tstamp_us);
 
-/**
- * ws_neighbor_class_neighbor_unicast_schedule_set a function for update neighbor unicast shedule information
- *
- * \param cur Pointer to interface
- * \param ws_neighbor pointer to neighbor
- * \param ws_us Unicast schedule IE data
- *
- */
-void ws_neighbor_class_neighbor_unicast_schedule_set(const struct net_if *cur, ws_neighbor_class_entry_t *ws_neighbor, ws_us_ie_t *ws_us, const uint8_t address[8]);
-
-
-/**
- * ws_neighbor_class_neighbor_broadcast_time_info_update a function for update neighbor broadcast time information
- *
- * \param ws_neighbor pointer to neighbor
- * \param ws_bt_ie Broadcast time IE data
- * \param timestamp timestamp for received data
- *
- */
-void ws_neighbor_class_neighbor_broadcast_time_info_update(ws_neighbor_class_entry_t *ws_neighbor, ws_bt_ie_t *ws_bt_ie, uint32_t timestamp);
-
-/**
- * ws_neighbor_class_neighbor_broadcast_schedule_set a function for update neighbor broadcast shedule information
- *
- * \param ws_neighbor pointer to neighbor
- * \param ws_bs_ie Broadcast schedule IE data
- *
- */
-void ws_neighbor_class_neighbor_broadcast_schedule_set(const struct net_if *cur, ws_neighbor_class_entry_t *ws_neighbor, ws_bs_ie_t *ws_bs_ie);
-
-/**
- * ws_neighbor_class_rf_sensitivity_calculate
- *
- * Calculates minimum heard RSL value from all packets.
- * This will dynamically adjusts min sensitivity if value is not properly set
- *
- * \param rsl_heard; rsl_heard heard from Radio
- *
- */
-void ws_neighbor_class_rf_sensitivity_calculate(uint8_t dev_min_sens_config, int8_t dbm_heard);
-
+// Unicast Schedule update
+void ws_neighbor_class_us_update(const struct net_if *net_if, ws_neighbor_class_entry_t *ws_neighbor,
+                                 const struct ws_generic_channel_info *chan_info,
+                                 uint8_t dwell_interval, const uint8_t eui64[8]);
+// Broadcast Schedule update
+void ws_neighbor_class_bs_update(const struct net_if *net_if, ws_neighbor_class_entry_t *ws_neighbor, 
+                                 const struct ws_generic_channel_info *chan_info,
+                                 uint8_t dwell_interval, uint32_t interval, uint16_t bsi);
+// LFN Unicast Schedule update
+void ws_neighbor_class_lus_update(const struct net_if *net_if,
+                                  ws_neighbor_class_entry_t *ws_neighbor,
+                                  const struct ws_generic_channel_info *chan_info,
+                                  uint24_t listen_interval_ms);
 /**
  * ws_neighbor_class_rsl_from_dbm_calculate
  *

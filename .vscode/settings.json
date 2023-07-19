@@ -1,0 +1,14 @@
+{
+    "cmake.configureOnOpen": false,
+    "files.associations": {
+        "spinel_buffer.h": "c",
+        "rf_driver_storage.h": "c",
+        "fhss_ws_extension.h": "c",
+        "utils.h": "c",
+        "sl_wsrcp_mac.h": "c",
+        "version.h": "c",
+        "hal_fhss_timer.h": "c",
+        "bits.h": "c",
+        "ns_address_internal.h": "c"
+    }
+}

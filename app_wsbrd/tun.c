@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Silicon Laboratories Inc. (www.silabs.com)
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  *
  * The licensor of this software is Silicon Laboratories Inc. Your use of this
  * software is governed by the terms of the Silicon Labs Master Software License
@@ -31,13 +31,13 @@
 #include "common/bits.h"
 #include "common/dhcp_server.h"
 #include "common/log.h"
+#include "common/endian.h"
 #include "common/iobuf.h"
 #include "common_protocols/icmpv6.h"
 #include "stack/mac/platform/arm_hal_phy.h"
 
 #include "stack/source/6lowpan/lowpan_adaptation_interface.h"
 #include "stack/source/nwk_interface/protocol.h"
-#include "stack-services/common_functions.h"
 
 #include "tun.h"
 #include "wsbr.h"
@@ -54,9 +54,9 @@ ssize_t wsbr_tun_write(uint8_t *buf, uint16_t len)
 
     ret = write(ctxt->tun_fd, buf, len);
     if (ret < 0)
-        WARN("write: %m");
+        WARN("%s: write: %m", __func__);
     else if (ret != len)
-        WARN("write: short write: %zd < %d", ret, len);
+        WARN("%s: write: Short write: %zd < %d", __func__, ret, len);
     return ret;
 }
 
@@ -105,7 +105,7 @@ int tun_addr_get_global_unicast(const char *if_name, uint8_t ip[static 16])
     return tun_addr_get(if_name, ip, true);
 }
 
-void tun_add_node_to_proxy_neightbl(struct net_if *if_entry, uint8_t address[16])
+void tun_add_node_to_proxy_neightbl(struct net_if *if_entry, const uint8_t address[16])
 {
     struct wsbr_ctxt *ctxt = &g_ctxt;
     char ipv6_addr_to_str[128] = { };
@@ -147,7 +147,8 @@ void tun_add_node_to_proxy_neightbl(struct net_if *if_entry, uint8_t address[16]
     rtnl_neigh_set_dst(nl_neigh, src_ipv6_nl_addr);
     rtnl_neigh_set_flags(nl_neigh, NTF_PROXY);
     rtnl_neigh_set_flags(nl_neigh, NTF_ROUTER);
-    rtnl_neigh_add(sock, nl_neigh, NLM_F_CREATE);
+    err = rtnl_neigh_add(sock, nl_neigh, NLM_F_CREATE);
+    FATAL_ON(err < 0, 2, "rtnl_neigh_add: %s", nl_geterror(err));
 
     rtnl_neigh_put(nl_neigh);
 ret_free_addr:
@@ -156,7 +157,7 @@ ret_free_sock:
     nl_socket_free(sock);
 }
 
-void tun_add_ipv6_direct_route(struct net_if *if_entry, uint8_t address[16])
+void tun_add_ipv6_direct_route(struct net_if *if_entry, const uint8_t address[16])
 {
     struct wsbr_ctxt *ctxt = &g_ctxt;
     char ipv6_addr_to_str[128] = { };
@@ -197,7 +198,8 @@ void tun_add_ipv6_direct_route(struct net_if *if_entry, uint8_t address[16])
     rtnl_route_nh_set_ifindex(nl_nexthop, ifindex);
     rtnl_route_add_nexthop(nl_route, nl_nexthop);
     err = rtnl_route_add(sock, nl_route, 0);
-    FATAL_ON(err < 0, 2, "rtnl_route_add: %s", nl_geterror(err));
+    if (err < 0 && err != -NLE_EXIST)
+        FATAL(2, "rtnl_route_add: %s", nl_geterror(err));
 
     rtnl_route_put(nl_route);
     nl_addr_put(ipv6_nl_addr);
@@ -223,12 +225,10 @@ static void tun_addr_add(struct nl_sock *sock, int ifindex, const uint8_t ipv6_p
         strcat(ipv6_addr_str, "/64");
     }
     err = nl_addr_parse(ipv6_addr_str, AF_INET6, &lo_ipv6_addr);
-    if (err < 0)
-        FATAL(2, "nl_addr_parse %s: %s", ipv6_addr_str, nl_geterror(err));
+    FATAL_ON(err < 0, 2, "nl_addr_parse %s: %s", ipv6_addr_str, nl_geterror(err));
     ipv6_addr = rtnl_addr_alloc();
     err = rtnl_addr_set_local(ipv6_addr, lo_ipv6_addr);
-    if (err < 0)
-        FATAL(2, "rtnl_addr_set_local %s: %s", ipv6_addr_str, nl_geterror(err));
+    FATAL_ON(err < 0, 2, "rtnl_addr_set_local %s: %s", ipv6_addr_str, nl_geterror(err));
     rtnl_addr_set_ifindex(ipv6_addr, ifindex);
     rtnl_addr_set_flags(ipv6_addr, IN6_ADDR_GEN_MODE_EUI64);
     err = rtnl_addr_add(sock, ipv6_addr, 0);
@@ -274,7 +274,7 @@ static int wsbr_tun_open(char *devname, const uint8_t hw_mac[static 8], uint8_t 
     if (is_user_configured) {
         err = rtnl_link_inet6_get_addr_gen_mode(link, &mode);
         if (err < 0 || mode != 1)
-            WARN("%s: unsepected addr_gen_mode", devname);
+            WARN("%s: unexpected addr_gen_mode", devname);
         if (rtnl_link_get_mtu(link) > 1280)
             WARN("%s: mtu is above 1280 (not 15.4 compliant)", devname);
         if (rtnl_link_get_txqlen(link) > 10)
@@ -344,6 +344,8 @@ static void wsbr_sysctl_set(const char *path, const char *devname, const char *o
 static void wsbr_tun_mcast_init(int * sock_ptr, const char * if_name)
 {
     *sock_ptr = socket(AF_INET6, SOCK_DGRAM | SOCK_CLOEXEC, 0);
+    if (*sock_ptr < 0)
+        FATAL(1, "%s: socket: %m", __func__);
     // ff02::1 and ff02::2 are automatically joined by Linux when the interface is brought up
     wsbr_tun_join_mcast_group(*sock_ptr, if_name, ADDR_LINK_LOCAL_ALL_RPL_NODES);   // ff02::1a
     wsbr_tun_join_mcast_group(*sock_ptr, if_name, ADDR_REALM_LOCAL_ALL_NODES);      // ff03::1
@@ -377,7 +379,7 @@ int wsbr_tun_leave_mcast_group(int sock_mcast, const char *if_name, const uint8_
 
 void wsbr_tun_init(struct wsbr_ctxt *ctxt)
 {
-    ctxt->tun_fd = wsbr_tun_open(ctxt->config.tun_dev, ctxt->hw_mac,
+    ctxt->tun_fd = wsbr_tun_open(ctxt->config.tun_dev, ctxt->rcp.eui64,
                                  ctxt->config.ipv6_prefix, ctxt->config.tun_autoconf,
                                  strlen(ctxt->config.neighbor_proxy));
     // It is also possible to use Netlink interface through DEVCONF_ACCEPT_RA
@@ -445,6 +447,8 @@ void wsbr_tun_read(struct wsbr_ctxt *ctxt)
             buffer_free(buf_6lowpan);
             return;
         }
+        if (!memcmp(buf_6lowpan->dst_sa.address, ADDR_ALL_MPL_FORWARDERS, 16))
+            buf_6lowpan->options.mpl_fwd_workaround = true;
     }
 
     if (nxthdr == SOL_TCP || nxthdr == SOL_UDP) {

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016-2018, 2020-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +23,7 @@
 #ifndef MAC_MCPS_H
 #define MAC_MCPS_H
 
+#include <sys/uio.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include "stack/mac/mac_common_defines.h"
@@ -50,12 +52,14 @@ typedef struct mcps_data_req {
     uint8_t *msdu;                  /**< Service data unit */
     uint8_t msduHandle;             /**< Handle associated with MSDU */
     bool TxAckReq: 1;               /**< Specifies whether ACK is needed or not */
-    bool InDirectTx: 1;             /**< Specifies whether indirect or direct transmission is used */
     bool PendingBit: 1;             /**< Specifies whether more fragments are to be sent or not */
     bool SeqNumSuppressed: 1;       /**< True suppress sequence number from frame. This will be only checked when 2015 extension is enabled */
     bool PanIdSuppressed: 1;        /**< True suppress PAN-id is done when possible from frame. This will be only checked when 2015 extension is enabled */
     bool ExtendedFrameExchange: 1;  /**< True for Extended Frame change. This will be only checked when 2015 extension and enhanced frame is enabled */
     mlme_security_t Key;            /**< Security key */
+    uint8_t priority;               /**< See mac_data_priority_e */
+    uint8_t phy_id;
+    uint8_t fhss_type;              /**< FHSS policy to send that frame */
 } mcps_data_req_t;
 
 /**
@@ -80,9 +84,9 @@ typedef struct mcps_data_conf {
  *
  */
 typedef struct mcps_data_conf_payload {
-    uint8_t *headerIeList;              /**< Header information IE's list without terminator*/
-    uint8_t *payloadIeList;             /**< Payload information IE's list without terminator*/
-    uint8_t *payloadPtr;                /**< Ack payload pointer */
+    const uint8_t *headerIeList;        /**< Header information IE's list without terminator*/
+    const uint8_t *payloadIeList;       /**< Payload information IE's list without terminator*/
+    const uint8_t *payloadPtr;          /**< Ack payload pointer */
     uint16_t headerIeListLength;        /**< Header information IE's list length in bytes */
     uint16_t payloadIeListLength;       /**< Payload information IE's list length in bytes */
     uint16_t payloadLength;             /**< Payload length in bytes */
@@ -111,7 +115,7 @@ typedef struct mcps_data_ind {
     uint8_t DSN;                /**< Data sequence number */
     mlme_security_t Key;        /**< Security key */
     uint16_t msduLength;        /**< Data unit length */
-    uint8_t *msdu_ptr;          /**< Data unit */
+    const uint8_t *msdu_ptr;    /**< Data unit */
 } mcps_data_ind_t;
 
 /**
@@ -120,22 +124,11 @@ typedef struct mcps_data_ind {
  * Structure for IEEE 802.15.4-2015 MCPS data extension to Indication
  */
 typedef struct mcps_data_ie_list {
-    uint8_t *headerIeList;              /**< Header information IE's list without terminator*/
-    uint8_t *payloadIeList;             /**< Payload information IE's list without terminator*/
+    const uint8_t *headerIeList;        /**< Header information IE's list without terminator*/
+    const uint8_t *payloadIeList;       /**< Payload information IE's list without terminator*/
     uint16_t headerIeListLength;        /**< Header information IE's list length in bytes */
     uint16_t payloadIeListLength;       /**< Payload information IE's list length in bytes */
 } mcps_data_ie_list_t;
-
-/** \brief Scatter-gather descriptor for MCPS request IE Element list
- *
- * Slightly optimised for small platforms - we assume we won't need any
- * element bigger than 64K.
- */
-typedef struct ns_ie_iovec {
-    void *ieBase;              /**< IE element pointer */
-    uint_fast16_t iovLen;      /**< IE element length */
-} ns_ie_iovec_t;
-
 
 /**
  * @brief struct mcps_data_req_ie_list MCPS data Information element list stuctrure
@@ -145,8 +138,8 @@ typedef struct ns_ie_iovec {
  * IE element could be divided to multiple vector which MAC just write to message direct.
  */
 typedef struct mcps_data_req_ie_list {
-    ns_ie_iovec_t *headerIeVectorList;   /**< Header IE element list */
-    ns_ie_iovec_t *payloadIeVectorList;  /**< Payload IE element list */
+    struct iovec *headerIeVectorList;    /**< Header IE element list */
+    struct iovec *payloadIeVectorList;   /**< Payload IE element list */
     uint16_t headerIovLength;            /**< Header IE element list size, set 0 when no elements */
     uint16_t payloadIovLength;           /**< Payload IE element list size, set 0 when no elements */
 } mcps_data_req_ie_list_t;

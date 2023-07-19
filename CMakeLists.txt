@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION  3.16.3)
 project(wsbrd)
-set(COMPILE_SIMULATION_TOOLS OFF CACHE BOOL "Keep unset if you don't consider to develop new features")
+set(COMPILE_DEVTOOLS OFF CACHE BOOL "Keep unset if you don't consider to develop new features")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(GNUInstallDirs)
 
 include(CheckCCompilerFlag)
 check_c_compiler_flag(-Wall                  CC_HAVE_WALL)
+check_c_compiler_flag(-Wno-format-zero-length CC_HAVE_WNO_FORMAT_ZERO_LENGTH)
 check_c_compiler_flag(-Wno-stringop-overread CC_HAVE_WNO_STRINGOP_OVERREAD)
 check_c_compiler_flag(-Wno-stringop-overflow CC_HAVE_WNO_STRINGOP_OVERFLOW)
 check_c_compiler_flag(-funwind-tables        CC_HAVE_UNWIND_TABLES)
@@ -17,28 +18,58 @@ check_include_file(sl_cpc.h LIBCPC_FOUND)
 # the libbacktrace project provides a fully compatible library.
 check_include_file(backtrace.h BACKTRACE_FOUND)
 
+include(CheckSymbolExists)
+set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_DL_LIBS})
+set(CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
+check_symbol_exists(dladdr dlfcn.h LIBDL_FOUND)
+unset(CMAKE_REQUIRED_DEFINITIONS)
+unset(CMAKE_REQUIRED_LIBRARIES)
+
 find_package(Rust)
 find_package(Cargo)
 
+find_package(ns3 QUIET)
+mark_as_advanced(ns3_DIR)
+if(ns3_FOUND)
+    # The wsbrd simulation library only works with a ns-3 fork private to
+    # Silicon Labs. See app_wsbrd_ns3/README.md.
+    include(CheckIncludeFileCXX)
+    get_target_property(NS3_INCLUDE_DIRECTORIES ns3::libcore INTERFACE_INCLUDE_DIRECTORIES)
+    set(CMAKE_REQUIRED_INCLUDES ${NS3_INCLUDE_DIRECTORIES})
+    set(CMAKE_REQUIRED_QUIET ON)
+    unset(ns3_FOUND)
+    check_include_file_cxx(ns3/libwsbrd-ns3.hpp ns3_FOUND)
+    unset(CMAKE_REQUIRED_QUIET)
+    unset(CMAKE_REQUIRED_INCLUDES)
+endif()
+
 set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
+find_package(Threads)
 
 # Syntax "MbedTLS 2.18...<4" does not work :(
 find_package(MbedTLS REQUIRED)
 mark_as_advanced(MbedTLS_DIR)
 
+# Check if MbedTLS has been compiled with -fPIC
+set(CMAKE_REQUIRED_LIBRARIES MbedTLS::mbedtls MbedTLS::mbedcrypto MbedTLS::mbedx509)
+set(CMAKE_REQUIRED_LINK_OPTIONS ${CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS})
+set(CMAKE_REQUIRED_QUIET True)
+check_symbol_exists(mbedtls_ssl_session_init mbedtls/ssl.h MBEDTLS_COMPILED_WITH_PIC)
+unset(CMAKE_REQUIRED_QUIET)
+unset(CMAKE_REQUIRED_LINK_OPTIONS)
+unset(CMAKE_REQUIRED_LIBRARIES)
+if(MBEDTLS_COMPILED_WITH_PIC)
+    set_target_properties(MbedTLS::mbedtls MbedTLS::mbedcrypto MbedTLS::mbedx509 PROPERTIES POSITION_INDEPENDENT_CODE True)
+endif()
+
 find_package(PkgConfig REQUIRED)
 # Note that old libpcap releases didn't provide pkg-config file and are not
 # detected by the line below. The user have to compile without support for
 # libpcap or manually defines the flags.
+pkg_check_modules(LIBCAP               IMPORTED_TARGET libcap>=2.29)
 pkg_check_modules(LIBPCAP              IMPORTED_TARGET libpcap)
 pkg_check_modules(LIBSYSTEMD           IMPORTED_TARGET libsystemd)
 pkg_check_modules(LIBNL_ROUTE REQUIRED IMPORTED_TARGET libnl-route-3.0)
-
-include(CheckSymbolExists)
-set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_DL_LIBS})
-set(CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
-check_symbol_exists(dladdr dlfcn.h LIBDL_FOUND)
 
 # Greatly improve warning messages. There is no reason to not enable that.
 if(CC_HAVE_WALL)
@@ -46,6 +77,9 @@ if(CC_HAVE_WALL)
 endif()
 
 # ... but it generate two irrelevant warnings
+if(CC_HAVE_WNO_FORMAT_ZERO_LENGTH)
+    add_compile_options(-Wno-format-zero-length)
+endif()
 if(CC_HAVE_WNO_STRINGOP_OVERREAD)
     add_compile_options(-Wno-stringop-overread)
 endif()
@@ -76,20 +110,20 @@ add_library(libwsbrd STATIC
     app_wsbrd/wsbr.c
     app_wsbrd/wsbr_mac.c
     app_wsbrd/wsbr_pcapng.c
-    app_wsbrd/wsbr_fhss_mac.c
-    app_wsbrd/wsbr_fhss_net.c
+    app_wsbrd/frame_helpers.c
+    app_wsbrd/rail_config.c
+    app_wsbrd/rcp_api.c
     app_wsbrd/timers.c
     app_wsbrd/tun.c
     app_wsbrd/commandline.c
     app_wsbrd/commandline_values.c
-    app_wsbrd/os_whiteboard.c
     app_wsbrd/mbedtls_config_check.c
     common/crc.c
     common/bus_uart.c
-    common/hal_interrupt.c
-    common/os_scheduler.c
+    common/events_scheduler.c
     common/log.c
     common/bits.c
+    common/endian.c
     common/rand.c
     common/named_values.c
     common/parsers.c
@@ -100,6 +134,7 @@ add_library(libwsbrd STATIC
     common/trickle.c
     common/ws_regdb.c
     common/key_value_storage.c
+    common/ieee802154_ie.c
     stack/source/timers.c
     stack/source/6lowpan/adaptation_interface.c
     stack/source/6lowpan/bootstraps/protocol_6lowpan.c
@@ -111,8 +146,6 @@ add_library(libwsbrd STATIC
     stack/source/6lowpan/iphc_decode/iphc_decompress.c
     stack/source/6lowpan/iphc_decode/lowpan_context.c
     stack/source/6lowpan/mac/mac_helper.c
-    stack/source/6lowpan/mac/mac_ie_lib.c
-    stack/source/6lowpan/mac/mac_response_handler.c
     stack/source/6lowpan/nd/nd_router_object.c
     stack/source/6lowpan/ws/ws_bbr_api.c
     stack/source/6lowpan/ws/ws_bootstrap.c
@@ -124,8 +157,10 @@ add_library(libwsbrd STATIC
     stack/source/6lowpan/ws/ws_eapol_relay.c
     stack/source/6lowpan/ws/ws_eapol_relay_lib.c
     stack/source/6lowpan/ws/ws_ie_lib.c
+    stack/source/6lowpan/ws/ws_ie_validation.c
     stack/source/6lowpan/ws/ws_llc_data_service.c
     stack/source/6lowpan/ws/ws_management_api.c
+    stack/source/6lowpan/ws/ws_mngt.c
     stack/source/6lowpan/ws/ws_mpx_header.c
     stack/source/6lowpan/ws/ws_neighbor_class.c
     stack/source/6lowpan/ws/ws_pae_auth.c
@@ -190,23 +225,21 @@ add_library(libwsbrd STATIC
     stack/source/service_libs/mac_neighbor_table/mac_neighbor_table.c
     stack/source/service_libs/nist_aes_kw/nist_aes_kw.c
     stack/source/service_libs/random_early_detection/random_early_detection.c
-    # Excluded stack/source/service_libs/whiteboard/whiteboard.c
-    stack-scheduler/source/event.c
-    stack-services/common_functions.c
-    stack-services/ip6string.c
-    stack-services/ns_list.c
 )
 target_include_directories(libwsbrd PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     stack/source/
-    stack-scheduler/
     stack/
 )
 target_compile_options(libwsbrd PRIVATE -include stack/source/configs/cfg_ws_border_router.h)
 # target_compile_definitions(libwsbrd PRIVATE EXTRA_DEBUG_INFO)
-target_link_libraries(libwsbrd PRIVATE Threads::Threads)
 target_link_libraries(libwsbrd PRIVATE PkgConfig::LIBNL_ROUTE)
 target_link_libraries(libwsbrd PRIVATE MbedTLS::mbedtls MbedTLS::mbedcrypto MbedTLS::mbedx509)
+if(LIBCAP_FOUND)
+    target_compile_definitions(libwsbrd PRIVATE HAVE_LIBCAP)
+    target_sources(libwsbrd PRIVATE app_wsbrd/drop_privileges.c)
+    target_link_libraries(libwsbrd PRIVATE PkgConfig::LIBCAP)
+endif()
 if(LIBSYSTEMD_FOUND)
     target_compile_definitions(libwsbrd PRIVATE HAVE_LIBSYSTEMD)
     target_sources(libwsbrd PRIVATE app_wsbrd/dbus.c)
@@ -247,9 +280,9 @@ if(RUST_FOUND AND CARGO_FOUND AND RUST_VERSION VERSION_GREATER_EQUAL 1.31)
     add_custom_target(cargo-wsbrd_cli ALL DEPENDS wsbrd_cli)
     add_custom_command(OUTPUT wsbrd_cli
         COMMAND ${CARGO_COMMAND} build ${RUST_BUILD_FLAG} --target=${RUST_TARGET} --target-dir=cargo/
-                                       --manifest-path=${CMAKE_CURRENT_SOURCE_DIR}/app_wsbrd_cli/Cargo.toml
+                                       --manifest-path=${CMAKE_CURRENT_SOURCE_DIR}/tools/wsbrd_cli/Cargo.toml
         COMMAND ${CMAKE_COMMAND} -E copy ${RUST_TARGET_DIR}/wsbrd_cli wsbrd_cli
-        DEPENDS app_wsbrd_cli/Cargo.toml app_wsbrd_cli/wsbrd_cli.rs app_wsbrd_cli/wsbrddbusapi.rs
+        DEPENDS tools/wsbrd_cli/Cargo.toml tools/wsbrd_cli/wsbrd_cli.rs tools/wsbrd_cli/wsbrddbusapi.rs
         USES_TERMINAL
     )
     set_target_properties(cargo-wsbrd_cli PROPERTIES ADDITIONAL_CLEAN_FILES cargo)
@@ -257,24 +290,38 @@ if(RUST_FOUND AND CARGO_FOUND AND RUST_VERSION VERSION_GREATER_EQUAL 1.31)
 
 endif()
 
-if(COMPILE_SIMULATION_TOOLS)
+add_executable(wsbrd-fwup
+    tools/fwup/wsbrd_fwup.c
+    common/bits.c
+    common/log.c
+    common/crc.c
+    common/bus_uart.c
+    common/spinel_buffer.c
+    common/iobuf.c
+    common/endian.c
+)
+target_include_directories(wsbrd-fwup PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS wsbrd-fwup RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+if(COMPILE_DEVTOOLS)
 
     add_executable(wsnode
         version.c
         app_wsbrd/wsrouter.c
         app_wsbrd/wsbr_mac.c
         app_wsbrd/wsbr_pcapng.c
-        app_wsbrd/wsbr_fhss_mac.c
-        app_wsbrd/wsbr_fhss_net.c
+        app_wsbrd/frame_helpers.c
+        app_wsbrd/rail_config.c
+        app_wsbrd/rcp_api.c
         app_wsbrd/timers.c
         app_wsbrd/commandline.c
         app_wsbrd/commandline_values.c
         common/crc.c
         common/bus_uart.c
-        common/hal_interrupt.c
-        common/os_scheduler.c
+        common/events_scheduler.c
         common/log.c
         common/bits.c
+        common/endian.c
         common/rand.c
         common/named_values.c
         common/parsers.c
@@ -284,6 +331,7 @@ if(COMPILE_SIMULATION_TOOLS)
         common/trickle.c
         common/ws_regdb.c
         common/key_value_storage.c
+        common/ieee802154_ie.c
         stack/source/timers.c
         stack/source/6lowpan/adaptation_interface.c
         stack/source/6lowpan/bootstraps/protocol_6lowpan.c
@@ -295,8 +343,6 @@ if(COMPILE_SIMULATION_TOOLS)
         stack/source/6lowpan/iphc_decode/iphc_decompress.c
         stack/source/6lowpan/iphc_decode/lowpan_context.c
         stack/source/6lowpan/mac/mac_helper.c
-        stack/source/6lowpan/mac/mac_ie_lib.c
-        stack/source/6lowpan/mac/mac_response_handler.c
         stack/source/6lowpan/nd/nd_router_object.c
         stack/source/6lowpan/ws/ws_bootstrap.c
         stack/source/6lowpan/ws/ws_bootstrap_ffn.c
@@ -307,6 +353,7 @@ if(COMPILE_SIMULATION_TOOLS)
         stack/source/6lowpan/ws/ws_eapol_relay.c
         stack/source/6lowpan/ws/ws_eapol_relay_lib.c
         stack/source/6lowpan/ws/ws_ie_lib.c
+        stack/source/6lowpan/ws/ws_ie_validation.c
         stack/source/6lowpan/ws/ws_llc_data_service.c
         stack/source/6lowpan/ws/ws_management_api.c
         stack/source/6lowpan/ws/ws_mpx_header.c
@@ -382,21 +429,14 @@ if(COMPILE_SIMULATION_TOOLS)
         stack/source/service_libs/mac_neighbor_table/mac_neighbor_table.c
         stack/source/service_libs/nist_aes_kw/nist_aes_kw.c
         stack/source/service_libs/random_early_detection/random_early_detection.c
-        # Excluded stack/source/service_libs/whiteboard/whiteboard.c
-        stack-scheduler/source/event.c
-        stack-services/common_functions.c
-        stack-services/ip6string.c
-        stack-services/ns_list.c
     )
     target_include_directories(wsnode PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
         stack/source/
-        stack-scheduler/
         stack/
     )
     target_compile_options(wsnode PRIVATE -include stack/source/configs/cfg_ws_router.h)
     # target_compile_definitions(wsnode PRIVATE EXTRA_DEBUG_INFO)
-    target_link_libraries(wsnode PRIVATE Threads::Threads)
     target_link_libraries(wsnode PRIVATE MbedTLS::mbedtls MbedTLS::mbedcrypto MbedTLS::mbedx509)
     if(BACKTRACE_FOUND)
         target_compile_definitions(wsnode PRIVATE HAVE_BACKTRACE)
@@ -413,54 +453,49 @@ if(COMPILE_SIMULATION_TOOLS)
         version.c
         common/crc.c
         common/bus_uart.c
-        common/hal_interrupt.c
-        common/os_scheduler.c
+        common/events_scheduler.c
         common/log.c
         common/bits.c
+        common/endian.c
         common/rand.c
+        common/iobuf.c
         common/slist.c
         common/spinel_buffer.c
-        stack-services/common_functions.c
-        stack-services/ip6string.c
-        stack-services/ns_list.c
-        stack-scheduler/source/event.c
-        app_wshwsim/timer_sys_stub.c
-        app_wshwsim/sl_wsrcp.c
-        app_wshwsim/sl_wsrcp_mac.c
-        app_wshwsim/sl_rf_driver.c
-        app_wshwsim/hal_fhss_timer.c
-        app_wshwsim/mac/rf_driver_storage.c
-        app_wshwsim/mac/ieee802154/mac_cca_threshold.c
-        app_wshwsim/mac/ieee802154/mac_fhss_callbacks.c
-        app_wshwsim/mac/ieee802154/mac_filter.c
-        app_wshwsim/mac/ieee802154/mac_header_helper_functions.c
-        app_wshwsim/mac/ieee802154/mac_indirect_data.c
-        app_wshwsim/mac/ieee802154/mac_mcps_sap.c
-        app_wshwsim/mac/ieee802154/mac_mlme.c
-        app_wshwsim/mac/ieee802154/mac_pd_sap.c
-        app_wshwsim/mac/ieee802154/mac_security_mib.c
-        app_wshwsim/mac/ieee802154/mac_timer.c
-        app_wshwsim/mac/ieee802154/sw_mac.c
-        app_wshwsim/ccm/ccm_security.c
-        app_wshwsim/ccm/mbedOS/aes_mbedtls_adapter.c
-        app_wshwsim/fhss/channel_functions.c
-        app_wshwsim/fhss/fhss_common.c
-        app_wshwsim/fhss/fhss_configuration_interface.c
-        app_wshwsim/fhss/fhss_statistics.c
-        app_wshwsim/fhss/fhss_ws.c
-        app_wshwsim/os_timer.c
+        tools/hwsim/timer_sys_stub.c
+        tools/hwsim/sl_wsrcp.c
+        tools/hwsim/sl_wsrcp_mac.c
+        tools/hwsim/sl_rf_driver.c
+        tools/hwsim/hal_fhss_timer.c
+        tools/hwsim/mac/rf_driver_storage.c
+        tools/hwsim/mac/ieee802154/mac_cca_threshold.c
+        tools/hwsim/mac/ieee802154/mac_fhss_callbacks.c
+        tools/hwsim/mac/ieee802154/mac_filter.c
+        tools/hwsim/mac/ieee802154/mac_header_helper_functions.c
+        tools/hwsim/mac/ieee802154/mac_indirect_data.c
+        tools/hwsim/mac/ieee802154/mac_mcps_sap.c
+        tools/hwsim/mac/ieee802154/mac_mlme.c
+        tools/hwsim/mac/ieee802154/mac_pd_sap.c
+        tools/hwsim/mac/ieee802154/mac_security_mib.c
+        tools/hwsim/mac/ieee802154/mac_timer.c
+        tools/hwsim/mac/ieee802154/sw_mac.c
+        tools/hwsim/ccm/ccm_security.c
+        tools/hwsim/ccm/mbedOS/aes_mbedtls_adapter.c
+        tools/hwsim/fhss/channel_functions.c
+        tools/hwsim/fhss/fhss_common.c
+        tools/hwsim/fhss/fhss_configuration_interface.c
+        tools/hwsim/fhss/fhss_statistics.c
+        tools/hwsim/fhss/fhss_ws.c
+        tools/hwsim/os_timer.c
         # Excluded app_wshwsim/fhss/fhss_test_api.c
     )
     target_include_directories(wshwsim PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
-        app_wshwsim/
-        stack-scheduler/
+        tools/hwsim/
         stack/
     )
     # target_compile_definitions(wshwsim PRIVATE FHSS_CHANNEL_DEBUG)
     # target_compile_definitions(wshwsim PRIVATE TIMING_TOOL_TRACES)
     # target_compile_definitions(wshwsim PRIVATE EXTRA_DEBUG_INFO)
-    target_link_libraries(wshwsim PRIVATE Threads::Threads)
     target_link_libraries(wshwsim PRIVATE MbedTLS::mbedtls)
     target_link_libraries(wshwsim PRIVATE util)
     if(LIBPCAP_FOUND)
@@ -478,28 +513,98 @@ if(COMPILE_SIMULATION_TOOLS)
     endif()
     install(TARGETS wshwsim RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+    add_executable(wsmac
+        version.c
+        common/crc.c
+        common/bus_uart.c
+        common/hal_interrupt.c
+        common/os_scheduler.c
+        common/log.c
+        common/bits.c
+        common/rand.c
+        common/slist.c
+        common/spinel_buffer.c
+        stack-services/common_functions.c
+        stack-services/ip6string.c
+        stack-services/ns_list.c
+        stack-scheduler/source/event.c
+        app_wsmac/timer_sys_stub.c
+        app_wsmac/sl_wsmac.c
+        app_wsmac/sl_wsrcp_mac.c
+        app_wsmac/sl_rf_driver.c
+        app_wsmac/hal_fhss_timer.c
+        app_wsmac/mac/rf_driver_storage.c
+        app_wsmac/mac/ieee802154/mac_cca_threshold.c
+        app_wsmac/mac/ieee802154/mac_fhss_callbacks.c
+        app_wsmac/mac/ieee802154/mac_filter.c
+        app_wsmac/mac/ieee802154/mac_header_helper_functions.c
+        app_wsmac/mac/ieee802154/mac_indirect_data.c
+        app_wsmac/mac/ieee802154/mac_mcps_sap.c
+        app_wsmac/mac/ieee802154/mac_mlme.c
+        app_wsmac/mac/ieee802154/mac_pd_sap.c
+        app_wsmac/mac/ieee802154/mac_security_mib.c
+        app_wsmac/mac/ieee802154/mac_timer.c
+        app_wsmac/mac/ieee802154/sw_mac.c
+        app_wsmac/ccm/ccm_security.c
+        app_wsmac/ccm/mbedOS/aes_mbedtls_adapter.c
+        app_wsmac/fhss/channel_functions.c
+        app_wsmac/fhss/fhss_common.c
+        app_wsmac/fhss/fhss_configuration_interface.c
+        app_wsmac/fhss/fhss_statistics.c
+        app_wsmac/fhss/fhss_ws.c
+        app_wsmac/os_timer.c
+        # Excluded app_wsmac/fhss/fhss_test_api.c
+    )
+    target_include_directories(wsmac PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        app_wsmac/
+        stack-scheduler/
+        stack/
+    )
+    # target_compile_definitions(wsmac PRIVATE FHSS_CHANNEL_DEBUG)
+    # target_compile_definitions(wsmac PRIVATE TIMING_TOOL_TRACES)
+    # target_compile_definitions(wsmac PRIVATE EXTRA_DEBUG_INFO)
+    target_link_libraries(wsmac PRIVATE Threads::Threads)
+    target_link_libraries(wsmac PRIVATE MbedTLS::mbedtls)
+    target_link_libraries(wsmac PRIVATE util)
+    if(LIBPCAP_FOUND)
+        target_compile_definitions(wsmac PRIVATE HAVE_LIBPCAP)
+        target_link_libraries(wsmac PRIVATE PkgConfig::LIBPCAP)
+    endif()
+    if(BACKTRACE_FOUND)
+        target_compile_definitions(wsmac PRIVATE HAVE_BACKTRACE)
+        target_sources(wsmac PRIVATE common/backtrace_show.c)
+        target_link_libraries(wsmac PRIVATE backtrace)
+    endif()
+    if(LIBDL_FOUND)
+        target_compile_definitions(wsmac PRIVATE HAVE_LIBDL)
+        target_link_libraries(wsmac PRIVATE ${CMAKE_DL_LIBS})
+    endif()
+    install(TARGETS wsmac RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
     add_executable(wssimserver
         common/log.c
         common/bits.c
-        app_wssimserver/wssimserver.c)
+        tools/simserver/wssimserver.c)
     target_include_directories(wssimserver PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
     )
     install(TARGETS wssimserver RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
     add_executable(wsbrd-fuzz
-        app_wsbrd_fuzz/wsbrd_fuzz.c
-        app_wsbrd_fuzz/commandline.c
-        app_wsbrd_fuzz/interfaces.c
-        app_wsbrd_fuzz/capture.c
-        app_wsbrd_fuzz/rand.c
+        tools/fuzz/wsbrd_fuzz.c
+        tools/fuzz/commandline.c
+        tools/fuzz/interfaces.c
+        tools/fuzz/capture.c
+        tools/fuzz/replay.c
+        tools/fuzz/rand.c
+        tools/fuzz/main.c
     )
     target_compile_options(wsbrd-fuzz PRIVATE -include stack/source/configs/cfg_ws_border_router.h)
     target_include_directories(wsbrd-fuzz PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
         stack/
         stack/source/
-        stack-scheduler/
     )
     add_dependencies(wsbrd-fuzz libwsbrd)
     target_link_libraries(wsbrd-fuzz libwsbrd)
@@ -507,6 +612,7 @@ if(COMPILE_SIMULATION_TOOLS)
         target_compile_definitions(wsbrd-fuzz PRIVATE HAVE_BACKTRACE)
     endif()
     target_link_options(wsbrd-fuzz PRIVATE
+        -Wl,--wrap=parse_commandline
         -Wl,--wrap=print_help_br
         -Wl,--wrap=uart_open
         -Wl,--wrap=uart_rx
@@ -515,9 +621,7 @@ if(COMPILE_SIMULATION_TOOLS)
         -Wl,--wrap=wsbr_tun_init
         -Wl,--wrap=tun_addr_get_global_unicast
         -Wl,--wrap=tun_addr_get_link_local
-        -Wl,--wrap=wsbr_spinel_replay_interface
         -Wl,--wrap=wsbr_common_timer_init
-        -Wl,--wrap=wsbr_spinel_replay_timers
         -Wl,--wrap=read
         -Wl,--wrap=write
         -Wl,--wrap=recv
@@ -532,6 +636,74 @@ if(COMPILE_SIMULATION_TOOLS)
     )
     install(TARGETS wsbrd-fuzz RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+    add_executable(wshwping
+        tools/hwping/wshwping.c
+        common/bits.c
+        common/log.c
+        common/crc.c
+        common/bus_uart.c
+        common/spinel_buffer.c
+        common/named_values.c
+        common/iobuf.c
+        common/endian.c
+    )
+    target_include_directories(wshwping PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        stack/source/
+        stack/
+    )
+    if(LIBCPC_FOUND)
+        target_compile_definitions(wshwping PRIVATE HAVE_LIBCPC)
+        target_sources(wshwping PRIVATE common/bus_cpc.c)
+        target_link_libraries(wshwping PRIVATE cpc)
+    endif()
+    install(TARGETS wshwping RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+    if(ns3_FOUND)
+        if (NOT MBEDTLS_COMPILED_WITH_PIC)
+            message(FATAL_ERROR "wsbrd-ns3 needs MbedTLS compiled with -fPIC")
+        endif()
+        if(NOT Threads_FOUND)
+            message(FATAL_ERROR "wsbrd-ns3 needs libpthread")
+        endif()
+
+        # To embed wsbrd into a shared library to be used with ns-3, dependencies
+        # must be compiled with -fPIC. This is also the case for MbedTLS, which
+        # cannot be ensured by CMake when resolving dependencies.
+        set_property(TARGET libwsbrd PROPERTY POSITION_INDEPENDENT_CODE ON)
+        add_library(wsbrd-ns3 SHARED
+            tools/simulation/wsbrd_ns3.cpp
+            tools/simulation/rand.cpp
+            tools/simulation/time.cpp
+            tools/simulation/uart.cpp
+            tools/fuzz/capture.c
+            tools/fuzz/commandline.c
+            tools/fuzz/interfaces.c
+            tools/fuzz/rand.c
+            tools/fuzz/wsbrd_fuzz.c
+        )
+        target_include_directories(wsbrd-ns3 PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            stack/
+            ${NS3_INCLUDE_DIRECTORIES}
+        )
+        target_link_libraries(wsbrd-ns3 libwsbrd)
+        target_link_libraries(wsbrd-ns3 Threads::Threads)
+        target_link_options(wsbrd-ns3 PRIVATE
+            -Wl,--wrap=uart_open
+            -Wl,--wrap=write
+            -Wl,--wrap=getrandom
+            -Wl,--wrap=wsbr_common_timer_init
+            -Wl,--wrap=wsbr_common_timer_process
+            -Wl,--wrap=clock_gettime
+            -Wl,--wrap=signal
+            -Wl,--wrap=exit
+            -Wl,--wrap=__tr_printf
+            -Wl,--wrap=getrandom
+            -Wl,--wrap=time
+        )
+        install(TARGETS wsbrd-ns3 LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    endif()
 endif()
 
 add_custom_command(OUTPUT wsbrd.conf
@@ -557,4 +729,6 @@ install(FILES misc/com.silabs.Wisun.BorderRouter.conf
 # FIXME: use ${CMAKE_INSTALL_LOCALSTATEDIR}/lib/wsbrd and report this value in
 # the code
 install(DIRECTORY DESTINATION /var/lib/wsbrd
-    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE)
+    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ)
+install(CODE "execute_process(COMMAND useradd --system --shell /sbin/nologin --home-dir /var/lib/wsbrd wsbrd)")
+install(CODE "execute_process(COMMAND chown -R wsbrd:wsbrd /var/lib/wsbrd)")

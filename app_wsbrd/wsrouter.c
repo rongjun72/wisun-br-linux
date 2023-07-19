@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Silicon Laboratories Inc. (www.silabs.com)
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  *
  * The licensor of this software is Silicon Laboratories Inc. Your use of this
  * software is governed by the terms of the Silicon Labs Master Software License
@@ -19,15 +19,14 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/stat.h>
-#include "common/hal_interrupt.h"
 #include "common/bus_uart.h"
-#include "common/os_scheduler.h"
+#include "common/events_scheduler.h"
 #include "common/os_types.h"
 #include "common/key_value_storage.h"
+#include "common/utils.h"
 #include "common/log.h"
 #include "common/log_legacy.h"
-#include "stack-scheduler/eventOS_event.h"
-#include "stack-scheduler/eventOS_scheduler.h"
+#include "common/version.h"
 #include "stack/mac/fhss_api.h"
 #include "stack/mac/mac_api.h"
 #include "stack/mac/sw_mac.h"
@@ -35,13 +34,18 @@
 #include "stack/ws_management_api.h"
 
 #include "stack/source/6lowpan/ws/ws_common_defines.h"
+#include "stack/source/6lowpan/ws/ws_llc.h"
 #include "stack/source/core/ns_address_internal.h"
 
 #include "commandline.h"
 #include "version.h"
+#include "rcp_api.h"
 #include "wsbr.h"
 #include "wsbr_mac.h"
 #include "timers.h"
+
+static void wsbr_handle_reset(struct wsbr_ctxt *ctxt);
+static void wsbr_handle_rx_err(uint8_t src[8], uint8_t status);
 
 enum {
     POLLFD_RCP,
@@ -52,20 +56,10 @@ enum {
 
 // See warning in wsbr.h
 struct wsbr_ctxt g_ctxt = {
-    .mac_api.mac_initialize = wsbr_mac_init,
-    .mac_api.mac_mcps_edfe_enable = wsbr_mac_edfe_ext_init,
-    .mac_api.mac_mcps_extension_enable = wsbr_mac_mcps_ext_init,
-
-    .mac_api.mac_storage_sizes_get = wsbr_mac_storage_sizes_get,
-    .mac_api.mac64_set = wsbr_mac_addr_set,
-    .mac_api.mac64_get = wsbr_mac_addr_get,
-
-    .mac_api.mlme_req = wsbr_mlme,
-    .mac_api.mcps_data_req = wsbr_mcps_req,
-    .mac_api.mcps_data_req_ext = wsbr_mcps_req_ext,
-    .mac_api.mcps_purge_req = wsbr_mcps_purge,
-
-    .mac_api.mtu = 2043,
+    .rcp.on_reset = wsbr_handle_reset,
+    .rcp.on_rx_err = wsbr_handle_rx_err,
+    .rcp.on_tx_cnf = ws_llc_mac_confirm_cb,
+    .rcp.on_rx_ind = ws_llc_mac_indication_cb,
 
     // avoid initializating to 0 = STDIN_FILENO
     .pcapng_fd = -1,
@@ -97,7 +91,7 @@ static void wsbr_configure_ws(struct wsbr_ctxt *ctxt)
     bool gtk_force = false;
 
     ret = ws_management_node_init(ctxt->rcp_if_id, ctxt->config.ws_domain,
-                                  ctxt->config.ws_name, (struct fhss_timer *)-1);
+                                  ctxt->config.ws_name);
     WARN_ON(ret);
 
     WARN_ON(ctxt->config.ws_domain == 0xFE, "Not supported");
@@ -128,9 +122,6 @@ static void wsbr_configure_ws(struct wsbr_ctxt *ctxt)
     ret = ws_test_version_set(ctxt->rcp_if_id, ctxt->config.ws_fan_version);
     WARN_ON(ret);
 
-    ret = ws_device_min_sens_set(ctxt->rcp_if_id, 174 - 93);
-    WARN_ON(ret);
-
     ret = arm_network_own_certificate_add(&ctxt->config.tls_own);
     WARN_ON(ret);
 
@@ -150,21 +141,8 @@ static void wsbr_configure_ws(struct wsbr_ctxt *ctxt)
     }
 }
 
-static void wsbr_tasklet(struct arm_event *event)
+static void wsbr_tasklet(struct event_payload *event)
 {
-    const char *const nwk_events[] = {
-        "ARM_NWK_BOOTSTRAP_READY",
-        "ARM_NWK_RPL_INSTANCE_FLOODING_READY",
-        "ARM_NWK_SET_DOWN_COMPLETE",
-        "ARM_NWK_NWK_SCAN_FAIL",
-        "ARM_NWK_IP_ADDRESS_ALLOCATION_FAIL",
-        "ARM_NWK_DUPLICATE_ADDRESS_DETECTED",
-        "ARM_NWK_AUHTENTICATION_START_FAIL",
-        "ARM_NWK_AUHTENTICATION_FAIL",
-        "ARM_NWK_NWK_CONNECTION_DOWN",
-        "ARM_NWK_NWK_PARENT_POLL_FAIL",
-        "ARM_NWK_PHY_CONNECTION_DOWN"
-    };
     struct wsbr_ctxt *ctxt = &g_ctxt;
 
     switch (event->event_type) {
@@ -179,39 +157,35 @@ static void wsbr_tasklet(struct arm_event *event)
             if (arm_nwk_interface_up(ctxt->rcp_if_id, NULL))
                  WARN("arm_nwk_interface_up RCP");
             break;
-        case ARM_LIB_NWK_INTERFACE_EVENT:
-            if (event->event_id == ctxt->rcp_if_id) {
-                DEBUG("get event for ws interface: %s", nwk_events[event->event_data]);
-            } else {
-                WARN("received unknown network event: %d", event->event_id);
-            }
-            break;
         default:
             WARN("received unknown event: %d", event->event_type);
             break;
     }
 }
 
-void wsbr_handle_reset(struct wsbr_ctxt *ctxt, const char *version_fw_str)
+static void wsbr_handle_rx_err(uint8_t src[8], uint8_t status)
 {
-    if (ctxt->rcp_init_state & RCP_INIT_DONE)
-        FATAL(3, "MAC layer has been reset. Operation not supported");
-    INFO("Connected to RCP \"%s\" (%d.%d.%d), API %d.%d.%d", version_fw_str,
-          FIELD_GET(0xFF000000, ctxt->rcp_version_fw),
-          FIELD_GET(0x00FFFF00, ctxt->rcp_version_fw),
-          FIELD_GET(0x000000FF, ctxt->rcp_version_fw),
-          FIELD_GET(0xFF000000, ctxt->rcp_version_api),
-          FIELD_GET(0x00FFFF00, ctxt->rcp_version_api),
-          FIELD_GET(0x000000FF, ctxt->rcp_version_api));
-    if (fw_api_older_than(ctxt, 0, 2, 0))
-        FATAL(3, "RCP API is too old");
-    ctxt->rcp_init_state |= RCP_HAS_RESET;
-    wsbr_rcp_get_hw_addr(ctxt);
+    TRACE(TR_DROP, "drop %-9s: from %s: %02x", "15.4", tr_ipv6(src), status);
 }
 
-void wsbr_spinel_replay_interface(struct spinel_buffer *buf)
+static void wsbr_handle_reset(struct wsbr_ctxt *ctxt)
 {
-    WARN("%s: not implemented", __func__);
+    if (ctxt->rcp.init_state & RCP_HAS_HWADDR) {
+        if (!(ctxt->rcp.init_state & RCP_HAS_RF_CONFIG))
+            FATAL(3, "unsupported radio configuration (check --list-rf-config)");
+        else
+            FATAL(3, "MAC layer has been reset. Operation not supported");
+    }
+    INFO("Connected to RCP \"%s\" (%d.%d.%d), API %d.%d.%d", ctxt->rcp.version_label,
+          FIELD_GET(0xFF000000, ctxt->rcp.version_fw),
+          FIELD_GET(0x00FFFF00, ctxt->rcp.version_fw),
+          FIELD_GET(0x000000FF, ctxt->rcp.version_fw),
+          FIELD_GET(0xFF000000, ctxt->rcp.version_api),
+          FIELD_GET(0x00FFFF00, ctxt->rcp.version_api),
+          FIELD_GET(0x000000FF, ctxt->rcp.version_api));
+    if (version_older_than(ctxt->rcp.version_api, 0, 2, 0))
+        FATAL(3, "RCP API is too old");
+    rcp_get_hw_addr();
 }
 
 void kill_handler(int signal)
@@ -219,11 +193,53 @@ void kill_handler(int signal)
     exit(0);
 }
 
+static void wsbr_rcp_init(struct wsbr_ctxt *ctxt)
+{
+    static const int timeout_values[] = { 2, 15, 60, 300, 900, 3600 }; // seconds
+    struct pollfd fds = { .fd = ctxt->os_ctxt->data_fd, .events = POLLIN };
+    int ret, i;
+
+    i = 0;
+    do {
+        ret = poll(&fds, 1, timeout_values[i] * 1000);
+        if (ret < 0)
+            FATAL(2, "poll: %m");
+        if (ret == 0)
+            WARN("still waiting for RCP");
+        if (i + 1 < ARRAY_SIZE(timeout_values))
+            i++;
+    } while (ret < 1);
+
+    while (!(ctxt->rcp.init_state & RCP_HAS_RESET))
+        rcp_rx(ctxt);
+
+    if (version_older_than(ctxt->rcp.version_api, 0, 15, 0) && ctxt->config.ws_fan_version == WS_FAN_VERSION_1_1)
+        FATAL(1, "RCP does not support FAN 1.1");
+    if (version_older_than(ctxt->rcp.version_api, 0, 16, 0) && ctxt->config.pcap_file[0])
+        FATAL(1, "pcap_file requires RCP >= 0.16.0");
+
+    while (!(ctxt->rcp.init_state & RCP_HAS_HWADDR))
+        rcp_rx(ctxt);
+
+    if (ctxt->config.list_rf_configs) {
+        if (version_older_than(ctxt->rcp.version_api, 0, 11, 0))
+            FATAL(1, "--list-rf-configs needs RCP API >= 0.10.0");
+    }
+
+    if (!version_older_than(ctxt->rcp.version_api, 0, 11, 0)) {
+        rcp_get_rf_config_list();
+        while (!(ctxt->rcp.init_state & RCP_HAS_RF_CONFIG_LIST))
+            rcp_rx(ctxt);
+        if (ctxt->config.list_rf_configs)
+            exit(0);
+    }
+}
+
 static void wsbr_fds_init(struct wsbr_ctxt *ctxt, struct pollfd *fds)
 {
     fds[POLLFD_RCP].fd = ctxt->os_ctxt->trig_fd;
     fds[POLLFD_RCP].events = POLLIN;
-    fds[POLLFD_EVENT].fd = ctxt->os_ctxt->event_fd[0];
+    fds[POLLFD_EVENT].fd = ctxt->scheduler.event_fd[0];
     fds[POLLFD_EVENT].events = POLLIN;
     fds[POLLFD_TIMER].fd = ctxt->timerfd;
     fds[POLLFD_TIMER].events = POLLIN;
@@ -242,9 +258,9 @@ static void wsbr_poll(struct wsbr_ctxt *ctxt, struct pollfd *fds)
         FATAL(2, "poll: %m");
 
     if (fds[POLLFD_EVENT].revents & POLLIN) {
-        read(ctxt->os_ctxt->event_fd[0], &val, sizeof(val));
+        read(ctxt->scheduler.event_fd[0], &val, sizeof(val));
         WARN_ON(val != 'W');
-        eventOS_scheduler_run_until_idle();
+        event_scheduler_run_until_idle();
     }
     if (fds[POLLFD_RCP].revents & POLLIN ||
         fds[POLLFD_RCP].revents & POLLERR ||
@@ -256,6 +272,12 @@ static void wsbr_poll(struct wsbr_ctxt *ctxt, struct pollfd *fds)
 
 int main(int argc, char *argv[])
 {
+    static const char *files[] = {
+        "pairwise-keys",
+        "network-keys",
+        "counters",
+        NULL,
+    };
     struct wsbr_ctxt *ctxt = &g_ctxt;
     struct pollfd fds[POLLFD_COUNT];
 
@@ -264,34 +286,32 @@ int main(int argc, char *argv[])
     signal(SIGHUP, kill_handler);
     signal(SIGTERM, kill_handler);
     ctxt->os_ctxt = &g_os_ctxt;
-    ctxt->rcp_tx = uart_tx;
-    ctxt->rcp_rx = uart_rx;
+    ctxt->rcp.device_tx = uart_tx;
+    ctxt->rcp.device_rx = uart_rx;
+    ctxt->rcp.on_crc_error = uart_handle_crc_error;
     parse_commandline(&ctxt->config, argc, argv, print_help_node);
     if (ctxt->config.color_output != -1)
         g_enable_color_traces = ctxt->config.color_output;
-    platform_critical_init();
-    eventOS_scheduler_os_init(ctxt->os_ctxt);
-    eventOS_scheduler_init();
+    event_scheduler_init(&ctxt->scheduler);
     g_storage_prefix = ctxt->config.storage_prefix[0] ? ctxt->config.storage_prefix : NULL;
+    if (ctxt->config.storage_delete)
+        storage_delete(files);
     ctxt->os_ctxt->data_fd = uart_open(ctxt->config.uart_dev, ctxt->config.uart_baudrate, ctxt->config.uart_rtscts);
     ctxt->os_ctxt->trig_fd = ctxt->os_ctxt->data_fd;
 
-    wsbr_rcp_reset(ctxt);
-    while (!(ctxt->rcp_init_state & RCP_HAS_HWADDR))
-        rcp_rx(ctxt);
-    memcpy(ctxt->dynamic_mac, ctxt->hw_mac, sizeof(ctxt->dynamic_mac));
-    ctxt->rcp_init_state |= RCP_INIT_DONE;
+    rcp_reset();
+    wsbr_rcp_init(ctxt);
 
     wsbr_common_timer_init(ctxt);
     if (net_init_core())
         BUG("net_init_core");
 
-    ctxt->rcp_if_id = arm_nwk_interface_lowpan_init(&ctxt->mac_api, "ws0");
+    ctxt->rcp_if_id = arm_nwk_interface_lowpan_init(&ctxt->rcp, ctxt->config.lowpan_mtu, "ws0");
     if (ctxt->rcp_if_id < 0)
         BUG("arm_nwk_interface_lowpan_init: %d", ctxt->rcp_if_id);
 
-    if (eventOS_event_handler_create(&wsbr_tasklet, ARM_LIB_TASKLET_INIT_EVENT) < 0)
-        BUG("eventOS_event_handler_create");
+    if (event_handler_create(&wsbr_tasklet, ARM_LIB_TASKLET_INIT_EVENT) < 0)
+        BUG("event_handler_create");
 
     wsbr_fds_init(ctxt, fds);
 

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2013-2018, 2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -104,18 +105,22 @@
 struct buffer;
 struct net_if;
 
-typedef struct aro {
+struct ipv6_nd_opt_earo {
     uint16_t lifetime;
     uint8_t status;
+    uint8_t opaque;
+    uint8_t i: 2;
+    bool    r: 1;
+    bool    t: 1;
+    uint8_t tid;
     uint8_t eui64[8];
     bool present;
-} aro_t;
+};
 
 typedef enum slaac_src {
     SLAAC_IID_DEFAULT,      // OPAQUE if key available and enabled on interface, else FIXED
     SLAAC_IID_EUI64,        // use fixed IID based on EUI-64/MAC-64 (iid_eui64)
     SLAAC_IID_FIXED,        // use fixed IID (iid_slaac)
-    SLAAC_IID_OPAQUE,       // RFC 7217 opaque
     SLAAC_IID_6LOWPAN_SHORT // use IID based on 6LoWPAN short address
 } slaac_src_e;
 
@@ -124,28 +129,29 @@ typedef enum slaac_src {
 #define ARO_FULL        2
 #define ARO_TOPOLOGICALLY_INCORRECT 8
 
+#define IPV6_ND_OPT_EARO_FLAGS_I_MASK 0b00001100
+#define IPV6_ND_OPT_EARO_FLAGS_R_MASK 0b00000010
+#define IPV6_ND_OPT_EARO_FLAGS_T_MASK 0b00000001
+
 void icmpv6_init(void);
 struct buffer *icmpv6_down(struct buffer *buf);
 struct buffer *icmpv6_up(struct buffer *buf);
 struct buffer *icmpv6_error(struct buffer *buf, struct net_if *cur, uint8_t type, uint8_t code, uint32_t aux);
 
-bool icmpv6_options_well_formed(const uint8_t *dptr, uint_fast16_t dlen);
 bool icmpv6_options_well_formed_in_buffer(const struct buffer *buf, uint16_t offset);
-const uint8_t *icmpv6_find_option(const uint8_t *dptr, uint_fast16_t dlen, uint8_t option, uint8_t optlen);
-const uint8_t *icmpv6_find_option_in_buffer(const struct buffer *buf, uint_fast16_t offset, uint8_t option, uint8_t optlen);
+const uint8_t *icmpv6_find_option_in_buffer(const struct buffer *buf, uint_fast16_t offset, uint8_t option);
 
 struct net_if;
 
-struct buffer *icmpv6_build_rs(struct net_if *cur, const uint8_t *dest_addr);
-struct buffer *icmpv6_build_ns(struct net_if *cur, const uint8_t target_addr[static 16], const uint8_t *prompting_src_addr, bool unicast, bool unspecified_source, const struct aro *aro);
-struct buffer *icmpv6_build_na(struct net_if *cur, bool solicited, bool override, bool tllao_required, const uint8_t target[static 16], const aro_t *aro, const uint8_t src_addr[static 16]);
+struct buffer *icmpv6_build_ns(struct net_if *cur, const uint8_t target_addr[static 16], const uint8_t *prompting_src_addr,
+                               bool unicast, bool unspecified_source, const struct ipv6_nd_opt_earo *aro);
+struct buffer *icmpv6_build_na(struct net_if *cur, bool solicited, bool override, bool tllao_required,
+                               const uint8_t target[16], const struct ipv6_nd_opt_earo *earo,
+                               const uint8_t src_addr[16]);
 struct buffer *icmpv6_build_dad(struct net_if *cur, struct buffer *buf, uint8_t type, const uint8_t dest_addr[16], const uint8_t eui64[8], const uint8_t reg_addr[16], uint8_t status, uint16_t lifetime);
-void icmpv6_build_echo_req(struct net_if *cur, const uint8_t target_addr[16]);
 
 void icmpv6_recv_ra_routes(struct net_if *cur, bool enable);
-void icmpv6_recv_ra_prefixes(struct net_if *cur, bool enable);
 
-void icmpv6_slaac_prefix_register_trig(struct net_if *cur, uint8_t *prefix_ptr, uint8_t prefix_len);
 int icmpv6_slaac_prefix_update(struct net_if *cur, const uint8_t *prefix_ptr, uint8_t prefix_len, uint32_t valid_lifetime, uint32_t preferred_lifetime);
 struct if_address_entry *icmpv6_slaac_address_add(struct net_if *cur, const uint8_t *prefix_ptr, uint8_t prefix_len, uint32_t valid_lifetime, uint32_t preferred_lifetime, bool skip_dad, slaac_src_e slaac_src);
 
@@ -155,8 +161,6 @@ struct if_address_entry *icmpv6_slaac_address_add(struct net_if *cur, const uint
  * (RFC4861+6275), or an RPL Prefix Information Option (RFC6550).
  * Same payload, different type/len.
  */
-uint8_t *icmpv6_write_prefix_option(const prefix_list_t *prefixes,  uint8_t *dptr, uint8_t rpl_prefix, struct net_if *cur);
-uint8_t *icmpv6_write_mtu_option(uint32_t mtu, uint8_t *dptr);
 uint8_t *icmpv6_write_icmp_lla(struct net_if *cur, uint8_t *dptr, uint8_t icmp_opt, bool must, const uint8_t *ip_addr);
 
 #endif /* _ICMPV6_H */

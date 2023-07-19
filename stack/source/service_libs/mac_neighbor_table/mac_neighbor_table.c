@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018-2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,10 +21,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "common/log_legacy.h"
-#include "stack-services/common_functions.h"
+#include "common/endian.h"
 #include "service_libs/mac_neighbor_table/mac_neighbor_table.h"
 #include "stack/mac/platform/topo_trace.h"
 #include "stack/mac/fhss_ws_extension.h"
+#include "nwk_interface/protocol.h"
 
 #include "core/ns_address_internal.h"
 
@@ -94,13 +96,13 @@ void mac_neighbor_table_neighbor_list_clean(mac_neighbor_table_t *table_class)
 
 void mac_neighbor_table_neighbor_timeout_update(int time_update)
 {
-    struct net_if *interface = protocol_stack_interface_info_get(IF_6LoWPAN);
+    struct net_if *interface = protocol_stack_interface_info_get();
     mac_neighbor_table_t *table_class;
 
     if (!(interface->lowpan_info & INTERFACE_NWK_ACTIVE))
         return;
 
-    table_class = mac_neighbor_info(interface);
+    table_class = interface->mac_parameters.mac_neighbor_table;
     if (!table_class) {
         return;
     }
@@ -113,7 +115,7 @@ void mac_neighbor_table_neighbor_timeout_update(int time_update)
             }
 
             cur->lifetime -= time_update;
-            if (!table_class->user_nud_notify_cb ||  table_class->active_nud_process > ACTIVE_NUD_PROCESS_MAX || cur->nud_active || !cur->rx_on_idle) {
+            if (!table_class->user_nud_notify_cb ||  table_class->active_nud_process > ACTIVE_NUD_PROCESS_MAX || cur->nud_active) {
                 continue;
             }
 
@@ -145,10 +147,7 @@ mac_neighbor_table_entry_t *mac_neighbor_table_entry_allocate(mac_neighbor_table
     table_class->neighbour_list_size++;
     memcpy(entry->mac64, mac64, 8);
     entry->mac16 = 0xffff;
-    entry->rx_on_idle = true;
-    entry->ffd_device = true;
     entry->nud_active = false;
-    entry->advertisment = false;
     entry->connected_device = false;
     entry->trusted_device = false;
     entry->lifetime = NEIGHBOR_CLASS_LINK_DEFAULT_LIFETIME;
@@ -212,7 +211,7 @@ mac_neighbor_table_entry_t *mac_neighbor_table_address_discover(mac_neighbor_tab
     }
     uint16_t short_address;
     if (address_type == ADDR_802_15_4_SHORT) {
-        short_address = common_read_16_bit(address);
+        short_address = read_be16(address);
     } else if (address_type == ADDR_802_15_4_LONG) {
 
     } else {
@@ -293,7 +292,7 @@ mac_neighbor_table_entry_t *mac_neighbor_entry_get_priority(mac_neighbor_table_t
 }
 
 // Update a neighbor entry with the last POM-IE received
-void mac_neighbor_update_pom(mac_neighbor_table_entry_t *neighbor_entry, uint8_t phy_mode_id_count, uint8_t *phy_mode_ids, uint8_t mdr_capable)
+void mac_neighbor_update_pom(mac_neighbor_table_entry_t *neighbor_entry, uint8_t phy_mode_id_count, const uint8_t *phy_mode_ids, uint8_t mdr_capable)
 {
     neighbor_entry->phy_mode_id_count = phy_mode_id_count;
     neighbor_entry->mdr_capable = (!!mdr_capable);
@@ -310,4 +309,14 @@ uint8_t mac_neighbor_find_phy_mode_id(mac_neighbor_table_entry_t *neighbor_entry
         if (phy_mode_id == neighbor_entry->phy_mode_ids[i])
             return phy_mode_id;
     return 0;
+}
+
+int mac_neighbor_lfn_count(const struct mac_neighbor_table *table)
+{
+    int cnt = 0;
+
+    ns_list_foreach(struct mac_neighbor_table_entry, entry, &table->neighbour_list)
+        if (entry->node_role == WS_NR_ROLE_LFN)
+            cnt++;
+    return cnt;
 }

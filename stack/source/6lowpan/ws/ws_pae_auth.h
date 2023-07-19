@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -176,7 +177,7 @@ int8_t ws_pae_auth_node_keys_remove(struct net_if *interface_ptr, uint8_t *eui64
  * \return >= 0 success
  *
  */
-int8_t ws_pae_auth_node_access_revoke_start(struct net_if *interface_ptr, bool is_lgtk);
+int8_t ws_pae_auth_node_access_revoke_start(struct net_if *interface_ptr, bool is_lgtk, uint8_t new_gtk[GTK_LEN]);
 
 /**
  * ws_pae_auth_node_limit_set set node limit
@@ -224,7 +225,7 @@ typedef void ws_pae_auth_gtk_hash_set(struct net_if *interface_ptr, gtkhash_t *g
  * \return >= 0 success
  *
  */
-typedef int8_t ws_pae_auth_nw_key_insert(struct net_if *interface_ptr, sec_prot_gtk_keys_t *gtks, bool force_install, bool is_lgtk);
+typedef int8_t ws_pae_auth_nw_key_insert(struct net_if *interface_ptr, struct sec_prot_gtk_keys *gtks, bool force_install, bool is_lgtk);
 
 /**
  * ws_pae_auth_nw_keys_remove remove network keys callback
@@ -307,6 +308,7 @@ void ws_pae_auth_cb_register(struct net_if *interface_ptr,
                              ws_pae_auth_nw_frame_counter_read *nw_frame_cnt_read);
 
 int ws_pae_auth_supp_list(int8_t interface_id, uint8_t eui64[][8], int len);
+void ws_pae_auth_gtk_install(int8_t interface_id, const uint8_t key[GTK_LEN], bool is_lgtk);
 
 #else
 
@@ -320,7 +322,7 @@ int ws_pae_auth_supp_list(int8_t interface_id, uint8_t eui64[][8], int len);
 #define ws_pae_auth_nw_key_index_update NULL
 #define ws_pae_auth_nw_info_set NULL
 #define ws_pae_auth_node_keys_remove(interface_ptr, eui64) -1
-#define ws_pae_auth_node_access_revoke_start(interface_ptr, is_lgtk) -1
+#define ws_pae_auth_node_access_revoke_start(interface_ptr, is_lgtk, new_gtk) -1
 #define ws_pae_auth_node_limit_set(interface_ptr, limit)
 #define ws_pae_auth_fast_timer NULL
 #define ws_pae_auth_slow_timer NULL

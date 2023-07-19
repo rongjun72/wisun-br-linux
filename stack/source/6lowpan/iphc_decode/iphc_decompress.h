@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2014-2017, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +18,9 @@
 #ifndef IPHC_DECOMPRESS_H_
 #define IPHC_DECOMPRESS_H_
 #include <stdint.h>
+#include "6lowpan/iphc_decode/lowpan_context.h"
+
+typedef struct buffer buffer_t;
 
 uint16_t iphc_header_scan(buffer_t *buf, uint16_t *uncompressed_size);
 

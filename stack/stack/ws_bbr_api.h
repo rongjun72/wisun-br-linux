@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2017-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +28,7 @@
 
 #ifndef WS_BBR_API_H_
 #define WS_BBR_API_H_
-
+#include <stdbool.h>
 #include <stdint.h>
 #include <sys/socket.h>
 
@@ -212,7 +213,7 @@ int ws_bbr_node_keys_remove(int8_t interface_id, uint8_t *eui64);
  * \return 0, Revocation started OK.
  * \return <0 Revocation start failed.
  */
-int ws_bbr_node_access_revoke_start(int8_t interface_id, bool is_lgtk);
+int ws_bbr_node_access_revoke_start(int8_t interface_id, bool is_lgtk, uint8_t new_gtk[16]);
 
 /**
  * Set EAPOL node limit

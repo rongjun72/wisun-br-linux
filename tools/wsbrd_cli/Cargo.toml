@@ -1,0 +1,21 @@
+[package]
+name = "wsbrd_cli"
+version = "0.1.0"
+edition = "2015"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name = "wsbrd_cli"
+path = "wsbrd_cli.rs"
+
+[dependencies]
+clap = "2.0"
+
+# dbus < 0.9.4 does not properly declare dependency on libdbus-sys and breaks
+# "cargo build -Z minimal-versions".
+dbus = "0.9.4"
+
+# pkg-config is not a dependency of wsbrd_cli, it is a dependcy of dbus.
+# However, pkg-config < 0.3.7 is incompatible with dbus.
+pkg-config = "0.3.7"

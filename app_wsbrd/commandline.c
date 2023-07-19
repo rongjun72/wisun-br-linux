@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Silicon Laboratories Inc. (www.silabs.com)
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  *
  * The licensor of this software is Silicon Laboratories Inc. Your use of this
  * software is governed by the terms of the Silicon Labs Master Software License
@@ -16,6 +16,7 @@
 #include <string.h>
 #include <assert.h>
 #include <unistd.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <fnmatch.h>
 #include <limits.h>
@@ -106,29 +107,21 @@ static const struct number_limit valid_lowpan_mtu = {
 
 static const int valid_ws_modes[] = {
     0x1a, 0x1b, 0x2a, 0x2b, 0x03, 0x4a, 0x4b, 0x05,
-    0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88,
-    0xa2, 0xa3, 0xa4, 0xa5, 0xa6,
-    0xb3, 0xb4, 0xb5, 0xb6,
-    0xc4, 0xc5, 0xc6,
-    0xd4, 0xd5, 0xd6,
     INT_MIN
 };
 
 static const int valid_ws_phy_mode_ids[] = {
      1,  2,  3,  4,  5,  6,  7,  8, // FSK
     17, 18, 19, 20, 21, 22, 23, 24, // FSK w/ FEC
-    34, 35, 36, 37, 38,             // OFDM 1
-    51, 52, 53, 54,                 // OFDM 2
-    68, 69, 70,                     // OFDM 3
-    84, 85, 86,                     // OFDM 4
+    32, 33, 34, 35, 36, 37, 38, 39, // OFDM 1
+    48, 49, 50, 51, 52, 53, 54, 55, // OFDM 2
+    64, 65, 66, 67, 68, 69, 70, 71, // OFDM 3
+    80, 81, 82, 83, 84, 85, 86, 87, // OFDM 4
     INT_MIN
 };
 
 static const int valid_ws_classes[] = {
-    0x01, 0x02, 0x03, 0x04,                         // Legacy
-    0x81, 0x82, 0x83, 0x84, 0x85,                   // ChanPlanIDs NA/BZ
-    0x95, 0x96, 0x97, 0x98,                         // ChanPlanIDs JP
-    0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, // ChanPlanIDs EU
+    0x01, 0x02, 0x03, 0x04,
     INT_MIN
 };
 
@@ -157,11 +150,13 @@ void print_help_br(FILE *stream) {
     fprintf(stream, "  -t TUN                Map a specific TUN device (eg. allocated with 'ip tuntap add tun0')\n");
     fprintf(stream, "  -T, --trace=TAG[,TAG] Enable traces marked with TAG. Valid tags: bus, cpc, hdlc, hif,\n");
     fprintf(stream, "                           hif-extra, trickle, 15.4-mngt, 15.4, eap, icmp-rf, icmp-tun,\n");
-    fprintf(stream, "                           dhcp, timers\n");
+    fprintf(stream, "                           dhcp, timers, drop\n");
     fprintf(stream, "  -F, --config=FILE     Read parameters from FILE. Command line options always have priority\n");
     fprintf(stream, "                          on config file\n");
     fprintf(stream, "  -o, --opt=PARM=VAL    Assign VAL to the parameter PARM. PARM can be any parameter accepted\n");
     fprintf(stream, "                          in the config file\n");
+    fprintf(stream, "  -D, --delete-storage  Delete storage upon start, which deauhenticates any previously\n");
+    fprintf(stream, "                          connected nodes. Useful for testing.\n");
     fprintf(stream, "  -v, --version         Print version and exit\n");
     fprintf(stream, "\n");
     fprintf(stream, "Wi-SUN related options:\n");
@@ -198,11 +193,13 @@ void print_help_node(FILE *stream) {
     fprintf(stream, "Common options:\n");
     fprintf(stream, "  -u UART_DEVICE        Use UART bus\n");
     fprintf(stream, "  -T, --trace=TAG[,TAG] Enable traces marked with TAG. Valid tags: bus, hdlc, hif,\n");
-    fprintf(stream, "                          hif-extra, timers\n");
+    fprintf(stream, "                          hif-extra, timers, drop\n");
     fprintf(stream, "  -F, --config=FILE     Read parameters from FILE. Command line options always have priority\n");
     fprintf(stream, "                          on config file\n");
     fprintf(stream, "  -o, --opt=PARM=VAL    Assign VAL to the parameter PARM. PARM can be any parameter accepted\n");
     fprintf(stream, "                          in the config file\n");
+    fprintf(stream, "  -D, --delete-storage  Delete storage upon start, which deauhenticates any previously\n");
+    fprintf(stream, "                          connected nodes. Useful for testing.\n");
     fprintf(stream, "  -v, --version         Print version and exit\n");
     fprintf(stream, "\n");
     fprintf(stream, "Wi-SUN related options:\n");
@@ -299,9 +296,16 @@ static void conf_set_string(struct wsbrd_conf *config, const struct storage_pars
 {
     uintptr_t max_len = (uintptr_t)raw_param;
     char *dest = raw_dest;
+    int ret;
 
-    if (parse_escape_sequences(dest, info->value, max_len))
+    ret = parse_escape_sequences(dest, info->value, max_len);
+    if (ret == -EINVAL)
         FATAL(1, "%s:%d: invalid escape sequence", info->filename, info->linenr);
+    else if (ret == -ERANGE)
+        FATAL(1, "%s:%d: maximum length for '%s' is %zu characters",
+              info->filename, info->linenr, info->key, max_len - 1);
+    else if (ret < 0)
+        FATAL(1, "%s:%d: parsing error", info->filename, info->linenr);
 }
 
 static void conf_set_netmask(struct wsbrd_conf *config, const struct storage_parse_info *info, void *raw_dest, const void *raw_param)
@@ -352,6 +356,39 @@ static void conf_set_flags(struct wsbrd_conf *config, const struct storage_parse
     substr = strtok(tmp, ",");
     do {
         *dest |= str_to_val(substr, specs);
+    } while ((substr = strtok(NULL, ",")));
+    free(tmp);
+}
+
+static void conf_set_phy_op_modes(struct wsbrd_conf *config, const struct storage_parse_info *info,
+                                  void *raw_dest, const void *raw_param)
+{
+    struct storage_parse_info sub_info = *info; // Copy struct to reuse conf_set_enum_int
+    uint8_t *dest = raw_dest;
+    char *tmp, *substr;
+    int phy_mode_id;
+    int i;
+
+    BUG_ON(raw_dest != config->ws_phy_op_modes);
+    BUG_ON(raw_param != &valid_ws_phy_mode_ids);
+    memset(dest, 0, sizeof(config->ws_phy_op_modes));
+    // FIXME: expect trouble if 0xFF become valid PHY IDs.
+    if (!strcmp(info->value, "auto")) {
+        dest[0] = -1;
+        return;
+    }
+    i = 0;
+    tmp = strdup(info->value);
+    substr = strtok(tmp, ",");
+    do {
+        // Keep room for sentinel
+        FATAL_ON(i >= ARRAY_SIZE(config->ws_phy_op_modes) - 1, 1,
+                 "%s:%d: too many entries (max: %zu)",
+                 info->filename, info->linenr,
+                 ARRAY_SIZE(config->ws_phy_op_modes) - 1);
+        strcpy(sub_info.value, substr);
+        conf_set_enum_int(config, &sub_info, &phy_mode_id, raw_param);
+        dest[i++] = phy_mode_id;
     } while ((substr = strtok(NULL, ",")));
     free(tmp);
 }
@@ -461,6 +498,8 @@ static void parse_config_line(struct wsbrd_conf *config, struct storage_parse_in
         { "tun_device",                    config->tun_dev,                           conf_set_string,      (void *)sizeof(config->tun_dev) },
         { "tun_autoconf",                  &config->tun_autoconf,                     conf_set_bool,        NULL },
         { "neighbor_proxy",                config->neighbor_proxy,                    conf_set_string,      (void *)sizeof(config->neighbor_proxy) },
+        { "user",                          config->user,                              conf_set_string,      (void *)sizeof(config->user) },
+        { "group",                         config->group,                             conf_set_string,      (void *)sizeof(config->group) },
         { "color_output",                  &config->color_output,                     conf_set_enum,        &valid_tristate },
         { "use_tap",                       NULL,                                      conf_deprecated,      NULL },
         { "ipv6_prefix",                   &config->ipv6_prefix,                      conf_set_netmask,     NULL },
@@ -477,6 +516,7 @@ static void parse_config_line(struct wsbrd_conf *config, struct storage_parse_in
         { "domain",                        &config->ws_domain,                        conf_set_enum,        &valid_ws_domains },
         { "mode",                          &config->ws_mode,                          conf_set_enum_int_hex, &valid_ws_modes },
         { "phy_mode_id",                   &config->ws_phy_mode_id,                   conf_set_enum_int,    &valid_ws_phy_mode_ids },
+        { "phy_operating_modes",           &config->ws_phy_op_modes,                  conf_set_phy_op_modes, &valid_ws_phy_mode_ids },
         { "class",                         &config->ws_class,                         conf_set_enum_int,    &valid_ws_classes },
         { "chan_plan_id",                  &config->ws_chan_plan_id,                  conf_set_enum_int,    &valid_ws_chan_plan_ids },
         { "regional_regulation",           &config->ws_regional_regulation,           conf_set_enum,        &valid_ws_regional_regulations },
@@ -499,12 +539,10 @@ static void parse_config_line(struct wsbrd_conf *config, struct storage_parse_in
         { "gtk_expire_offset",             &config->ws_gtk_expire_offset,             conf_set_number,      &valid_unsigned },
         { "gtk_new_activation_time",       &config->ws_gtk_new_activation_time,       conf_set_number,      &valid_positive },
         { "gtk_new_install_required",      &config->ws_gtk_new_install_required,      conf_set_number,      &valid_gtk_new_install_required },
-        { "gtk_max_mismatch",              &config->ws_gtk_max_mismatch,              conf_set_number,      &valid_unsigned },
         { "ffn_revocation_lifetime_reduction", &config->ws_ffn_revocation_lifetime_reduction, conf_set_number,      &valid_unsigned },
         { "lgtk_expire_offset",             &config->ws_lgtk_expire_offset,             conf_set_number,      &valid_unsigned },
         { "lgtk_new_activation_time",       &config->ws_lgtk_new_activation_time,       conf_set_number,      &valid_positive },
         { "lgtk_new_install_required",      &config->ws_lgtk_new_install_required,      conf_set_number,      &valid_gtk_new_install_required },
-        { "lgtk_max_mismatch",              &config->ws_lgtk_max_mismatch,              conf_set_number,      &valid_unsigned },
         { "lfn_revocation_lifetime_reduction", &config->ws_lfn_revocation_lifetime_reduction, conf_set_number,      &valid_unsigned },
         { "allowed_mac64",                 config->ws_allowed_mac_addresses,          conf_set_allowed_macaddr, NULL },
         { "denied_mac64",                  config->ws_denied_mac_addresses,           conf_set_denied_macaddr, NULL },
@@ -542,7 +580,7 @@ static void parse_config_file(struct wsbrd_conf *config, const char *filename)
 void parse_commandline(struct wsbrd_conf *config, int argc, char *argv[],
                        void (*print_help)(FILE *stream))
 {
-    static const char *opts_short = "u:F:o:t:T:n:d:m:c:S:K:C:A:b:Hhv";
+    static const char *opts_short = "u:F:o:t:T:n:d:m:c:S:K:C:A:b:HhvD";
     static const struct option opts_long[] = {
         { "config",      required_argument, 0,  'F' },
         { "opt",         required_argument, 0,  'o' },
@@ -562,13 +600,16 @@ void parse_commandline(struct wsbrd_conf *config, int argc, char *argv[],
         { "hardflow",    no_argument,       0,  'H' },
         { "help",        no_argument,       0,  'h' },
         { "version",     no_argument,       0,  'v' },
+        { "delete-storage", no_argument,    0,  'D' },
         { 0,             0,                 0,   0  }
     };
+    const struct phy_params *phy_params;
     struct storage_parse_info info = {
         .filename = "command line",
     };
     int opt;
 
+    // Keep these values in sync with examples/wsbrd.conf
     config->uart_baudrate = 115200;
     config->tun_autoconf = true;
     config->internal_dhcp = true;
@@ -578,10 +619,23 @@ void parse_commandline(struct wsbrd_conf *config, int argc, char *argv[],
     config->ws_size = NETWORK_SIZE_SMALL;
     config->ws_pan_id = -1;
     config->color_output = -1;
-    config->tx_power = 20;
-    config->uc_dwell_interval = WS_FHSS_UC_DWELL_INTERVAL;
-    config->bc_interval = WS_FHSS_BC_INTERVAL;
-    config->bc_dwell_interval = WS_FHSS_BC_DWELL_INTERVAL;
+    config->tx_power = 14;
+    config->uc_dwell_interval = 255;
+    config->bc_interval = 1020;
+    config->lfn_bc_interval = 60000;
+    config->lfn_bc_sync_period = 5;
+    config->bc_dwell_interval = 255;
+    config->lowpan_mtu = 2043;
+    config->ws_pmk_lifetime = 172800;
+    config->ws_ptk_lifetime = 86400;
+    config->ws_gtk_expire_offset = 43200;
+    config->ws_gtk_new_activation_time = 720;
+    config->ws_gtk_new_install_required = 80;
+    config->ws_ffn_revocation_lifetime_reduction = 30;
+    config->ws_lgtk_expire_offset = 129600;
+    config->ws_lgtk_new_activation_time = 180;
+    config->ws_lgtk_new_install_required = 90;
+    config->ws_lfn_revocation_lifetime_reduction = 30;
     config->ws_allowed_mac_address_count = 0;
     config->ws_denied_mac_address_count = 0;
     config->ws_regional_regulation = 0;
@@ -667,6 +721,9 @@ void parse_commandline(struct wsbrd_conf *config, int argc, char *argv[],
             case 'H':
                 FATAL(1, "deprecated option: -H/--hardflow");
                 break;
+            case 'D':
+                config->storage_delete = true;
+                break;
             case 'h':
                 print_help(stdout);
                 exit(0);
@@ -685,6 +742,10 @@ void parse_commandline(struct wsbrd_conf *config, int argc, char *argv[],
         FATAL(1, "missing \"uart_device\" (or \"cpc_instance\") parameter");
     if (config->uart_dev[0] && config->cpc_instance[0])
         FATAL(1, "\"uart_device\" and \"cpc_instance\" are exclusive %s", config->uart_dev);
+    if (!config->user[0] && config->group[0])
+        WARN("group is set while user is not: privileges will not be dropped if started as root");
+    if (config->user[0] && !config->group[0])
+        WARN("user is set while group is not: privileges will not be dropped if started as root");
     if (config->list_rf_configs)
         return;
     if (!config->ws_name[0])
@@ -708,20 +769,15 @@ void parse_commandline(struct wsbrd_conf *config, int argc, char *argv[],
         WARN("Japanese regulation domain used without ARIB regional regulation");
     if (config->ws_domain != REG_DOMAIN_JP && config->ws_regional_regulation == REG_REGIONAL_ARIB)
         FATAL(1, "ARIB is only supported with Japanese regulation domain");
+    phy_params = ws_regdb_phy_params(config->ws_phy_mode_id, config->ws_mode);
+    if (config->ws_regional_regulation == REG_REGIONAL_ARIB && phy_params && phy_params->fec)
+        FATAL(1, "ARIB is not supported with FSK FEC");
     if (!config->ws_mode && !config->ws_phy_mode_id)
         FATAL(1, "missing \"phy_mode_id\" parameter");
     if (config->ws_mode && config->ws_phy_mode_id)
         FATAL(1, "\"phy_mode_id\" and \"mode\" are mutually exclusive");
     if (config->ws_class && config->ws_chan_plan_id)
         FATAL(1, "\"chan_plan_id\" and \"class\" are mutually exclusive");
-    if (config->ws_mode & OPERATING_MODE_PHY_MODE_ID_BIT) {
-        config->ws_phy_mode_id = config->ws_mode & OPERATING_MODE_PHY_MODE_ID_MASK;
-        config->ws_mode = 0;
-    }
-    if (config->ws_class & OPERATING_CLASS_CHAN_PLAN_ID_BIT) {
-        config->ws_chan_plan_id = config->ws_class & OPERATING_CLASS_CHAN_PLAN_ID_MASK;
-        config->ws_class = 0;
-    }
     if (config->ws_class && config->ws_phy_mode_id)
         WARN("mix FAN 1.1 PHY mode with FAN1.0 class");
     if (config->ws_chan_plan_id && !config->ws_phy_mode_id)
@@ -732,12 +788,12 @@ void parse_commandline(struct wsbrd_conf *config, int argc, char *argv[],
         config->ws_fan_version = WS_FAN_VERSION_1_1;
     if (!config->ws_fan_version)
         config->ws_fan_version = WS_FAN_VERSION_1_1;
+    if (!config->ws_phy_mode_id && config->ws_phy_op_modes[0])
+        FATAL(1, "\"phy_operating_modes\" depends on \"phy_mode_id\"");
     if (config->bc_interval < config->bc_dwell_interval)
         FATAL(1, "broadcast interval %d can't be lower than broadcast dwell interval %d", config->bc_interval, config->bc_dwell_interval);
     if (config->ws_allowed_mac_address_count > 0 && config->ws_denied_mac_address_count > 0)
         FATAL(1, "allowed_mac64 and denied_mac64 are exclusive");
-    if (!strcmp(config->storage_prefix, "-"))
-        config->storage_prefix[0]= '\0';
     if (storage_check_access(config->storage_prefix))
         FATAL(1, "%s: %m", config->storage_prefix);
     if (config->radius_server.ss_family == AF_UNSPEC) {
@@ -755,6 +811,10 @@ void parse_commandline(struct wsbrd_conf *config, int argc, char *argv[],
         if (config->ws_lgtk_force[0] || config->ws_lgtk_force[1] || config->ws_lgtk_force[2])
             FATAL(1, "\"lgtk[i]\" is incompatible with \"fan_version = 1.0\"");
     }
+    if (config->ws_gtk_new_install_required >= (100 - 100 / config->ws_ffn_revocation_lifetime_reduction))
+        FATAL(1, "unsatisfied condition gtk_new_install_required < 100 * (1 - 1 / ffn_revocation_lifetime_reduction)");
+    if (config->ws_lgtk_new_install_required >= (100 - 100 / config->ws_lfn_revocation_lifetime_reduction))
+        FATAL(1, "unsatisfied condition lgtk_new_install_required < 100 * (1 - 1 / lfn_revocation_lifetime_reduction)");
 #ifdef HAVE_WS_BORDER_ROUTER
     if (!memcmp(config->ipv6_prefix, ADDR_UNSPECIFIED, 16) && config->tun_autoconf)
         FATAL(1, "missing \"ipv6_prefix\" parameter");
@@ -766,4 +826,10 @@ void parse_commandline(struct wsbrd_conf *config, int argc, char *argv[],
     if (memcmp(config->ipv6_prefix, ADDR_UNSPECIFIED, 16))
         WARN("ipv6_prefix is ignored");
 #endif
+    for (int i = 0; config->ws_phy_op_modes[i]; i++)
+        if (config->ws_phy_op_modes[i] != (uint8_t)-1 &&
+            !ws_regdb_is_std(config->ws_domain, config->ws_phy_op_modes[i]))
+            WARN("PHY %d is not standard in domain %s", config->ws_phy_op_modes[i],
+                 val_to_str(config->ws_domain, valid_ws_domains, "<unknown>"));
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Silicon Laboratories Inc. (www.silabs.com)
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  *
  * The licensor of this software is Silicon Laboratories Inc. Your use of this
  * software is governed by the terms of the Silicon Labs Master Software License
@@ -10,8 +10,8 @@
  *
  * [1]: https://www.silabs.com/about-us/legal/master-software-license-agreement
  */
-#ifndef OS_H
-#define OS_H
+#ifndef COMMON_OS_TYPES_H
+#define COMMON_OS_TYPES_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -32,15 +32,16 @@ struct os_ctxt {
     int     trig_fd;
     int     data_fd;
     int     spi_recv_window;
+    int     spinel_tid;
+    int     spinel_iid;
     bool    uart_next_frame_ready;
     int     uart_rx_buf_len;
     uint8_t uart_rx_buf[2048];
+    bool    uart_inhibit_crc_warning;
 #ifdef HAVE_LIBCPC
     cpc_endpoint_t cpc_ep;
 #endif
 
-    int event_fd[2];
-    
     // For retransmission in case of crc error on the rcp
     // FIXME: rename this and the structure / naive circular buffer : rearch
     int retransmission_index;

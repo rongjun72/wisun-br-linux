@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016-2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,32 +19,15 @@
 #include <string.h>
 #include <stdint.h>
 #include <mbedtls/md.h>
+#include "common/endian.h"
 #include "common/log_legacy.h"
 #include "service_libs/hmac/hmac_md.h"
-#include "stack-services/common_functions.h"
 
 #define TRACE_GROUP "hmac"
 
 int8_t hmac_md_calc(const alg_hmac_md_e md, const uint8_t *key, uint16_t key_len, const uint8_t *data, uint16_t data_len, uint8_t *result, uint8_t result_len)
 {
-#ifdef EXTRA_DEBUG_INFO
-    // Extensive debug for now, to be disabled later
-    tr_debug("hmac_md key %s", trace_array(key, key_len));
-
-    const uint8_t *print_data = data;
-    uint16_t print_data_len = data_len;
-    while (true) {
-        tr_debug("hmac_md data %s", trace_array(print_data, print_data_len > 32 ? 32 : print_data_len));
-        if (print_data_len > 32) {
-            print_data_len -= 32;
-            print_data += 32;
-        } else {
-            break;
-        }
-    }
-#endif
-
-    uint16_t payload_length = common_read_16_bit(&data[2]);
+    uint16_t payload_length = read_be16(&data[2]);
     if (data_len > payload_length)
         data_len = payload_length + 4;
 
@@ -83,9 +67,6 @@ int8_t hmac_md_calc(const alg_hmac_md_e md, const uint8_t *key, uint16_t key_len
 
     memcpy(result, result_value, result_len);
 
-#ifdef EXTRA_DEBUG_INFO
-    tr_debug("hmac_md result %s", trace_array(result_value, 20));
-#endif
     return 0;
 
 error:

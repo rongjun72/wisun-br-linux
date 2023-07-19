@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2018, 2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,11 +27,9 @@
 #include <stdbool.h>
 
 struct net_if;
-struct route_info_entry;
 struct ns_sockaddr;
 struct rpl_domain;
 struct rpl_dodag;
-struct mlme_pan_descriptor;
 enum addrtype;
 
 extern struct rpl_domain *protocol_6lowpan_rpl_domain;
@@ -50,14 +49,7 @@ void protocol_6lowpan_neighbor_priority_clear_all(int8_t interface_id, neighbor_
 
 
 int8_t protocol_6lowpan_neighbor_address_state_synch(struct net_if *cur, const uint8_t eui64[8], const uint8_t iid[8]);
-int8_t protocol_6lowpan_neighbor_remove(struct net_if *cur, uint8_t *address_ptr, enum addrtype type);
 
 void protocol_6lowpan_allocate_mac16(struct net_if *cur);
-
-int8_t protocol_6lowpan_interface_get_mac_coordinator_address(struct net_if *cur, struct ns_sockaddr *adr_ptr);
-
-int16_t protocol_6lowpan_rpl_global_priority_get(void);
-bool protocol_6lowpan_latency_estimate_get(int8_t interface_id, uint32_t *latency);
-bool protocol_6lowpan_stagger_estimate_get(int8_t interface_id, uint32_t data_amount, uint16_t *stagger_min, uint16_t *stagger_max, uint16_t *stagger_rand);
 
 #endif /* PROTOCOL_6LOWPAN_H_ */

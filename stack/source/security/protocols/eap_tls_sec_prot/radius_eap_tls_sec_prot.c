@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,10 +19,10 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "common/endian.h"
 #include "common/log.h"
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
-#include "stack-services/common_functions.h"
+#include "common/ns_list.h"
 #include "stack/mac/fhss_config.h"
 
 #include "nwk_interface/protocol.h"
@@ -89,15 +90,15 @@ static int8_t radius_eap_tls_sec_prot_init(sec_prot_t *prot);
 
 static void radius_eap_tls_sec_prot_create_request(sec_prot_t *prot, sec_prot_keys_t *sec_keys);
 static void radius_eap_tls_sec_prot_delete(sec_prot_t *prot);
-static int8_t radius_eap_tls_sec_prot_receive(sec_prot_t *prot, void *pdu, uint16_t size);
-static int8_t radius_eap_tls_sec_prot_radius_client_receive(sec_prot_t *radius_client, void *pdu, uint16_t size);
+static int8_t radius_eap_tls_sec_prot_receive(sec_prot_t *prot, const void *pdu, uint16_t size);
+static int8_t radius_eap_tls_sec_prot_radius_client_receive(sec_prot_t *radius_client, const void *pdu, uint16_t size);
 static void radius_eap_tls_sec_prot_eap_tls_msg_free(sec_prot_t *prot);
 static int8_t radius_eap_tls_sec_prot_radius_eap_message_forward(sec_prot_t *prot, uint8_t *eap_code);
 static int8_t radius_eap_tls_sec_prot_radius_eap_message_retry(sec_prot_t *prot);
 
 static void radius_eap_tls_sec_prot_state_machine(sec_prot_t *prot);
 
-static int8_t radius_eap_tls_sec_prot_message_handle(sec_prot_t *prot, uint8_t *data_ptr, uint16_t *length);
+static int8_t radius_eap_tls_sec_prot_message_handle(sec_prot_t *prot, uint16_t *length);
 static int8_t radius_eap_tls_sec_prot_message_send(sec_prot_t *prot, uint8_t eap_code, uint8_t eap_type);
 
 static void radius_eap_tls_sec_prot_timer_timeout(sec_prot_t *prot, uint16_t ticks);
@@ -170,7 +171,7 @@ static void radius_eap_tls_sec_prot_create_request(sec_prot_t *prot, sec_prot_ke
     prot->state_machine_call(prot);
 }
 
-static int8_t radius_eap_tls_sec_prot_receive(sec_prot_t *prot, void *pdu, uint16_t size)
+static int8_t radius_eap_tls_sec_prot_receive(sec_prot_t *prot, const void *pdu, uint16_t size)
 {
     radius_eap_tls_sec_prot_int_t *data = eap_tls_sec_prot_get(prot);
     int8_t ret_val = -1;
@@ -217,11 +218,10 @@ static int8_t radius_eap_tls_sec_prot_receive(sec_prot_t *prot, void *pdu, uint1
     return ret_val;
 }
 
-static int8_t radius_eap_tls_sec_prot_message_handle(sec_prot_t *prot, uint8_t *data_ptr, uint16_t *length)
+static int8_t radius_eap_tls_sec_prot_message_handle(sec_prot_t *prot, uint16_t *length)
 {
     radius_eap_tls_sec_prot_int_t *data = eap_tls_sec_prot_get(prot);
-
-    data_ptr = data->recv_eapol_pdu.msg.eap.data_ptr;
+    const uint8_t *data_ptr = data->recv_eapol_pdu.msg.eap.data_ptr;
     *length = data->recv_eapol_pdu.msg.eap.length;
 
     bool old_seq_id = false;
@@ -286,7 +286,7 @@ static int8_t radius_eap_tls_sec_prot_radius_eap_message_forward(sec_prot_t *pro
 
     *eap_code = *eap_pdu++;
     uint8_t eap_id_seq = *eap_pdu++;
-    uint16_t eap_len = common_read_16_bit(eap_pdu);
+    uint16_t eap_len = read_be16(eap_pdu);
     eap_pdu += 2;
 
     if (eap_pdu_len != eap_len) {
@@ -354,7 +354,7 @@ static void radius_eap_tls_sec_prot_timer_timeout(sec_prot_t *prot, uint16_t tic
                                   &prot->sec_cfg->prot_cfg.sec_prot_trickle_params, ticks);
 }
 
-static int8_t radius_eap_tls_sec_prot_radius_client_receive(sec_prot_t *radius_client, void *pdu, uint16_t size)
+static int8_t radius_eap_tls_sec_prot_radius_client_receive(sec_prot_t *radius_client, const void *pdu, uint16_t size)
 {
     sec_prot_t *prot = radius_client->type_get(radius_client, SEC_PROT_TYPE_RADIUS_EAP_TLS);
     if (!prot) {
@@ -368,7 +368,7 @@ static int8_t radius_eap_tls_sec_prot_radius_client_receive(sec_prot_t *radius_c
     }
 
     data->recv_eap_msg_len = size;
-    data->recv_eap_msg = pdu;
+    data->recv_eap_msg = (uint8_t *)pdu; // FIXME
 
     prot->state_machine_call(prot);
 
@@ -418,7 +418,6 @@ static void radius_eap_tls_sec_prot_radius_client_deleted(sec_prot_t *prot)
 static void radius_eap_tls_sec_prot_state_machine(sec_prot_t *prot)
 {
     radius_eap_tls_sec_prot_int_t *data = eap_tls_sec_prot_get(prot);
-    uint8_t *data_ptr = NULL;
     uint16_t length = 0;
 
     // EAP-TLS authenticator state machine
@@ -462,7 +461,7 @@ static void radius_eap_tls_sec_prot_state_machine(sec_prot_t *prot)
             }
 
             // Handle EAP response (expected Identity)
-            if (radius_eap_tls_sec_prot_message_handle(prot, data_ptr, &length) != EAP_TLS_MSG_IDENTITY) {
+            if (radius_eap_tls_sec_prot_message_handle(prot, &length) != EAP_TLS_MSG_IDENTITY) {
                 return;
             }
 
@@ -534,7 +533,7 @@ static void radius_eap_tls_sec_prot_state_machine(sec_prot_t *prot)
             tr_debug("EAP-TLS: EAP response, eui-64: %s", tr_eui64(sec_prot_remote_eui_64_addr_get(prot)));
 
             // Handle EAP response
-            if (radius_eap_tls_sec_prot_message_handle(prot, data_ptr, &length) != EAP_TLS_MSG_CONTINUE) {
+            if (radius_eap_tls_sec_prot_message_handle(prot, &length) != EAP_TLS_MSG_CONTINUE) {
                 return;
             }
 

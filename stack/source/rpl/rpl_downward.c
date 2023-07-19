@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -80,16 +81,17 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include "common/bits.h"
+#include "common/endian.h"
 #include "common/rand.h"
 #include "common/log_legacy.h"
 #include "app_wsbrd/dbus.h"
 #include "app_wsbrd/wsbr.h"
-#include "stack-services/common_functions.h"
-#include "stack-services/ns_list.h"
-#include "stack-services/ip6string.h"
+#include "common/ns_list.h"
+#include "common/utils.h"
 #include "stack/net_rpl.h"
 #include "stack/timers.h"
 
+#include "stack/source/common_protocols/icmpv6.h"
 #include "common_protocols/ip.h"
 #include "common_protocols/icmpv6.h"
 #include "nwk_interface/protocol.h"
@@ -454,7 +456,7 @@ static uint8_t *rpl_downward_write_target(uint8_t *ptr, rpl_dao_target_t *target
     if (target->descriptor_present) {
         *ptr++ = RPL_TARGET_DESC_OPTION;
         *ptr++ = 4;
-        ptr = common_write_32_bit(target->descriptor, ptr);
+        ptr = write_be32(ptr, target->descriptor);
     }
 
     return ptr;
@@ -1214,7 +1216,7 @@ static bool rpl_downward_process_targets_for_transit(rpl_dodag_t *dodag, bool st
             case RPL_TARGET_DESC_OPTION:
                 if (target_start[1] == 4 && last_target) {
                     last_target->descriptor_present = true;
-                    last_target->descriptor = common_read_32_bit(target_start + 2);
+                    last_target->descriptor = read_be32(target_start + 2);
                 }
                 break;
             case RPL_PAD1_OPTION:
@@ -1769,37 +1771,33 @@ void rpl_downward_dao_timer(rpl_instance_t *instance, uint16_t ticks)
     }
 }
 
-void rpl_downward_print_instance(rpl_instance_t *instance, route_print_fn_t *print_fn)
+void rpl_downward_print_instance(rpl_instance_t *instance)
 {
     if (ns_list_is_empty(&instance->dao_targets)) {
         return;
     }
-    print_fn("DAO Targets:");
+    tr_debug("DAO Targets:");
     if (rpl_instance_am_root(instance)) {
         rpl_downward_compute_paths(instance);
     }
     ns_list_foreach(rpl_dao_target_t, target, &instance->dao_targets) {
-
-        char str_buf[44];
-        ip6_prefix_tos(target->prefix, target->prefix_len, str_buf);
 #ifdef HAVE_RPL_ROOT
         if (target->root) {
-            print_fn("  %-40s %02x seq=%d%s cost=%"PRIu32"%s%s%s",
-                     str_buf,
+            tr_debug("  %-40s %02x seq=%d%s cost=%"PRIu32"%s%s%s",
+                     tr_ipv6_prefix(target->prefix, target->prefix_len),
                      target->path_control, target->path_sequence, target->need_seq_inc ? "+" : "",
                      target->info.root.cost,
                      target->published ? " (pub)" : "",
                      target->external ? " (E)" : "",
                      target->connected ? "" : " (disconnected)");
             ns_list_foreach(rpl_dao_root_transit_t, transit, &target->info.root.transits) {
-                // Reuse str_buf as it's no longer needed and it's large enough for ROUTE_PRINT_ADDR_STR_FORMAT.
-                print_fn("    ->%-36s %02x cost=%"PRIu16, ROUTE_PRINT_ADDR_STR_FORMAT(str_buf, transit->transit), transit->path_control, transit->cost);
+                tr_debug("    ->%-36s %02x cost=%"PRIu16, tr_ipv6(transit->transit), transit->path_control, transit->cost);
             }
         } else
 #endif
         {
-            print_fn("  %-40s %02x seq=%d%s%s%s",
-                     str_buf,
+            tr_debug("  %-40s %02x seq=%d%s%s%s",
+                     tr_ipv6_prefix(target->prefix, target->prefix_len),
                      target->path_control, target->path_sequence, target->need_seq_inc ? "+" : "",
                      target->published ? " (pub)" : "",
                      target->external ? " (E)" : "");
@@ -1878,7 +1876,7 @@ static rpl_neighbour_t *rpl_instance_get_unconfirmed_parent_info(rpl_instance_t 
 
 static bool rpl_instance_push_address_registration(struct net_if *interface, rpl_neighbour_t *neighbour, if_address_entry_t *addr)
 {
-    aro_t aro;
+    struct ipv6_nd_opt_earo aro;
 
     aro.status = ARO_SUCCESS;
     aro.present = true;
@@ -2027,4 +2025,3 @@ bool rpl_instance_address_registration_done(struct net_if *interface, rpl_instan
     dao_target->response_wait_time = 6;
     return false;
 }
-

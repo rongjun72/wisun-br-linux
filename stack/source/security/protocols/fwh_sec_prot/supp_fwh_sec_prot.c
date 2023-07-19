@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016-2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +22,7 @@
 #include <inttypes.h>
 #include "common/log.h"
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 #include "service_libs/hmac/hmac_md.h"
 #include "service_libs/nist_aes_kw/nist_aes_kw.h"
 #include "stack/mac/fhss_config.h"
@@ -89,7 +90,7 @@ static int8_t supp_fwh_sec_prot_init(sec_prot_t *prot);
 
 static void supp_fwh_sec_prot_create_response(sec_prot_t *prot, sec_prot_result_e result);
 static void supp_fwh_sec_prot_delete(sec_prot_t *prot);
-static int8_t supp_fwh_sec_prot_receive(sec_prot_t *prot, void *pdu, uint16_t size);
+static int8_t supp_fwh_sec_prot_receive(sec_prot_t *prot, const void *pdu, uint16_t size);
 static fwh_sec_prot_msg_e supp_fwh_sec_prot_message_get(sec_prot_t *prot, eapol_pdu_t *eapol_pdu);
 static void supp_fwh_sec_prot_state_machine(sec_prot_t *prot);
 
@@ -167,7 +168,7 @@ static void supp_fwh_sec_prot_create_response(sec_prot_t *prot, sec_prot_result_
     prot->state_machine_call(prot);
 }
 
-static int8_t supp_fwh_sec_prot_receive(sec_prot_t *prot, void *pdu, uint16_t size)
+static int8_t supp_fwh_sec_prot_receive(sec_prot_t *prot, const void *pdu, uint16_t size)
 {
     fwh_sec_prot_int_t *data = fwh_sec_prot_get(prot);
     int8_t ret_val = -1;
@@ -182,7 +183,7 @@ static int8_t supp_fwh_sec_prot_receive(sec_prot_t *prot, void *pdu, uint16_t si
                   tr_eui64(data->remote_eui64));
 
             // Call state machine
-            data->recv_pdu = pdu;
+            data->recv_pdu = (uint8_t *)pdu; // FIXME
             data->recv_size = size;
             prot->state_machine(prot);
         } else {
@@ -480,7 +481,7 @@ static int8_t supp_fwh_sec_prot_ptk_generate(sec_prot_t *prot, sec_prot_keys_t *
     uint8_t local_eui64[8];
     prot->addr_get(prot, local_eui64, NULL);
 
-    uint8_t *remote_nonce = data->recv_eapol_pdu.msg.key.key_nonce;
+    const uint8_t *remote_nonce = data->recv_eapol_pdu.msg.key.key_nonce;
     if (!remote_nonce) {
         tr_error("No ANonce");
         return -1;

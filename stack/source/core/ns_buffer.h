@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2008-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,7 +33,7 @@
 #include <stdbool.h>
 #include <assert.h>
 #include "common/int24.h"
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 
 #include "core/ns_address_internal.h"
 #include "nwk_interface/protocol_abstract.h"
@@ -81,11 +82,8 @@ typedef struct buffer_link_ieee802_15_4 {
     bool fc_security: 1;            // Security Enabled flag from frame control
     bool ack_fc_frame_pending: 1;   // Frame Pending flag that was transmitted in Ack for this frame (used in Data Request)
     bool useDefaultPanId: 1;       // Transmit to broadcast PAN ID (0xffff)
-    bool indirectTxProcess: 1;
     bool requestAck: 1;
-    bool rf_channel_switch: 1;
     buffer_security_key_id_mode_e key_id_mode;
-    uint8_t selected_channel;
     uint32_t indirectTTL;
     uint16_t srcPanId;
     uint16_t dstPanId;
@@ -130,6 +128,7 @@ typedef struct buffer_options {
     signed  ipv6_use_min_mtu: 2;        /*!< Use minimum 1280-byte MTU (RFC 3542) - three settings +1, 0, -1 */
     uint8_t traffic_class;              /*!< Traffic class */
     int_least24_t flow_label;           /*!< IPv6 flow label; -1 means unspecified (may auto-generate); -2 means auto-generate required */
+    bool    mpl_fwd_workaround;         // force tunneling for packets arriving at TUN with dst ff03::fc
 } buffer_options_t;
 
 #define IPV6_FLOW_UNSPECIFIED (-1)

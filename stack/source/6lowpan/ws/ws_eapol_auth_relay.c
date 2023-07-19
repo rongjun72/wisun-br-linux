@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,9 +23,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <net/if.h>
+#include "common/endian.h"
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
-#include "stack-services/common_functions.h"
+#include "common/ns_list.h"
 #include "stack/mac/fhss_config.h"
 #include "stack/mac/mac_api.h"
 #include "stack/mac/mac_mcps.h"
@@ -50,7 +51,7 @@ typedef struct eapol_auth_relay {
     struct net_if *interface_ptr;         /**< Interface pointer */
     ns_address_t remote_addr;                               /**< Remote address and port */
     ns_address_t relay_addr;                                /**< Relay address */
-    int8_t socket_id;                                       /**< Socket ID for relay */
+    int socket_id;                                          /**< Socket ID for relay */
     ns_list_link_t link;                                    /**< Link */
 } eapol_auth_relay_t;
 
@@ -61,7 +62,7 @@ static eapol_auth_relay_t *g_eapol_auth_relay;
 
 int ws_eapol_auth_relay_get_socket_fd()
 {
-    struct net_if *interface_ptr = protocol_stack_interface_info_get(IF_6LoWPAN);
+    struct net_if *interface_ptr = protocol_stack_interface_info_get();
     eapol_auth_relay_t *eapol_auth_relay = ws_eapol_auth_relay_get(interface_ptr);
     if (eapol_auth_relay)
         return eapol_auth_relay->socket_id;
@@ -93,10 +94,12 @@ int8_t ws_eapol_auth_relay_start(struct net_if *interface_ptr, uint16_t local_po
     eapol_auth_relay->relay_addr.identifier = remote_port;
 
     eapol_auth_relay->socket_id = socket(AF_INET6, SOCK_DGRAM, 0);
-    setsockopt(eapol_auth_relay->socket_id, SOL_SOCKET, SO_BINDTODEVICE, ctxt->config.tun_dev, IF_NAMESIZE);
-    if (bind(eapol_auth_relay->socket_id, (struct sockaddr *) &sockaddr, sizeof(sockaddr)) < 0) {
-        tr_error("could not create eapol_auth_relay->socket_id socket: %m");
-    }
+    if (eapol_auth_relay->socket_id < 0)
+        FATAL(1, "%s: socket: %m", __func__);
+    if (setsockopt(eapol_auth_relay->socket_id, SOL_SOCKET, SO_BINDTODEVICE, ctxt->config.tun_dev, IF_NAMESIZE) < 0)
+        FATAL(1, "%s: setsocketopt: %m", __func__);
+    if (bind(eapol_auth_relay->socket_id, (struct sockaddr *) &sockaddr, sizeof(sockaddr)) < 0)
+        FATAL(1, "%s: bind: %m", __func__);
     if (eapol_auth_relay->socket_id < 0) {
         free(eapol_auth_relay);
         return -1;
@@ -168,7 +171,7 @@ void ws_eapol_auth_relay_socket_cb(int fd)
         relay_ip_addr.type = ADDRESS_IPV6;
         memcpy(relay_ip_addr.address, ptr, 16);
         ptr += 16;
-        relay_ip_addr.identifier = common_read_16_bit(ptr);
+        relay_ip_addr.identifier = read_be16(ptr);
         ptr += 2;
         eui_64 = ptr;
         ptr += 8;
@@ -210,7 +213,7 @@ static int8_t ws_eapol_auth_relay_send_to_kmp(eapol_auth_relay_t *eapol_auth_rel
     uint8_t *ptr = temp_array;
     memcpy(ptr, ip_addr, 16);
     ptr += 16;
-    ptr = common_write_16_bit(port, ptr);
+    ptr = write_be16(ptr, port);
     memcpy(ptr, eui_64, 8);
     msg_iov[0].iov_base = temp_array;
     msg_iov[0].iov_len = 26;

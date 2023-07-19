@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,27 +21,23 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 #include "service_libs/mac_neighbor_table/mac_neighbor_table.h"
-#include "stack/mac/fhss_config.h"
 #include "stack/mac/net_fhss.h"
+#include "stack/mac/fhss_config.h"
+#include "stack/net_interface.h"
 
-#include "nwk_interface/protocol.h"
 #include "6lowpan/ws/ws_config.h"
 #include "6lowpan/ws/ws_common_defines.h"
 #include "6lowpan/ws/ws_neighbor_class.h"
-#include "6lowpan/ws/ws_regulation.h"
+#include "6lowpan/ws/ws_mngt.h"
 
 extern uint16_t test_max_child_count_override;
 
-struct ws_pan_information;
-struct ws_neighbor_class;
-struct ws_excluded_channel_data;
 struct ws_cfg;
-struct ws_neighbor_class_entry;
-struct mcps_data_ie_list;
 
 typedef struct parent_info {
+#ifndef HAVE_WS_BORDER_ROUTER
     uint16_t             pan_id;             /**< PAN ID */
     uint8_t              addr[8];            /**< address */
     uint8_t              link_quality;       /**< LQI value measured during reception of the MPDU */
@@ -53,6 +50,7 @@ typedef struct parent_info {
     uint32_t             age;                       /**< Age of entry in 100ms ticks */
     uint8_t              excluded_channel_data[32]; /**< Channel mask Max length and it accept 8 different range*/
     bool                 link_acceptable: 1;        /**< True when Link quality is in acceptable level*/
+#endif
     ns_list_link_t       link;
 } parent_info_t;
 
@@ -97,15 +95,9 @@ typedef struct ws_test_proc_trg {
 typedef NS_LIST_HEAD(ws_nud_table_entry_t, link) ws_nud_table_list_t;
 
 typedef struct ws_info {
-    trickle_t trickle_pan_config_solicit;
-    trickle_t trickle_pan_config;
-    trickle_t trickle_pan_advertisement_solicit;
-    trickle_t trickle_pan_advertisement;
-    trickle_params_t trickle_params_pan_discovery;
+    struct ws_mngt mngt;
     uint8_t version; // Wi-SUN version information 1 = 1.0 2 = 1.x
     uint8_t rpl_state; // state from rpl_event_e
-    uint8_t pas_requests; // Amount of PAN solicits sent
-    uint8_t device_min_sens; // Device min sensitivity set by the application
     int8_t weakest_received_rssi; // Weakest received signal (dBm)
     parent_info_t parent_info[WS_PARENT_LIST_SIZE];
     parent_info_list_t parent_list_free;
@@ -117,13 +109,8 @@ typedef struct ws_info {
     uint32_t uptime;                       /**< Seconds after interface has been started */
     uint32_t authentication_time;          /**< When the last authentication was performed */
     uint32_t connected_time;               /**< Time we have been connected to network */
-    uint32_t pan_config_sol_max_timeout;
     uint16_t network_pan_id;
     bool configuration_learned: 1;
-    bool trickle_pas_running: 1;
-    bool trickle_pa_running: 1;
-    bool trickle_pcs_running: 1;
-    bool trickle_pc_running: 1;
     ws_pending_key_index_t pending_key_index_info;
     ws_nud_table_entry_t nud_table_entrys[ACTIVE_NUD_PROCESS_MAX];
     ws_nud_table_list_t active_nud_process;
@@ -134,8 +121,8 @@ typedef struct ws_info {
     ws_hopping_schedule_t hopping_schedule;
     struct ws_statistics *stored_stats_ptr;
     struct ws_neighbor_class neighbor_storage;
-    struct fhss_timer *fhss_timer_ptr; // Platform adaptation for FHSS timers.
-    struct fhss_api *fhss_api;
+    // FIXME: fhss_conf is redundant with hopping_schedule
+    struct fhss_ws_configuration fhss_conf;
     int regulation;  /**< Regional regulation context. */
 } ws_info_t;
 
@@ -174,14 +161,6 @@ uint32_t ws_common_datarate_get_from_phy_mode(uint8_t phy_mode_id, uint8_t opera
 
 uint32_t ws_common_datarate_get(struct net_if *cur);
 
-uint32_t ws_common_usable_application_datarate_get(struct net_if *cur);
-
-uint32_t ws_common_network_size_estimate_get(struct net_if *cur);
-
-uint32_t ws_common_connected_time_get(struct net_if *cur);
-
-uint32_t ws_common_authentication_time_get(struct net_if *cur);
-
 void ws_common_primary_parent_update(struct net_if *interface, mac_neighbor_table_entry_t *neighbor);
 
 void ws_common_secondary_parent_update(struct net_if *interface);
@@ -194,10 +173,10 @@ int ws_common_init(int8_t interface_id, net_6lowpan_mode_e bootstrap_mode);
 
 void ws_common_state_machine(struct net_if *cur);
 
-fhss_ws_configuration_t ws_common_get_current_fhss_configuration(struct net_if *cur);
+bool ws_common_is_valid_nr(uint8_t node_role);
 
-#define ws_info(cur) ((cur)->ws_info)
-#define ws_version_1_0(cur) (((cur)->ws_info) && ((cur)->ws_info)->version == 1)
-#define ws_version_1_1(cur) (((cur)->ws_info) && ((cur)->ws_info)->version > 1)
-#define ws_test_proc_auto_trg(cur) ((cur)->ws_info->test_proc_trg.auto_trg_enabled == true)
+uint8_t ws_common_calc_plf(uint16_t pan_size, uint8_t network_size);
+
+#define ws_version_1_0(cur) ((cur)->ws_info.version == 1)
+#define ws_version_1_1(cur) ((cur)->ws_info.version > 1)
 #endif //WS_COMMON_H_

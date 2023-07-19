@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2013-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -303,7 +304,7 @@ typedef struct mlme_get_conf {
     uint8_t status;             /**< status of operation*/
     mlme_attr_e attr;           /**<PIB attribute for operation*/
     uint8_t attr_index;         /**< attribute index to to table (valid only for PIB attributes which are tables)*/
-    void *value_pointer;        /**< Pointer to data when status is MLME_SUCCESS */
+    const void *value_pointer;  /**< Pointer to data when status is MLME_SUCCESS */
     uint8_t value_size;         /**< define data length in bytes behind pointer*/
 } mlme_get_conf_t;
 

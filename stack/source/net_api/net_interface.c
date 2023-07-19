@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2014-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,11 +25,9 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include "common/hal_interrupt.h"
 #include "common/log_legacy.h"
-#include "stack-services/common_functions.h"
-#include "service_libs/whiteboard/whiteboard.h"
-#include "stack-scheduler/eventOS_scheduler.h"
+#include "common/events_scheduler.h"
+#include "common/endian.h"
 #include "stack/nwk_stats_api.h"
 #include "stack/mac/sw_mac.h"
 #include "stack/mac/mac_api.h"
@@ -74,31 +73,6 @@ static int arm_channel_list_validation(const channel_list_t *scan_list)
 }
 
 /**
- * \brief A function to read network layer configurations.
- * \param network_params is a pointer to the structure to where the network layer configs are written to.
- * \return 0 on success.
- * \return Negative value if interface id or PAN coordinator is not known.
- */
-int8_t arm_nwk_param_read(int8_t interface_id, link_layer_setups_s *network_params)
-{
-    struct net_if *cur = protocol_stack_interface_info_get_by_id(interface_id);
-    addrtype_e addrType = mac_helper_coordinator_address_get(cur, network_params->address);
-    if (addrType == ADDR_NONE) {
-        return -2;
-    }
-    network_params->PANId = mac_helper_panid_get(cur);
-    if (addrType == ADDR_802_15_4_SHORT) {
-        network_params->addr_mode = ADDR_MAC_SHORT16;
-    } else {
-        network_params->addr_mode = ADDR_MAC_LONG64;
-    }
-
-    network_params->LogicalChannel = cur->mac_parameters.mac_channel;
-    network_params->sf = 0xff;
-    return 0;
-}
-
-/**
  * \brief A function to read MAC PAN-ID, Short address & EUID64
  * \param mac_params is a pointer to the structure to where the mac address are written to.
  * \return 0 on success.
@@ -114,33 +88,6 @@ int8_t arm_nwk_mac_address_read(int8_t interface_id, link_layer_address_s *mac_p
         memcpy(mac_params->mac_long, cur->mac, 8);
         memcpy(mac_params->iid_eui64, cur->iid_eui64, 8);
         mac_params->PANId = cur->mac_parameters.pan_id;
-        mac_params->mac_short = cur->mac_parameters.mac_short_address;
-    }
-    return ret_val;
-}
-
-/**
- * \brief A function to read 6LoWPAN ND border router address and NWK prefix
- * \param mac_params is a pointer to the structure to where the mac address are written to.
- * \return 0 on success.
- * \return -1 .
- */
-int8_t arm_nwk_nd_address_read(int8_t interface_id, network_layer_address_s *nd_addr_info)
-{
-    (void)interface_id;
-    (void)nd_addr_info;
-    int8_t ret_val = -2;
-    struct net_if *cur = 0;
-    cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (cur) {
-        if ((cur->lowpan_info & (INTERFACE_NWK_ACTIVE | INTERFACE_NWK_BOOTSTRAP_ADDRESS_REGISTER_READY)) == (INTERFACE_NWK_ACTIVE | INTERFACE_NWK_BOOTSTRAP_ADDRESS_REGISTER_READY)) {
-            uint8_t *adr_ptr = protocol_6lowpan_nd_border_router_address_get(cur->nwk_id);
-            if (adr_ptr) {
-                ret_val = 0;
-                memcpy(nd_addr_info->border_router, adr_ptr, 16);
-                memcpy(nd_addr_info->prefix, adr_ptr, 8);
-            }
-        }
     }
     return ret_val;
 }
@@ -172,50 +119,6 @@ int16_t arm_net_get_current_channel(int8_t interface_id)
 void net_get_version_information(uint8_t *ptr)
 {
     (void)ptr;
-}
-
-/**
- * \brief Set configured network interface Global address mode (Border router bootstrap mode can't set this).
- *
- * \param interface_id Network interface ID
- * \param mode efine 6LoWPAN Global Address register mode::
- *      * NET_6LOWPAN_GP64_ADDRESS, Interface register only GP64
- *      * NET_6LOWPAN_GP16_ADDRESS, Interface register only GP16
- *      * NET_6LOWPAN_MULTI_GP_ADDRESS, Interface register GP16 and GP64 addresses. GP16 is primary address and GP64 is secondary.
- *
- * \param short_address_base Short address base. If application defines value 0-0xfffd 6LoWPAN try to register GP16 address using that address. 0xfffe and 0xffff will generate random 16-bit short address.
- *
- * \param define_new_short_address_at_DAD This parameter is only checked when mode is not NET_6LOWPAN_GP64_ADDRESS and short_address_base is 0-0xfffd. Recommend value is 1 that will enable automatic new address definition at Duplicate Address Detection(DAD). Value 0 will generate Duplicate Adreress Detection error for interface bootstrap.
-Border Router Device will not check that part.
- *
- * \return >=0 Bootstrap mode set OK.
- * \return -1 Unknown network ID.
- * \return -2 Illegal for Border Router
- * \return -3 Bootstrap not defined yet.
- */
-int8_t arm_nwk_6lowpan_gp_address_mode(int8_t interface_id, net_6lowpan_gp_address_mode_e mode, uint16_t short_address_base, uint8_t define_new_short_address_at_DAD)
-{
-    struct net_if *cur;
-    cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (!cur) {
-        return -1;
-    }
-    if (cur->bootstrap_mode == ARM_NWK_BOOTSTRAP_MODE_6LoWPAN_BORDER_ROUTER) {
-        return -2;
-    }
-    if (!(cur->configure_flags & INTERFACE_BOOTSTRAP_DEFINED)) {
-        return -3;
-    }
-
-    if (short_address_base < 0xfffe) {
-        cur->lowpan_desired_short_address = short_address_base;
-    } else {
-        protocol_6lowpan_allocate_mac16(cur); //Allocate Random init value
-    }
-    cur->reallocate_short_address_if_duplicate = define_new_short_address_at_DAD;
-    cur->lowpan_address_mode = mode;
-
-    return 0;
 }
 
 /**
@@ -492,13 +395,9 @@ int8_t arm_net_route_delete(const uint8_t *prefix, uint8_t prefix_len, const uin
     return ipv6_route_delete(prefix, prefix_len, interface_id, next_hop, ROUTE_USER);
 }
 
-int8_t arm_nwk_interface_lowpan_init(mac_api_t *api, char *interface_name_ptr)
+int8_t arm_nwk_interface_lowpan_init(struct rcp *rcp, int mtu, char *interface_name_ptr)
 {
-    if (!api) {
-        return -1;
-    }
-
-    struct net_if *cur = protocol_stack_interface_generate_lowpan(api);
+    struct net_if *cur = protocol_stack_interface_generate_lowpan(rcp, mtu);
     if (!cur) {
         return -3;
     }
@@ -534,7 +433,7 @@ int8_t arm_nwk_interface_network_driver_set(int8_t interface_id, const channel_l
     }
 
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (!cur || !cur->mac_api) {
+    if (!cur) {
         return -1;
     }
 
@@ -568,7 +467,6 @@ int8_t arm_nwk_interface_up(int8_t interface_id, const uint8_t *ipv6_address)
         return -5;
     }
 
-    cur->net_start_tasklet = eventOS_scheduler_get_active_tasklet();
     ret_val = cur->if_up(cur, ipv6_address);
 
 
@@ -653,10 +551,6 @@ int8_t arm_6lowpan_bootstrap_set_for_selected_interface(int8_t interface_id)
     if (cur->lowpan_info & INTERFACE_NWK_ACTIVE || cur->interface_mode == INTERFACE_UP) {
         return -4;
     }
-
-    if (cur->nwk_id != IF_6LoWPAN) {
-        return -1;
-    }
     return 0;
 }
 
@@ -693,35 +587,6 @@ int8_t arm_nwk_interface_configure_6lowpan_bootstrap_set(int8_t interface_id, ne
         }
     }
 
-    return ret_val;
-}
-
-int8_t arm_nwk_set_channel_list(int8_t interface_id, const channel_list_t *nwk_channel_list)
-{
-    int8_t ret_val = -1;
-    struct net_if *cur = protocol_stack_interface_info_get_by_id(interface_id);
-
-    if (!cur) {
-        return -1;
-    }
-
-    if (arm_channel_list_validation(nwk_channel_list)) {
-        tr_debug("Given channel mask is empty!");
-        return -2;
-    }
-
-    //CHECK Value
-    if (cur->lowpan_info & INTERFACE_NWK_ACTIVE) {
-        return -4;
-    }
-
-    if (cur->bootstrap_mode == ARM_NWK_BOOTSTRAP_MODE_6LoWPAN_BORDER_ROUTER) {
-        return -2;
-    } else {
-        // copy the channel information and store one internal pointer to it
-        cur->mac_parameters.mac_channel_list = *nwk_channel_list;
-        ret_val = 0;
-    }
     return ret_val;
 }
 
@@ -771,123 +636,39 @@ int8_t net_init_core(void)
     return 0;
 }
 
-int8_t net_nvm_data_clean(int8_t interface_id)
-{
-    int8_t ret_val = -2; // Not ative
-    struct net_if *cur = 0;
-    cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (cur) {
-        if ((cur->lowpan_info & INTERFACE_NWK_ACTIVE) == 0) {
-            mac_helper_panid_set(cur, 0xffff);
-            mac_helper_mac16_address_set(cur, 0xffff);
-            ret_val = 0;
-        } else {
-            ret_val = 0;
-        }
-    }
-
-    return ret_val;
-}
-
-static void trace_cmd_print(const char *fmt, ...)
-{
-    va_list ap;
-    va_start(ap, fmt);
-    vtracef(1, TRACE_GROUP, fmt, ap);
-    va_end(ap);
-}
 void arm_print_routing_table(void)
 {
-    arm_print_routing_table2(trace_cmd_print);
+    arm_print_routing_table2();
 }
 
-void arm_print_routing_table2(void (*print_fn)(const char *fmt, ...))
+void arm_print_routing_table2()
 {
-    ipv6_destination_cache_print(print_fn);
-    ipv6_route_table_print(print_fn);
-    rpl_control_print(print_fn);
+    ipv6_destination_cache_print();
+    ipv6_route_table_print();
+    rpl_control_print();
 }
 
 void arm_print_neigh_cache(void)
 {
-    arm_print_neigh_cache2(trace_cmd_print);
+    arm_print_neigh_cache2();
 }
 
-void arm_print_neigh_cache2(void (*print_fn)(const char *fmt, ...))
+void arm_print_neigh_cache2()
 {
-    nwk_interface_print_neigh_cache(print_fn);
+    nwk_interface_print_neigh_cache();
 }
 
 void arm_print_protocols(void)
 {
-    arm_print_protocols2(trace_cmd_print, ' ');
+    arm_print_protocols2(' ');
 }
 
-void arm_print_protocols2(void (*print_fn)(const char *fmt, ...), char sep)
+void arm_print_protocols2(char sep)
 {
-    socket_list_print(print_fn, sep);
+    socket_list_print(sep);
 }
 
 void arm_ncache_flush(void)
 {
     nwk_interface_flush_neigh_cache();
-}
-
-int arm_nwk_sleepy_device_parent_buffer_size_set(int8_t interface_id, uint16_t big_packet_threshold, uint16_t small_packets_per_child_count, uint16_t big_packets_total_count)
-{
-    struct net_if *cur;
-
-    cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (cur) {
-        return lowpan_adaptation_indirect_queue_params_set(cur, big_packet_threshold,
-                                                           big_packets_total_count, small_packets_per_child_count);
-    }
-    return -1;
-}
-
-int8_t arm_nwk_set_cca_threshold(int8_t interface_id, uint8_t cca_threshold)
-{
-    struct net_if *cur;
-    cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (!cur || !cur->mac_api || (cca_threshold > 100)) {
-        return -1;
-    }
-    mlme_set_t set_req;
-    set_req.attr = macCCAThreshold;
-    set_req.attr_index = 0;
-    set_req.value_pointer = &cca_threshold;
-    set_req.value_size = sizeof(cca_threshold);
-    cur->mac_api->mlme_req(cur->mac_api, MLME_SET, &set_req);
-    return 0;
-}
-
-int8_t arm_nwk_set_tx_output_power(int8_t interface_id, int8_t tx_power)
-{
-    struct net_if *cur;
-    cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (!cur || !cur->mac_api) {
-        return -1;
-    }
-    mlme_set_t set_req;
-    set_req.attr = macTXPower;
-    set_req.attr_index = 0;
-    set_req.value_pointer = &tx_power;
-    set_req.value_size = sizeof(tx_power);
-    cur->mac_api->mlme_req(cur->mac_api, MLME_SET, &set_req);
-    return 0;
-}
-
-const cca_threshold_table_s *arm_nwk_get_cca_threshold_table(int8_t interface_id)
-{
-    struct net_if *cur;
-    cur = protocol_stack_interface_info_get_by_id(interface_id);
-    // Interface or MAC parameters not initialized
-    if (!cur) {
-        return NULL;
-    }
-    // Automatic CCA threshold not initialized
-    if (!cur->mac_parameters.cca_thr_table.cca_threshold_table || !cur->mac_parameters.cca_thr_table.number_of_channels) {
-        return NULL;
-    }
-    return &cur->mac_parameters.cca_thr_table;
 }

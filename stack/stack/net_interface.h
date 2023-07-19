@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2014-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +20,7 @@
 #include <stdint.h>
 
 struct mac_api;
+struct rcp;
 struct eth_mac_api;
 struct channel_list;
 
@@ -45,9 +47,6 @@ typedef enum arm_nwk_interface_status_type_e {
 /** Event library type. */
 typedef enum arm_library_event_type_e {
     ARM_LIB_TASKLET_INIT_EVENT = 0, /**< Tasklet init occurs always when generating a tasklet. */
-    ARM_LIB_NWK_INTERFACE_EVENT,    /**< Interface bootstrap or state update event. */
-    ARM_LIB_SYSTEM_TIMER_EVENT, /*!*< System timer event. */
-    APPLICATION_EVENT, /**< Application-specific event. */
 } arm_library_event_type_e;
 
 
@@ -158,19 +157,6 @@ typedef enum {
     NET_6LOWPAN_ZIGBEE_IP               /**< **UNSUPPORTED** */
 } net_6lowpan_mode_extension_e;
 
-
-/** IPv6 bootstrap modes */
-typedef enum {
-    NET_IPV6_BOOTSTRAP_STATIC,  /**< Application defines the IPv6 prefix. */
-    NET_IPV6_BOOTSTRAP_AUTONOMOUS /**< Interface gets IPv6 address automatically from network using ICMP and DHCP. */
-} net_ipv6_mode_e;
-
-/** IPv6 accept RA behaviour */
-typedef enum {
-    NET_IPV6_RA_ACCEPT_IF_AUTONOMOUS, /**<Accept Router Advertisements when using autonomous IPv6 address allocation. Ignore when using a static address. This is the default value for the setting. */
-    NET_IPV6_RA_ACCEPT_ALWAYS         /**<Accept Router Advertisements always, even when using static IPv6 address allocation. */
-} net_ipv6_accept_ra_e;
-
 /** Network coordinator parameter list.
  * Structure is used to read network parameter for warm start.
  */
@@ -185,7 +171,6 @@ typedef struct link_layer_setups {
 /** Network MAC address info. */
 typedef struct link_layer_address {
     uint16_t PANId;            /**< Network PAN-ID. */
-    uint16_t mac_short;        /**< MAC short address, if <0xfffe then is valid. */
     uint8_t mac_long[8];       /**< MAC long address (EUI-48 for Ethernet; EUI-64 for IEEE 802.15.4). */
     uint8_t iid_eui64[8];      /**< IPv6 interface identifier based on EUI-64. */
 } link_layer_address_s;
@@ -195,13 +180,6 @@ typedef struct network_layer_address {
     uint8_t border_router[16]; /**< ND Border Router Address. */
     uint8_t prefix[8];        /**< Long 64-bit network ID. */
 } network_layer_address_s;
-
-/** Different addressing modes for a network interface. */
-typedef enum {
-    NET_6LOWPAN_GP64_ADDRESS,       /**< Interface registers only GP64 address. */
-    NET_6LOWPAN_GP16_ADDRESS,       /**< Interface registers only GP16 address. */
-    NET_6LOWPAN_MULTI_GP_ADDRESS,   /**< Interface registers GP16 & GP64 addresses. */
-} net_6lowpan_gp_address_mode_e;
 
 /** TLS PSK info */
 typedef struct net_tls_psk_info {
@@ -239,17 +217,6 @@ typedef struct ns_keys {
     uint8_t current_active_key_index;           /**< The index associated to the current_active_network_key. */
 } ns_keys_t;
 
-/** 6LoWPAN border router information structure. */
-typedef struct border_router_setup {
-    uint16_t mac_panid;             /**< Link layer PAN-ID, accepts only < 0xfffe.  */
-    uint16_t mac_short_adr;         /**< Defines 802.15.4 short address. If the value is <0xfffe it indicates that GP16 is activated. */
-    uint8_t beacon_protocol_id;     /**< ZigBeeIP uses always 2. */
-    uint8_t network_id[16];         /**< Network ID 16-bytes, will be used at beacon payload. */
-    uint8_t lowpan_nd_prefix[8];    /**< Define ND default prefix, ABRO, DODAG ID, GP address. */
-    uint16_t ra_life_time;          /**< Define ND router lifetime in seconds, recommend value 180+. */
-    uint32_t abro_version_num;      /**< ND ABRO version number (0 when starting a new ND setup). */
-} border_router_setup_s;
-
 /** 6LoWPAN radio interface setup. */
 typedef struct network_driver_setup {
     uint16_t mac_panid;                 /**< Link layer PAN-ID, accepts only < 0xfffe. */
@@ -259,12 +226,6 @@ typedef struct network_driver_setup {
     uint8_t beacon_payload_tlv_length; /**< Optional steering parameter length. */
     uint8_t *beacon_payload_tlv_ptr;  /**< Optional steering parameters. */
 } network_driver_setup_t;
-
-/** CCA threshold table */
-typedef struct cca_threshold_table {
-    uint8_t number_of_channels;         /**< Number of channels */
-    const int8_t *cca_threshold_table;  /**< CCA threshold table */
-} cca_threshold_table_s;
 
 /**
   * Init 6LoWPAN library
@@ -284,7 +245,7 @@ int8_t net_init_core(void);
  * \return -1 api was NULL.
  * \return -3 No memory for the interface.
  */
-int8_t arm_nwk_interface_lowpan_init(struct mac_api *api, char *interface_name_ptr);
+int8_t arm_nwk_interface_lowpan_init(struct rcp *rcp, int mtu, char *interface_name_ptr);
 
 /**
  * \brief Set network interface bootstrap setup.
@@ -322,43 +283,6 @@ int8_t arm_nwk_interface_configure_6lowpan_bootstrap_set(int8_t interface_id, ne
  * \return -4 Null pointer parameter.
  */
 int8_t arm_nwk_interface_network_driver_set(int8_t interface_id, const struct channel_list *nwk_channel_list, network_driver_setup_t *link_setup);
-
-/**
- * \brief Set configured network interface global address mode (border router bootstrap mode cannot set this).
- *
- * \param interface_id Network interface ID.
- * \param mode Define 6LoWPAN Global Address register mode:
- *      * NET_6LOWPAN_GP64_ADDRESS, Interface registers only GP64
- *      * NET_6LOWPAN_GP16_ADDRESS, Interface registers only GP16
- *      * NET_6LOWPAN_MULTI_GP_ADDRESS, Interface registers GP16 and GP64 addresses. GP16 is primary address and GP64 is secondary.
- *
- * \param short_address_base Short address base. If the application defines value 0-0xfffd, 6LoWPAN tries to register GP16 address
- * using that address. 0xfffe and 0xffff generate random 16-bit short address.
- *
- * \param define_new_short_address_at_DAD This parameter is only checked when mode is not NET_6LOWPAN_GP64_ADDRESS and
- * short_address_base is 0-0xfffd. Recommended value is 1. It enables automatic new address definition at
- * Duplicate Address Detection (DAD). Value 0 generates a DAD error for the interface bootstrap.
- * Border router device will not check that part.
- *
- * \return >=0 Bootstrap mode set OK.
- * \return -1 Unknown network ID.
- * \return -2 Illegal for border router.
- * \return -3 No memory for 6LoWPAN stack.
- */
-int8_t arm_nwk_6lowpan_gp_address_mode(int8_t interface_id, net_6lowpan_gp_address_mode_e mode, uint16_t short_address_base, uint8_t define_new_short_address_at_DAD);
-
-/**
- * \brief Set the channel list configuration to be used on the network interface.
- *
- * \param interface_id Network interface ID.
- * \param nwk_channel_list Channel list to be used.
- *
- * \return >=0 Channel configuration OK.
- * \return -1 Unknown network interface ID.
- * \return -2 Empty channel list, no channels enabled.
- * \return -4 If network interface is already active and cannot be re-configured.
- */
-int8_t arm_nwk_set_channel_list(int8_t interface_id, const struct channel_list *nwk_channel_list);
 
 /**
   * \brief Get current used channel.
@@ -495,15 +419,6 @@ int8_t arm_nwk_6lowpan_border_router_configure_push(int8_t interface_id);
 int8_t arm_nwk_6lowpan_border_route_nd_default_prefix_timeout_set(int8_t interface_id, uint32_t time);
 
 /**
- * \brief A function to read network layer configurations.
- * \param interface_id Network interface ID.
- * \param network_params A pointer to the structure where the network layer configs are written.
- * \return 0 On success.
- * \return Negative value if interface is not known.
- */
-int8_t arm_nwk_param_read(int8_t interface_id, link_layer_setups_s *network_params);
-
-/**
  * \brief A function to read MAC PAN-ID, Short address and EUID64.
  * \param interface_id Network interface ID.
  * \param mac_params A pointer to the structure where the MAC addresses are written.
@@ -511,16 +426,6 @@ int8_t arm_nwk_param_read(int8_t interface_id, link_layer_setups_s *network_para
  * \return Negative value if interface is not known.
  */
 int8_t arm_nwk_mac_address_read(int8_t interface_id, link_layer_address_s *mac_params);
-
-/**
- * \brief A function to read 6LoWPAN ND border router address and NWK prefix.
- * \param interface_id Network interface ID.
- * \param nd_addr_info Pointer to the structure where the address is written.
- * \return 0 On success.
- * \return Negative value if network interface is not known or if the interface
- *          is not in active or ready state.
- */
-int8_t arm_nwk_nd_address_read(int8_t interface_id, network_layer_address_s *nd_addr_info);
 
 /**
  * \brief A function to read the networking address information.
@@ -837,9 +742,8 @@ void arm_print_routing_table(void);
  *
  * Outputs the routing table using the given printf style function
  *
- * \param print_fn pointer to a printf style output function
  */
-void arm_print_routing_table2(void (*print_fn)(const char *fmt, ...));
+void arm_print_routing_table2();
 
 /**
  * \brief Flush neighbor cache
@@ -859,10 +763,8 @@ void arm_print_neigh_cache(void);
  * \brief Print neighbor cache
  *
  * Outputs the neighbor cache using the given printf style function
- *
- * \param print_fn pointer to a printf style output function
  */
-void arm_print_neigh_cache2(void (*print_fn)(const char *fmt, ...));
+void arm_print_neigh_cache2();
 
 /**
  * \brief Print PCB list
@@ -876,10 +778,9 @@ void arm_print_protocols(void);
  *
  * Prints Protocol Control Block list using the given printf style function
  *
- * \param print_fn pointer to a printf style output function
  * \param sep column separator character
  */
-void arm_print_protocols2(void (*print_fn)(const char *fmt, ...), char sep);
+void arm_print_protocols2(char sep);
 
 /**
   * \brief Get the library version information.
@@ -897,36 +798,6 @@ void arm_print_protocols2(void (*print_fn)(const char *fmt, ...), char sep);
 void net_get_version_information(uint8_t *ptr);
 
 /**
- * \brief Set buffer size for sleepy device parent.
- *
- * This function can be used to set sleepy device parent buffer size and packet threshold.
- *
- * Note! In Thread mode parent buffer size is automatically set during Thread initialization.
- *
- * \param interface_id Network interface ID.
- * \param big_packet_threshold Indicate how long packets are considered big. For Thread, must be 106 bytes.
- * \param small_packets_per_child_count Number of small packets stored for each sleepy children. For Thread, must be at least 1.
- * \param big_packets_total_count Total number of big packets parent can store for all sleepy children. For Thread, must be at least 1.
- * \return 0 on success, <0 on errors.
- */
-
-int arm_nwk_sleepy_device_parent_buffer_size_set(int8_t interface_id, uint16_t big_packet_threshold, uint16_t small_packets_per_child_count, uint16_t big_packets_total_count);
-
-/**
- * \brief Set CCA threshold.
- *
- * This function can be used to set CCA threshold to PHY layer. Threshold is given as percentage of maximum threshold.
- * 0 is the lowest(strictest) possible threshold and 100 is the highest possible threshold.
- *
- * Note! Software MAC must be created and registered before using this function.
- *
- * \param interface_id Network interface ID.
- * \param cca_threshold CCA threshold (%).
- * \return 0 on success, <0 on errors.
- */
-int8_t arm_nwk_set_cca_threshold(int8_t interface_id, uint8_t cca_threshold);
-
-/**
  * \brief Set TX output power.
  *
  * This function can be used to set TX output power to PHY layer.
@@ -938,20 +809,6 @@ int8_t arm_nwk_set_cca_threshold(int8_t interface_id, uint8_t cca_threshold);
  * \return 0 on success, <0 on errors.
  */
 int8_t arm_nwk_set_tx_output_power(int8_t interface_id, int8_t tx_power);
-
-/**
- * \brief Get CCA threshold table.
- *
- * This function can be used to read CCA threshold table.
- * CCA threshold table structure contains number of channels and an array indicating the currently used CCA threshold value of each channel. CCA threshold values are updated by library continuously.
- * If channels are reconfigured, number of channels and table length are changed automatically. User should check the table length (number of channels) before reading the table.
- * Automatic CCA threshold feature may not be enabled before interface is up, causing function to return NULL.
- * Returned pointer to cca_threshold_table_s structure is valid until interface is destroyed. Re-reading the pointer with this function is allowed any time.
- *
- * \param interface_id Network interface ID.
- * \return NULL if automatic CCA threshold feature is not enabled, otherwise pointer to CCA threshold structure.
- */
-const cca_threshold_table_s *arm_nwk_get_cca_threshold_table(int8_t interface_id);
 
 #endif
 

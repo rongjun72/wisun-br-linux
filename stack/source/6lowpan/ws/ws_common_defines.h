@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,67 +24,22 @@
 #include "common/int24.h"
 #include "security/protocols/sec_prot.h" /* gtkhash_t */
 
-#define WH_IE_ELEMENT_HEADER_LENGTH 3
-
-/* Header IE Sub elements */
-#define WH_IE_UTT_TYPE              1   /**< Unicast Timing and Frame type information */
-#define WH_IE_BT_TYPE               2   /**< Broadcast timing information */
-#define WH_IE_FC_TYPE               3   /**< Flow Control for Extended Direct Frame Exchange */
-#define WH_IE_RSL_TYPE              4   /**< Received Signal Level information */
-#define WH_IE_MHDS_TYPE             5   /**< MHDS information for mesh routing */
-#define WH_IE_VH_TYPE               6   /**< Vendor header information */
-#define WH_IE_EA_TYPE               9   /**< Eapol Auhtenticator EUI-64 header information */
-/* Wi-SUN FAN dfinition 1.1 */
-#define WH_IE_LUTT_TYPE             10  /**< LFN Unicast Timing and Frame Type information */
-#define WH_IE_LBT_TYPE              11  /**< LFN Broadcast Timing information */
-#define WH_IE_NR_TYPE               12  /**< Node Role IE information */
-#define WH_IE_LUS_TYPE              13  /**< LFN Unicast Schedule information */
-#define WH_IE_FLUS_TYPE             14  /**< FFN for LFN unicast Schedule information */
-#define WH_IE_LBS_TYPE              15  /**<  LFN Broadcast Schedule information */
-#define WH_IE_LND_TYPE              16  /**< LFN Network Discovery information */
-#define WH_IE_LTO_TYPE              17  /**< LFN Timing information */
-#define WH_IE_PANID_TYPE            18  /**< PAN Identifier information */
-#define WH_IE_LBC_TYPE              128 /**< LFN Broadcast Configuration IE */
-
-
-#define WS_WP_NESTED_IE             4 /**< WS nested Payload IE element'selement could include mltiple sub payload IE */
-
-#define WS_WP_SUB_IE_ELEMENT_HEADER_LENGTH 2
-
-/* Payload IE sub elements in side WS_WP_NESTED_IE */
-/* Long form subID's */
-#define WP_PAYLOAD_IE_US_TYPE               1   /**< Unicast Schedule information */
-#define WP_PAYLOAD_IE_BS_TYPE               2   /**< Broadcast Schedule information */
-#define WP_PAYLOAD_IE_VP_TYPE               3   /**< Vendor Payload information */
-/* Wi-SUN FAN definition 1.1 */
-#define WP_PAYLOAD_IE_LFN_CHANNEL_PLAN_TYPE 4   /**< LFN Channel Plan information*/
-#define WP_PAYLOAD_IE_LBATS_TYPE            5   /**< LFN Broadcast Additional Transmit Schedule information */
-
-
-/* Short form subID's */
-#define WP_PAYLOAD_IE_PAN_TYPE      4   /**< PAN Information */
-#define WP_PAYLOAD_IE_NETNAME_TYPE  5   /**< Network Name information */
-#define WP_PAYLOAD_IE_PAN_VER_TYPE  6   /**< Pan configuration version */
-#define WP_PAYLOAD_IE_GTKHASH_TYPE  7   /**< GTK Hash information */
-/* Wi-SUN FAN definition 1.1 */
-#define WP_PAYLOAD_IE_POM_TYPE      8   /**< PHY Capability information */
-#define WP_PAYLOAD_IE_LFN_VER_TYPE  0x40   /**< LFN Version information */
-#define WP_PAYLOAD_IE_LGTKHASH_TYPE 0x41   /**< LFN GTK Hash Information */
-
-/* WS frame types to WH_IE_UTT_TYPE */
-#define WS_FT_PAN_ADVERT        0          /**< PAN Advert */
-#define WS_FT_PAN_ADVERT_SOL    1          /**< PAN Advert Solicit */
-#define WS_FT_PAN_CONF          2          /**< PAN Config */
-#define WS_FT_PAN_CONF_SOL      3          /**< PAN Config Solicit */
-#define WS_FT_DATA              4          /**< data type inside MPX */
-#define WS_FT_ACK               5          /**< Enhanced ACK */
-#define WS_FT_EAPOL             6          /**< EAPOL message inside MPX */
-/* Wi-SUN FAN 1.1 */
-#define WS_FT_LPA               9           /**< LFN PAN Advert */
-#define WS_FT_LPAS              10          /**< LFN PAN Advert Solicit */
-#define WS_FT_LPC               11          /**< LFN PAN Config */
-#define WS_FT_LPCS              12          /**< LFN PAN Config Solicit */
-
+// Wi-SUN Assigned Value Registry 0v24
+//   10. Wi-SUN Frame Types
+#define WS_FT_PA     0 // PAN Advert
+#define WS_FT_PAS    1 // PAN Advert Solicit
+#define WS_FT_PC     2 // PAN Config
+#define WS_FT_PCS    3 // PAN Config Solicit
+#define WS_FT_DATA   4 // Data
+#define WS_FT_ACK    5 // Ack
+#define WS_FT_EAPOL  6 // EAPOL
+// FAN 1.1
+#define WS_FT_LPA    9 // LFN PAN Advert
+#define WS_FT_LPAS  10 // LFN PAN Advert Solicit
+#define WS_FT_LPC   11 // LFN PAN Config
+#define WS_FT_LPCS  12 // LFN PAN Config Solicit
+#define WS_FT_LTS   13 // LFN Time Sync
+#define WS_FT_EXT   15 // Extended Type
 
 /* WS excluded channel Control */
 #define WS_EXC_CHAN_CTRL_NONE 0             /**< No excluded channels */
@@ -98,11 +54,16 @@
 #define WS_NR_ROLE_LFN      2
 #define WS_NR_ROLE_UNKNOWN  3
 
+#define WS_CHAN_PLAN_TAG_CURRENT 255
+
 /**
  * @brief ws_pan_information_t PAN information
  */
 typedef struct ws_pan_information {
     uint16_t pan_size;          /**< Number devices connected to Border Router. */
+    // TODO: move metrics to their own struct once there is more
+    uint8_t jm_version;
+    uint8_t jm_plf;
     uint16_t routing_cost;      /**< ETX to border Router. */
     uint16_t pan_version;       /**< Pan configuration version will be updatd by Border router at PAN. */
     uint16_t lpan_version;      /**< LFN Pan configuration version will be updatd by Border router at PAN. */
@@ -144,6 +105,8 @@ typedef struct ws_hopping_schedule {
     uint8_t operating_class;            /**< PHY operating class default to 1 */
     uint8_t operating_mode;             /**< PHY operating mode default to "1b" symbol rate 50, modulation index 1 */
     uint8_t phy_mode_id;                /**< PHY mode ID, default to 255 */
+    uint8_t phy_op_modes[16];           /**< 15 possible phy_mode_id + 1 sentinel value */
+    int rcp_rail_config_index;          /**< Index number in rcp.rail_config_list. Needed to configure the RCP */
     uint8_t channel_plan_id;            /**< Channel plan ID, default to 255 */
     uint8_t channel_plan;               /**< 0: use regulatory domain values 1: application defined plan */
     uint8_t uc_channel_function;        /**< 0: Fixed channel, 1:TR51CF, 2: Direct Hash, 3: Vendor defined */
@@ -266,7 +229,7 @@ typedef struct ws_pom_ie {
     uint8_t phy_op_mode_number: 4; /**< Number of PHY Operating Modes */
     uint8_t mdr_command_capable: 1;/**< Indicate if the transmitter supports MDR Command */
     uint8_t reserved: 3;           /**< Reserved, set to 0. */
-    uint8_t *phy_op_mode_id;       /**< Pointer to PHY Operating Modes List */
+    const uint8_t *phy_op_mode_id; /**< Pointer to PHY Operating Modes List */
 } ws_pom_ie_t;
 
 /**
@@ -343,7 +306,7 @@ typedef struct ws_channel_function_zero {
  */
 typedef struct ws_channel_function_three {
     uint8_t channel_hop_count;
-    uint8_t *channel_list;
+    const uint8_t *channel_list;
 } ws_channel_function_three_t;
 
 /**
@@ -351,14 +314,14 @@ typedef struct ws_channel_function_three {
  */
 typedef struct ws_excluded_channel_range {
     uint8_t number_of_range;
-    uint8_t *range_start;
+    const uint8_t *range_start;
 } ws_excluded_channel_range_t;
 
 /**
  * @brief ws_excluded_channel_mask_t WS excluded channel mask
  */
 typedef struct ws_excluded_channel_mask {
-    uint_rev8_t *channel_mask;
+    const uint_rev8_t *channel_mask;
     uint8_t mask_len_inline;
 } ws_excluded_channel_mask_t;
 
@@ -382,16 +345,16 @@ typedef struct ws_generic_channel_info {
     unsigned channel_plan: 3;
     unsigned channel_function: 3;
     unsigned excluded_channel_ctrl: 2;
-    union {
+    union ws_channel_plan {
         ws_channel_plan_zero_t zero;
         ws_channel_plan_one_t one;
         ws_channel_plan_two_t two;
     } plan;
-    union {
+    union ws_channel_function {
         ws_channel_function_zero_t zero;
         ws_channel_function_three_t three;
     } function;
-    union {
+    union ws_excluded_channel {
         ws_excluded_channel_range_out_t range_out;
         ws_excluded_channel_mask_out_t mask_out;
         ws_excluded_channel_range_t range;

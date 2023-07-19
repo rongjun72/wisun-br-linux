@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,15 +22,13 @@
 #include "common/rand.h"
 #include "common/trickle.h"
 #include "common/log_legacy.h"
-#include "stack-services/common_functions.h"
+#include "common/endian.h"
 #include "service_libs/utils/ns_time.h"
 #include "service_libs/etx/etx.h"
 #include "service_libs/mac_neighbor_table/mac_neighbor_table.h"
-#include "service_libs/nd_proxy/nd_proxy.h"
 #include "service_libs/blacklist/blacklist.h"
 #include "service_libs/random_early_detection/random_early_detection_api.h"
-#include "stack-scheduler/eventOS_event.h"
-#include "stack/dhcp_service_api.h"
+#include "common/events_scheduler.h"
 #include "stack/net_interface.h"
 #include "stack/ws_management_api.h"
 #include "stack/net_rpl.h"
@@ -39,7 +38,6 @@
 #include "stack/mac/mac_api.h"
 
 #include "nwk_interface/protocol.h"
-#include "ipv6_stack/protocol_ipv6.h"
 #include "ipv6_stack/ipv6_routing_table.h"
 #include "mpl/mpl.h"
 #include "rpl/rpl_protocol.h"
@@ -47,13 +45,8 @@
 #include "rpl/rpl_data.h"
 #include "rpl/rpl_policy.h"
 #include "common_protocols/icmpv6.h"
-#include "common_protocols/icmpv6_radv.h"
 #include "common_protocols/ipv6_constants.h"
 #include "common_protocols/ip.h"
-#include "libdhcpv6/libdhcpv6.h"
-#include "libdhcpv6/libdhcpv6_vendordata.h"
-#include "dhcpv6_client/dhcpv6_client_api.h"
-#include "net_lib/net_dns_internal.h"
 #include "6lowpan/lowpan_adaptation_interface.h"
 #include "6lowpan/bootstraps/protocol_6lowpan.h"
 #include "6lowpan/bootstraps/protocol_6lowpan_interface.h"
@@ -78,12 +71,12 @@
 
 #define TRACE_GROUP "wsbs"
 
-void ws_bootstrap_lfn_asynch_ind(struct net_if *cur, const struct mcps_data_ind *data, const struct mcps_data_ie_list *ie_ext, uint8_t message_type)
+void ws_bootstrap_lfn_mngt_ind(struct net_if *cur, const struct mcps_data_ind *data, const struct mcps_data_ie_list *ie_ext, uint8_t message_type)
 {
     (void)ie_ext;
     // Store weakest heard packet RSSI
-    if (cur->ws_info->weakest_received_rssi > data->signal_dbm) {
-        cur->ws_info->weakest_received_rssi = data->signal_dbm;
+    if (cur->ws_info.weakest_received_rssi > data->signal_dbm) {
+        cur->ws_info.weakest_received_rssi = data->signal_dbm;
     }
 
     if (data->SrcAddrMode != MAC_ADDR_MODE_64_BIT) {
@@ -100,7 +93,7 @@ void ws_bootstrap_lfn_asynch_confirm(struct net_if *interface, uint8_t asynch_me
     ws_stats_update(interface, STATS_WS_ASYNCH_TX, 1);
 }
 
-void ws_bootstrap_lfn_event_handler(struct net_if *cur, arm_event_s *event)
+void ws_bootstrap_lfn_event_handler(struct net_if *cur, struct event_payload *event)
 {
     (void)cur;
     ws_bootstrap_event_type_e event_type;

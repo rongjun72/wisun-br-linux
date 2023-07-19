@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2013-2017, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +17,8 @@
  */
 #ifndef _CIPV6_H
 #define _CIPV6_H
+
+typedef struct buffer buffer_t;
 
 /* MTU defined in RFC 4944 */
 #ifndef LOWPAN_MTU

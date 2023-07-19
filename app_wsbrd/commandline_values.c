@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Silicon Laboratories Inc. (www.silabs.com)
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  *
  * The licensor of this software is Silicon Laboratories Inc. Your use of this
  * software is governed by the terms of the Silicon Labs Master Software License
@@ -78,10 +78,12 @@ const struct name_value valid_traces[] = {
     { "15.4-mngt", TR_15_4_MNGT },
     { "15.4",      TR_15_4_MNGT | TR_15_4_DATA },
     { "eap",       TR_EAP },
-    { "icmp-rf",   TR_ICMP_RF },
-    { "icmp-tun",  TR_ICMP_TUN },
+    { "icmp",      TR_ICMP },
+    { "icmp-rf",   TR_ICMP }, // legacy name
+    { "icmp-tun",  0 },       // legacy name
     { "dhcp",      TR_DHCP },
     { "timers",    TR_TIMERS },
+    { "drop",      TR_DROP },
     { NULL },
 };
 

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016-2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +20,7 @@
 #define SEC_PROT_CERTS_H_
 #include <stdint.h>
 #include <stdbool.h>
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 
 /*
  * Security protocols certificate interface. This is used by security protocols to

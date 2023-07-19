@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Silicon Laboratories Inc. (www.silabs.com)
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  *
  * The licensor of this software is Silicon Laboratories Inc. Your use of this
  * software is governed by the terms of the Silicon Labs Master Software License
@@ -10,18 +10,18 @@
  *
  * [1]: https://www.silabs.com/about-us/legal/master-software-license-agreement
  */
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef COMMON_UTILS_H
+#define COMMON_UTILS_H
 
 #include <stddef.h>
 
-#define min(x, y) ({ \
+#define MIN(x, y) ({ \
     typeof(x) _x = (x); \
     typeof(y) _y = (y); \
     _x < _y ? _x : _y;  \
 })
 
-#define max(x, y) ({ \
+#define MAX(x, y) ({ \
     typeof(x) _x = (x); \
     typeof(y) _y = (y); \
     _x > _y ? _x : _y;  \
@@ -37,7 +37,11 @@
     __x - (__x % (y));   \
 })
 
-#define container_of(ptr, type, member)  (type *)((uintptr_t)(ptr) - ((uintptr_t)(offsetof(type, member))))
+#define container_of(ptr, type, member) ({ \
+   const typeof(((type *)0)->member) * _mptr = (ptr);   \
+   (type *)((uintptr_t)_mptr - offsetof(type, member)); \
+})
+
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 #endif

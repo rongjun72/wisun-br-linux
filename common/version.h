@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Silicon Laboratories Inc. (www.silabs.com)
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  *
  * The licensor of this software is Silicon Laboratories Inc. Your use of this
  * software is governed by the terms of the Silicon Labs Master Software License
@@ -15,15 +15,12 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "bits.h"
 
-#define VERSION_MASK_MAJOR 0xFF000000
-#define VERSION_MASK_MINOR 0x00FFFF00
-#define VERSION_MASK_PATCH 0x000000FF
-
-#define VERSION(major, minor, patch) (FIELD_PREP(VERSION_MASK_MAJOR, major) | \
-                                      FIELD_PREP(VERSION_MASK_MINOR, minor) | \
-                                      FIELD_PREP(VERSION_MASK_PATCH, patch))
+// FIELD_PREP cannot be evaluated by preprocessor expressions because it uses
+// __builtin_ctz. Use explicit offsets instead.
+#define VERSION(major, minor, patch) ((((major) << 24) & 0xff000000) | \
+                                      (((minor) <<  8) & 0x00ffff00) | \
+                                      ( (patch)        & 0x000000ff))
 
 static inline bool version_older_than(uint32_t version,
                                       uint8_t major, uint16_t minor, uint8_t patch)

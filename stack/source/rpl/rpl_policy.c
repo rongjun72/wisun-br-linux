@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -352,15 +353,6 @@ bool rpl_policy_target_descriptor_for_own_address(rpl_domain_t *domain, const ui
     (void)addr;
     (void)source;
     (void)data;
-    (void)descriptor_out;
-
-    return false;
-}
-
-bool rpl_policy_target_descriptor_for_host_address(rpl_domain_t *domain, const uint8_t addr[16], uint32_t *descriptor_out)
-{
-    (void)domain;
-    (void)addr;
     (void)descriptor_out;
 
     return false;

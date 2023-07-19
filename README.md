@@ -1,21 +1,15 @@
-<table border="0">
-  <tr>
-    <td align="left" valign="middle">
-    <h1>Wi-SUN Linux Border Router</h1>
-  </td>
-  <td align="left" valign="middle">
-    <a href="https://wi-sun.org/">
-      <img src="misc/wisun-logo.png" title="Wi-SUN" alt="Wi-SUN Logo" width="300"/>
-    </a>
-  </td>
-  </tr>
-</table>
+[<img align="right" src="misc/wisun-logo.png" width="300" alt="Wi-SUN Logo">][0]
 
-The goal of this project is to implement the Wi-SUN protocol on Linux devices
-and allow the use of Linux hosts as Border Routers for Wi-SUN networks. For the
-time being, the implementation is mostly a port of Silicon Labs' embedded stack
-on a Linux host. However, the ultimate goal is to replace services currently
-provided by the stack with native Linux services.
+Wi-SUN Linux Border Router
+==========================
+
+The goal of this project is to implement the [Wi-SUN protocol][0] on Linux
+devices and allow the use of Linux hosts as Border Routers for Wi-SUN networks.
+For the time being, the implementation is mostly a port of Silicon Labs'
+embedded stack on a Linux host. However, the ultimate goal is to replace
+services currently provided by the stack with native Linux services.
+
+[0]: https://wi-sun.org/
 
 # Quick Start Guide
 
@@ -29,8 +23,8 @@ currently supported are the EFR32FG12 and EFR32MG12.
 The RCP needs to be flashed with a specific firmware to communicate with the
 daemon. This firmware is provided in binary format. To help users deploy and
 evaluate the solution, a [wisun-br-linux-docker][1] repository is provided. It
-contains a bundle of all the necessary software components (including a
-compiled RCP firmware) to run the Linux Wi-SUN border router.
+contains a bundle of all the necessary software components (including a compiled
+RCP firmware image) to run the Linux Wi-SUN border router.
 
 Alternatively, [Application Note 1332][2] explains how to build RCP firmware and
 flash it.
@@ -51,16 +45,17 @@ If it is not yet done, start by cloning this repository:
 ## Compiling
 
 The build requires `mbedTLS` (> 2.18), `libnl-3`, `libnl-route-3`, and `cmake`.
-`libsystemd` is also recommended (note that it can be replaced by `elogind` if
-you do not want to pull `systemd`). Optionally, you can also install `libpcap`
-and Rust/Cargo.
+`libcap` and `libsystemd` are also recommended (note that `libsystemd` can be
+replaced by `elogind` if you do not want to pull `systemd`). Optionally, you can
+also install `libpcap` and Rust/Cargo.
 
 We also encourage the use of Ninja as the `cmake` back-end.
 
 On Debian and its derivatives, install the necessary dependencies (except for
 mbedTLS) with:
 
-    sudo apt-get install libnl-3-dev libnl-route-3-dev libpcap-dev libsystemd-dev cargo cmake ninja-build
+    sudo apt-get install libnl-3-dev libnl-route-3-dev libcap-dev libpcap-dev \
+        libsystemd-dev libdbus-1-dev cargo cmake ninja-build pkg-config lrzsz
 
 Debian does not (yet) package `mbedTLS` > 2.18 so you must build it from
 sources. Note that support for `cmake` has been added to `mbedTLS` 2.27. So, if
@@ -84,8 +79,7 @@ file provided in `examples/mbedtls-config.h`:
 > necessary.
 
 Optionally, `wsbrd` can be compiled with support for [Silabs
-CPC](#should-i-use-cpc-or-plain-uart). To install Silabs CPC
-library:
+CPC](#should-i-use-cpc-or-plain-uart). To install Silabs CPC library:
 
     git clone https://github.com/SiliconLabs/cpc_daemon.git
     cd cpc_daemon
@@ -108,8 +102,8 @@ Finally, install the service with:
 
 ## Launching
 
-You must provide a configuration file to the Wi-SUN border router. A
-commented example is available in `/usr/local/share/doc/wsbrd/examples/wsbrd.conf`.
+You must provide a configuration file to the Wi-SUN border router. A commented
+example is available in `/usr/local/share/doc/wsbrd/examples/wsbrd.conf`.
 
     cp -r /usr/local/share/doc/wsbrd/examples .
     <edit examples/wsbrd.conf>
@@ -127,11 +121,26 @@ Finally, launch `wsbrd` with:
 
 `wsbrd` lists the useful options in the output of `wsbrd --help`.
 
+# Tools
+
+A suite of tools is provided for various tasks around `wsbrd` and its RCP. For
+more detail, refer to the `README.md` present in the relevant source folder
+(under [`tools/`](tools)), or the `--help` message output by the application.
+Some of these are not compiled by default and require setting
+`COMPILE_DEVTOOLS=ON` when configuring the project with CMake.
+
+| Application  | Description                                           |
+|--------------|-------------------------------------------------------|
+| `wsbrd_cli`  | A simple application for querying the D-Bus interface |
+| `wsbrd-fwup` | A tool for updating the RCP firware                   |
+| `wsbrd-fuzz` | A tool for fuzzing and debugging `wsbrd`              |
+| `wshwping`   | A tool for testing the serial link                    |
+
 # Using `wsbrd_cli` and the D-Bus Interface
 
 `wsbrd_cli` is a small utility to retrieve the status of the Wi-SUN network. Its
-usage is described in output of `wsbrd_cli --help`. The tool relies on the D-Bus
-interface provided by `wsbrd`, which is described in `DBUS.md`.
+usage is described in the output of `wsbrd_cli --help`. The tool relies on the
+D-Bus interface provided by `wsbrd`, which is described in `DBUS.md`.
 
 # Generating the Wi-SUN Public Key Infrastructure
 
@@ -149,6 +158,7 @@ Web site][7] (restricted access).
 `wsbrd` provides a built-in DHCPv6 server. However, it is still possible to use
 an external DHCPv6 server. If the DHCP server runs on a remote host, you need to
 launch a DHCPv6 relay.
+
 `wsbrd` has been tested with ISC DHCP and dnsmasq. Both projects provide DHCP
 server and DHCP relay implementations.
 
@@ -216,9 +226,8 @@ manpage][8]):
 
 # Running `wsbrd` Without Root Privilege
 
-To run `wsbrd` without root permissions, you first have to ensure you have
-permission to access the UART device (you will have to logout/login after this
-command):
+To run `wsbrd` without root permissions, first ensure you have permission to
+access the UART device (you will have to logout/login after this command):
 
     sudo usermod -aG dialout YOUR_USER
 
@@ -235,7 +244,8 @@ The MTU must be set to 1280 bytes to comply with 802.15.4g:
 
     sudo ip link set dev tun0 mtu 1280
 
-We suggest reducing the queue size of the interface to avoid huge latencies:
+Silicon Labs suggests reducing the queue size of the interface to avoid huge
+latencies:
 
     sudo ip link set dev tun0 txqueuelen 10
 
@@ -282,28 +292,28 @@ Finally, you can run `wsbrd`.
 Transparent IPv6 proxy provides IPv6 connectivity to the Wi-SUN
 network without changing configuration of existing IPv6 infrastructure.
 Once enabled:
-   - The Wi-SUN nodes will appear as classical hosts on the network
-   - The other hosts on the network will be able to reach them
+   - The Wi-SUN nodes will appear as classical hosts on the network.
+   - The other hosts on the network will be able to reach them.
    - The Wi-SUN nodes will be able to reach the Internet through the gateway of
-     the host
+     the host.
    - If the upstream gateway provides global addresses and there is no firewall
      on the way (which is uncommon), hosts on the Internet can reach the Wi-SUN
-     nodes
+     nodes.
 
 To enable this feature:
    - The `neighbor_proxy` parameter must be set to the name of the upstream
      network interface.
    - The `ipv6_prefix` parameter must be set to the same prefix as the hosting
      network.
-   - IPv6 forward must be enabled on the host (with
-     `sysctl net.ipv6.conf.all.forwarding=1`). Note that [enabling
-     forwarding per interface does not work][1].
+   - IPv6 forward must be enabled on the host (with `sysctl
+     net.ipv6.conf.all.forwarding=1`). Note that [enabling forwarding per
+     interface does not work][1].
 
 
 Under the hood, when `neighbor_proxy` is in use:
-   - NDP proxy (`/proc/sys/net/ipv6/conf/*/proxy_ndp`) is enabled
+   - NDP proxy (`/proc/sys/net/ipv6/conf/*/proxy_ndp`) is enabled.
    - Wi-SUN nodes are automatically added to the neighbor proxy list (user can
-     dump them with `ip -6 neigh show proxy`)
+     dump them with `ip -6 neigh show proxy`).
    - IPv6 routes are automatically added for the Wi-SUN nodes (user can dump
      them with `ip -6 route show`).
    - The delay before answering multicast neighbor solicitations
@@ -314,21 +324,34 @@ Under the hood, when `neighbor_proxy` is in use:
 
 # Bugs and Limitations
 
-## Should I use CPC or Plain UART?
+## Should I Use CPC or Plain UART?
 
-CPC protocol relies on an external service (CPCd). So plain UART allows an
-easier integration for simple setups. However, CPC offers some features:
+CPC protocol relies on an external service (CPCd). Therefore, plain UART allows
+an easier integration for simple setups. However, CPC offers some features:
 
-  - Support for SPI bus
-  - Support for encrypted link with the RCP
+  - Support for SPI bus.
+  - Support for encrypted link with the RCP.
   - Support for Dynamic MultiProtocol (DMP). Thus, CPCd can share the RCP
     between several network stacks (that is, Bluetooth, Zigbee, OpenThread, and
     Wi-SUN)
 
+## I get `error inflating zlib stream; class=Zlib (5)` During Compilation
+
+The last update of GitHub seems incompatible with the git version bundled with
+Rust 1.45. The issue and the workaround are described [here][1] and the root
+cause is solved [here][2].
+
+Before launching `cmake`, you can run:
+
+   export CARGO_NET_GIT_FETCH_WITH_CLI=true
+
+[10]: https://github.com/rust-lang/cargo/issues/10303
+[11]: https://github.com/libgit2/libgit2/pull/5740
+
 ## I Cannot Connect to DBus Interface
 
-First of all, check you have followed the installation process. Especially,
-check you have run `ninja install`.
+First, check you have followed the installation process. Especially, check you
+have run `ninja install`.
 
 There are several DBus instances on your system:
   - One system instance
@@ -352,13 +375,21 @@ You can enforce the session used with an environment variable
 
     sudo env DBUS_STARTER_BUS_TYPE=system wsbrd ...
 
+## LFNs and the D-Bus interface
+
+Low function nodes (LFN) that are connected directly to the border router do
+not appear as having parent when querrying the D-Bus `Nodes` API. This is due
+to them being routed differently, and will be fixed in an future version. Tools
+like `wsbrd_cli` and the web GUI that rely on this D-Bus API are affected by
+this limitation.
+
 ## I Have Issues when Trying to Send UDP Data
 
 Path MTU Discovery works as expected on the Wi-SUN network. The Border Router
 replies with `ICMPv6/Packet Too Big` if necessary. (Remember that in IPv6,
-routers cannot fragment packets, therefore the sender is responsible for the size
-of the packet). Direct neighbors of the Border Router can receive frames up to
-1504 bytes, while the other nodes can receive frames up to 1280 bytes.
+routers cannot fragment packets, therefore the sender is responsible for the
+size of the packet). Direct neighbors of the Border Router can receive frames up
+to 1504 bytes, while the other nodes can receive frames up to 1280 bytes.
 
 If you try to send a UDP frame larger than the MTU, there are two
 options:
@@ -370,21 +401,34 @@ options:
 
 On the receiver, the buffer must be large enough (up to 64 kB) to handle the
 fragmented packet. This feature is sometimes limited on embedded devices.
+[IPv6][12] requires at least 1500 bytes available during reception, and warns
+on sending more:
+
+> A node must be able to accept a fragmented packet that, after reassembly, is
+> as large as 1500 octets.  A node is permitted to accept fragmented packets
+> that reassemble to more than 1500 octets. An upper-layer protocol or
+> application that depends on IPv6 fragmentation to send packets larger than
+> the MTU of a path should not send packets larger than 1500 octets unless it
+> has assurance that the destination is capable of reassembling packets of that
+> larger size.
+
 Typically, on Silicon Labs nodes, the default fragmentation buffer size is 1504
-bytes.
+bytes. Therefore, if you send a buffer greater than 1504 bytes (including IP
+and MAC headers), the packet will be silently dropped.
 
-Therefore, if you send a buffer greater than 1504 bytes (including IP and MAC
-headers), the packet will be silently dropped.
-
-As another consequence, the commonly used tool `nc` cannot be used with Wi-SUN
-networks. Indeed, `nc` sends 16 kB-long UDP frames. There is no option to reduce
+As another consequence, the commonly used tool `nc` cannot be used to stress
+Wi-SUN networks with a continuous data stream, as `nc` sends 16 kB-long UDP
+when fed an endless source such as `/dev/urandom`. There is no option to reduce
 frame size (or to enable `IPV6_DONTFRAG`).
 
 Therefore, sending UDP packets with `IPV6_DONTFRAG` is recommended. Use
 `IPV6_PATHMTU` and `IPV6_RECVPATHMTU` to determine the optimal packet size.
+Read [RFC 8900][13] for more insights on the question.
 
-## Run `wsbrd` without RF hardware
--------------------------------
+[12]: https://www.rfc-editor.org/rfc/rfc8200.html#section-5
+[13]: https://www.rfc-editor.org/rfc/rfc8900.html
+
+<br clear="right"/><!-- Right align the Wi-SUN Logo -->
 
 The compilation also generate binary `wshwsim` that simulate a RF device.
 This binary is not installed by default, you will find it in your build

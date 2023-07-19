@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +20,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 #include "stack/mac/fhss_config.h"
 #include "stack/mac/mac_api.h"
 #include "stack/mac/mac_mcps.h"
@@ -231,8 +232,6 @@ int8_t ws_eapol_pdu_mpx_eui64_purge(struct net_if *interface_ptr, const uint8_t 
 static void ws_eapol_pdu_data_request_primitiv_set(mcps_data_req_t *dataReq, struct net_if *cur)
 {
     memset(dataReq, 0, sizeof(mcps_data_req_t));
-
-    dataReq->InDirectTx = false;
     dataReq->TxAckReq = true;
     dataReq->SrcAddrMode = ADDR_802_15_4_LONG;
     dataReq->DstAddrMode = ADDR_802_15_4_LONG;

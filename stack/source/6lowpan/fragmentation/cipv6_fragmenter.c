@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2013-2019, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +28,7 @@
 #include <inttypes.h>
 #include "common/rand.h"
 #include "common/log_legacy.h"
-#include "stack-services/common_functions.h"
+#include "common/endian.h"
 #include "stack/nwk_stats_api.h"
 
 #include "nwk_interface/protocol.h"
@@ -279,14 +280,14 @@ buffer_t *cipv6_frag_reassembly(int8_t interface_id, buffer_t *buf)
         goto reassembly_error;
 
     frag_header = ptr[0];
-    datagram_size = common_read_16_bit(ptr) & 0x07FF;
+    datagram_size = read_be16(ptr) & 0x07FF;
 
     if (datagram_size == 0) {
         goto reassembly_error;
     }
 
     ptr += 2;
-    datagram_tag = common_read_16_bit(ptr);
+    datagram_tag = read_be16(ptr);
     ptr += 2;
     if (frag_header & LOWPAN_FRAGN_BIT) {
         if (buffer_data_length(buf) < 5)

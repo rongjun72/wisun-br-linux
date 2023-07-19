@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2013-2018, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +19,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "common/log_legacy.h"
-#include "stack-services/common_functions.h"
+#include "common/endian.h"
 #include "stack/nwk_stats_api.h"
 
 #include "common_protocols/ipv6.h"
@@ -59,7 +60,7 @@ buffer_t *lowpan_down(buffer_t *buf)
     /* We have IP next hop - figure out the MAC address */
     if (addr_is_ipv6_multicast(next_hop)) {
         buf->dst_sa.addr_type = ADDR_BROADCAST;
-        common_write_16_bit(cur->mac_parameters.pan_id, buf->dst_sa.address);
+        write_be16(buf->dst_sa.address, cur->mac_parameters.pan_id);
         buf->dst_sa.address[2] = 0x80 | (next_hop[14] & 0x1f);
         buf->dst_sa.address[3] = next_hop[15];
         stable_only = true;
@@ -72,7 +73,7 @@ buffer_t *lowpan_down(buffer_t *buf)
 
     if (!buf->link_specific.ieee802_15_4.useDefaultPanId) {
         /* Override dest PAN ID (from multicast map above, or neighbour cache) */
-        common_write_16_bit(buf->link_specific.ieee802_15_4.dstPanId, buf->dst_sa.address);
+        write_be16(buf->dst_sa.address, buf->link_specific.ieee802_15_4.dstPanId);
     }
 
     /* Figure out which source MAC address to use. Usually try to match the
@@ -81,8 +82,6 @@ buffer_t *lowpan_down(buffer_t *buf)
      */
     if (addr_iid_matches_eui64(ip_src + 8, cur->mac)) {
         buf->src_sa.addr_type = ADDR_802_15_4_LONG;
-    } else if (cur->mac_parameters.mac_short_address < 0xfffe && addr_iid_matches_lowpan_short(ip_src + 8, cur->mac_parameters.mac_short_address)) {
-        buf->src_sa.addr_type = ADDR_802_15_4_SHORT;
     } else {
         /* This lets mac_mlme_write_our_addr choose based on address mode */
         buf->src_sa.addr_type = ADDR_NONE;
@@ -102,20 +101,12 @@ buffer_t *lowpan_down(buffer_t *buf)
     }
 
     if (buf->dst_sa.addr_type == ADDR_BROADCAST) {
-        /* Thread says multicasts other than MLE are sent to our parent, if we're an end device */
-        if (cur->ip_multicast_as_mac_unicast_to_parent && !buf->options.ll_broadcast_tx) {
-            if (protocol_6lowpan_interface_get_mac_coordinator_address(cur, &buf->dst_sa) < 0) {
-                tr_warn("IP: No parent for multicast as unicast");
-                return buffer_free(buf);
-            }
-        } else {
-            /*
-             * Not using a mesh header, so have to "purify" RFC 4944 multicast - we
-             * set a 100xxxxxxxxxxxxx RFC 4944 multicast address above, but
-             * IEEE 802.15.4 only supports broadcast in the real MAC header.
-             */
-            common_write_16_bit(0xFFFF, buf->dst_sa.address + 2);
-        }
+        /*
+         * Not using a mesh header, so have to "purify" RFC 4944 multicast - we
+         * set a 100xxxxxxxxxxxxx RFC 4944 multicast address above, but
+         * IEEE 802.15.4 only supports broadcast in the real MAC header.
+         */
+        write_be16(buf->dst_sa.address + 2, 0xFFFF);
     }
 
     /* RFC 6282+4944 require that we limit compression to the first fragment.
@@ -144,8 +135,8 @@ buffer_t *lowpan_up(buffer_t *buf)
      *    Short source addresses 0xfffe (illegal) and 0xffff (broadcast)
      */
     if (buf->dst_sa.addr_type == ADDR_NONE || buf->src_sa.addr_type == ADDR_NONE ||
-            common_read_16_bit(buf->src_sa.address) == 0xffff ||
-            (buf->dst_sa.addr_type == ADDR_802_15_4_SHORT && common_read_16_bit(buf->src_sa.address + 2) > 0xfffd)) {
+            read_be16(buf->src_sa.address) == 0xffff ||
+            (buf->dst_sa.addr_type == ADDR_802_15_4_SHORT && read_be16(buf->src_sa.address + 2) > 0xfffd)) {
         goto drop;
     }
 

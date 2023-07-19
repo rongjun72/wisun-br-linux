@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Silicon Laboratories Inc. (www.silabs.com)
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  *
  * The licensor of this software is Silicon Laboratories Inc. Your use of this
  * software is governed by the terms of the Silicon Labs Master Software License
@@ -16,10 +16,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <limits.h>
 #include <sys/socket.h> // Compatibility with linux headers < 4.12
-#include <linux/limits.h>
 #include <linux/if.h>
-#include <netinet/in.h>
 
 #include "stack/net_interface.h"
 
@@ -51,10 +50,15 @@ struct wsbrd_conf {
     uint8_t ws_allowed_channels[32];
     int  ws_phy_mode_id;
     int  ws_chan_plan_id;
+    uint8_t ws_phy_op_modes[15];
+
+    char user[LOGIN_NAME_MAX];
+    char group[LOGIN_NAME_MAX];
 
     uint8_t ipv6_prefix[16];
 
     char storage_prefix[PATH_MAX];
+    bool storage_delete;
     arm_certificate_entry_s tls_own;
     arm_certificate_entry_s tls_ca;
     uint8_t ws_gtk[4][16];
@@ -72,12 +76,10 @@ struct wsbrd_conf {
     int  ws_gtk_expire_offset;
     int  ws_gtk_new_activation_time;
     int  ws_gtk_new_install_required;
-    int  ws_gtk_max_mismatch;
     int  ws_ffn_revocation_lifetime_reduction;
     int  ws_lgtk_expire_offset;
     int  ws_lgtk_new_activation_time;
     int  ws_lgtk_new_install_required;
-    int  ws_lgtk_max_mismatch;
     int  ws_lfn_revocation_lifetime_reduction;
     int  ws_async_frag_duration;
     int  uc_dwell_interval;

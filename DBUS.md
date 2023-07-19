@@ -18,7 +18,7 @@ application.
 
 ### `SetModeSwitch` (`ayi`)
 
-There are 2 ways to configure mode switch, either global or per neighbor. Each
+There are two ways to configure mode switch, either global or per neighbor. Each
 neighbor can either use the global config, or a node-specific setting.
 
 - `ay`: EUI-64 of a neighbor node on which to configure mode switch, or empty
@@ -47,56 +47,76 @@ Example:
 ### `SetSlotAlgorithm` (`y`)
 
 The slot algorithm is an experimental feature that tries to avoid collisions
-during radio transmission at the expense of additional latency. It is
-disabled by default.
+during radio transmission at the expense of additional latency. It is disabled
+by default.
 
 - `y`: `0` for disabled, `1` for enabled
 
 ### `JoinMulticastGroup` and `LeaveMulticastGroup` (`ay`)
 
 In order to send or receive multicast traffic from outside the Wi-SUN network,
-this API must be used to join the appropriate multicast group (appart for the
-mandatory Wi-SUN multicast group subscriptions `ff02::1`, `ff02::2`,
-`ff02::1a`, `ff03::1`, `ff03::2` and `ff03::fc`)
+this API must be used to join the appropriate multicast group (apart from the
+mandatory Wi-SUN multicast group subscriptions `ff02::1`, `ff02::2`, `ff02::1a`,
+`ff03::1`, `ff03::2` and `ff03::fc`)
 
 - `ay`: IPv6 multicast address
 
-### `RevokeNode` (`ay`)
+### `RevokePairwiseKeys` (`ay`)
 
-Remove the Pairwise Transient Key (PTK) and Pairwise Master Key (PMK)
-associated with the node. Call `RevokeApply` to complete the revocation
-process.
+Remove the Pairwise Transient Key (PTK) and Pairwise Master Key (PMK) associated
+with a node as described in the Wi-SUN FAN specification section 6.5.2.5.
 
 - `ay`: 64 bit MAC address of the node to be revoked
 
-### `RevokeApply`
+### `RevokeGroupKeys` (`ayay`)
 
-Transition to a new Group Transient Key (GTK) as described in Wi-SUN FAN
-specification section 6.5.2.5.
+Destroy all (L)GTKs except the current active one (and potentially the next
+key), reduce the current (or next) key's lifetime, and add a new key, as
+described in the Wi-SUN FAN specification section 6.5.2.5.
+
+- `ay`: Explicit key to add as the new GTK (for testing), or 0 length array to
+  generate a random key
+- `ay`: Idem for LGTKs
+
+### `InstallGtk` and `InstallLgtk` (`ay`)
+
+Install a new explicit (L)GTK in the next available slot. This is only meant for
+debug and test. Might be used in conjunction with `(l)gtk_new_install_required =
+0` to fully manage the key installation process.
+
+- `ay` 16 bytes long group key
 
 ## Properties
 
 ### `Nodes` (`a(aya{sv})`)
 
 Returns an array of the nodes connected to the Wi-SUN network, with associated
-data. Each node is identified by its MAC address, and has a series of
-properties provided as key-value pairs. A D-Bus signal is emitted whenenever
-the routing graph is refreshed.
+data. Each node is identified by its MAC address, and has a series of properties
+provided as key-value pairs. A D-Bus signal is emitted whenever the routing
+graph is refreshed.
 
 - `ay`: EUI64
-- `a{sv}`: list of properties identified by a string, as described in the following table:
+- `a{sv}`: list of properties identified by a string, as described in the
+  following table. Not all properties are guaranteed to be present per node
+  (ex: a node without parent has no `parent` field)
 
-| Key              |Signature| Comment                                                    |
-|------------------|---------|------------------------------------------------------------|
-|`is_border_router`|`b`      |                                                            |
-|`ipv6`            |`aay`    |Array of IPv6 addresses (usually link-local and GUA)        |
-|`parent`          |`ay`     |EUI64 of the preferred parent (only absent if border router)|
+| Key              |Signature| Comment                                                                  |
+|------------------|---------|--------------------------------------------------------------------------|
+|`is_border_router`|`b`      |Deprecated. Use `node_role` instead.                                      |
+|`node_role`       |`y`      |Semantics from Wi-SUN (`0`: BR, `1`: FFN-FAN1.1, `2`: LFN, none: FFN-FAN1.0)|
+|`ipv6`            |`aay`    |Array of IPv6 addresses (usually link-local and GUA)                      |
+|`parent`          |`ay`     |EUI-64 of the preferred parent                                            |
+|`is_authenticated`|`b`      |                                                                          |
+|`is_neighbor`     |`b`      |Only nodes that use direct unicast traffic to the border router are listed|
+|`rssi`            |`i`      |Received Signal Strength Indication (RSSI) of the last packet received in dBm (neighbor only)|
+|`rsl`             |`i`      |Exponentially Weighted Moving Average (EWMA) of the Received Signal Level (RSL) in dBm (neighbor only)|
+|`rsl_adv`         |`i`      |EWMA of the RSL in dBm advertised by the node in RSL-IE (neighbor only)   |
 
 ### `Gtks` and `Gaks` (`aay`)
 
-Returns a list of the 4 Group Transient (or Temporal) Keys (GTKs) or Group AES
-Keys (GAKs) used in the network. A signal is emitted upon change. Refer to the
-Wi-SUN FAN and IEEE 802.11 specifications for more details.
+Returns a list of the four Group Transient (or Temporal) Keys (GTKs) or Group
+AES Keys (GAKs) used in the network. A signal is emitted upon change. Refer to
+the Wi-SUN FAN and IEEE 802.11 specifications for more details.
 
 ### `HwAddress` (`ay`)
 
@@ -104,9 +124,8 @@ EUI64 (MAC address) of the RCP
 
 ### Wi-SUN configuration
 
-The following properties return the corresponding value set during
-configuration (commandline or config file). See `examples/wsbrd.conf` for
-more details.
+The following properties return the corresponding value set during configuration
+(commandline or config file). See `examples/wsbrd.conf` for more details.
 
 | Property name    |Signature| Comment                                          |
 |------------------|---------|--------------------------------------------------|
@@ -118,3 +137,4 @@ more details.
 |`WisunPhyModeId`  |`u`      |FAN 1.1 PHY mode ID, or `0` when using FAN 1.0    |
 |`WisunChanPlanId` |`u`      |FAN 1.1 channel plan ID, or `0` when using FAN 1.0|
 |`WisunPanId`      |`q`      |                                                  |
+|`WisunFanVersion` |`y`      |Semantics from Wi-SUN (`1`: FAN 1.0, `2`: FAN 1.1)|

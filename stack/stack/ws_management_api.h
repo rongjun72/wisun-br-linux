@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,11 +40,6 @@ typedef struct fhss_timer fhss_timer_t;
 #define OPERATING_MODE_4a 0x4a  /**< 200, 0.5 */
 #define OPERATING_MODE_4b 0x4b  /**< 200, 1.0 */
 #define OPERATING_MODE_5  0x05  /**< 300, 0.5 */
-
-#define OPERATING_MODE_PHY_MODE_ID_BIT    0x80  /**< Indicate the 7 LSB bits of the operating mode field must be interpreted as PhyModeId */
-#define OPERATING_MODE_PHY_MODE_ID_MASK   0x7F  /**< Mask the 7 LSB bits of the operating mode field which must be interpreted as PhyModeId */
-#define OPERATING_CLASS_CHAN_PLAN_ID_BIT  0x80  /**< Indicate the 6 LSB bits of the operating class field must be interpreted as ChanPlanId */
-#define OPERATING_CLASS_CHAN_PLAN_ID_MASK 0x3F  /**< Mask the 6 LSB bits of the operating class field which must be interpreted as ChanPlanId */
 
 #define CHANNEL_FUNCTION_FIXED            0x00  /**< Fixed channel */
 #define CHANNEL_FUNCTION_TR51CF           0x01  /**< TR51CF */
@@ -217,7 +213,6 @@ typedef struct ws_neighbour_info {
  * \param interface_id Network interface ID.
  * \param regulatory_domain Mandatory regulatory domain value of the device.
  * \param network_name_ptr Network name where to join if no configuration found from storage.
- * \param fhss_timer_ptr FHSS functions for timer adaptation to platform.
  *
  * \return 0, Init OK.
  * \return <0 Init fail.
@@ -225,8 +220,7 @@ typedef struct ws_neighbour_info {
 int ws_management_node_init(
     int8_t interface_id,
     uint8_t regulatory_domain,
-    char *network_name_ptr,
-    fhss_timer_t *fhss_timer_ptr);
+    char *network_name_ptr);
 
 /**
  * Change the network name
@@ -834,33 +828,5 @@ int ws_neighbor_info_get(
     int8_t interface_id,
     ws_neighbour_info_t *neighbor_ptr,
     uint16_t count);
-
-/**
- * Set minimum RF sensitivity acceptable for the parent selection
- *
- * Set radio signal minimum sensitivity level acceptable for parent selection.
- * Range of -174 (0) to +80 (254) dBm.
- *
- * If device_min_sens is set to 0 then automatic adjustment is done by the stack.
- *
- * Setting a value that is not suitable for Radio might prevent the device joining to the network.
- *
- * This configuration limits the EAPOL parents accepted for Authentication and device must hear signal
- * level higher than device_min_sens + CAND_PARENT_THRESHOLD + CAND_PARENT_HYSTERESIS
- * to start authentication.
- *
- * ETX Calculation gives a maximum ETX if two way EWMA RSL is less than
- * device_min_sens + CAND_PARENT_THRESHOLD + CAND_PARENT_HYSTERESIS to
- * prevent selecting parents with poor signal quality
- *
- * \param interface_id Network interface ID.
- * \param device_min_sens value used in the parent selections.
- *
- * \return 0 Success.
- * \return <0 Failure.
- */
-int ws_device_min_sens_set(
-    int8_t interface_id,
-    uint8_t device_min_sens);
 
 #endif

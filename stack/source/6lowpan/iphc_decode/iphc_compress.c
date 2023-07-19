@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2014-2019, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,9 +18,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include "common/bits.h"
+#include "common/endian.h"
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
-#include "stack-services/common_functions.h"
+#include "common/ns_list.h"
 
 #include "nwk_interface/protocol.h"
 #include "common_protocols/ipv6_constants.h"
@@ -41,11 +42,6 @@ typedef struct iphc_compress_state {
 } iphc_compress_state_t;
 
 static bool compress_nh(uint8_t nh, iphc_compress_state_t *restrict cs);
-
-static inline bool context_ok_for_compression(const lowpan_context_t *ctx, bool stable_only)
-{
-    return ctx->lifetime && ctx->compression && (!stable_only || ctx->stable);
-}
 
 /* Using a specified context, what's the best possible compression of addr? */
 static uint_fast8_t addr_bytes_needed(const uint8_t *addr, const uint8_t *outer_iid, const uint8_t *ctx_prefix, uint_fast8_t ctx_len)
@@ -125,22 +121,6 @@ static uint8_t compress_mc_addr(const lowpan_context_list_t *context_list, const
         *mode |= HC_48BIT_MULTICAST;
         return 6;
     }
-    /* Looking for addresses of the form ffxx:xxLL:PPPP:PPPP:PPPP:PPPP:xxxx:xxxx */
-    /* Context info is padded with zeros, so the 8-byte memcmp is okay for short contexts. */
-    /* RFCs are ambiguous about how this should work if prefix length is > 64 bits, */
-    /* so don't attempt compression against long contexts. */
-    ns_list_foreach(lowpan_context_t, ctx, context_list) {
-        if (context_ok_for_compression(ctx, stable_only) &&
-                ctx->length <= 64 &&
-                addr[3] == ctx->length && memcmp(addr + 4, ctx->prefix, 8) == 0) {
-            cmp_addr_out[0] = addr[1];
-            cmp_addr_out[1] = addr[2];
-            memcpy(cmp_addr_out + 2, addr + 12, 4);
-            *context |= ctx->cid;
-            *mode |= HC_48BIT_CONTEXT_MULTICAST;
-            return 6;
-        }
-    }
 
     memcpy(cmp_addr_out, addr, 16);
     *mode |= HC_128BIT_MULTICAST;
@@ -155,32 +135,6 @@ static uint8_t compress_addr(const lowpan_context_list_t *context_list, const ui
 
     uint_fast8_t best_bytes = addr_bytes_needed(addr, outer_iid, ADDR_LINK_LOCAL_PREFIX, 64);
     lowpan_context_t *best_ctx = NULL;
-    bool checked_ctx0 = false;
-
-    if (best_bytes > 0) {
-        ns_list_foreach(lowpan_context_t, ctx, context_list) {
-            if (!context_ok_for_compression(ctx, stable_only)) {
-                continue;
-            }
-
-            uint_fast8_t bytes = addr_bytes_needed(addr, outer_iid, ctx->prefix, ctx->length);
-            if (ctx->cid == 0) {
-                checked_ctx0 = true;
-            }
-            /* This context is better if:
-             * a) it means fewer inline bytes, or
-             * b) it needs the same inline bytes and might avoid a CID extension
-             */
-            if (bytes < best_bytes || (bytes == best_bytes && ctx->cid == 0 && best_ctx && best_ctx->cid != 0)) {
-                best_ctx = ctx;
-                best_bytes = bytes;
-                /* Don't need to check further if we've reached 0 bytes, and we've considered context 0 */
-                if (best_bytes == 0 && checked_ctx0) {
-                    break;
-                }
-            }
-        }
-    }
 
     /* If not found a 0-byte match, one more (unlikely) possibility for source - special case for "unspecified" */
     if (best_bytes > 0 && !is_dst && addr_is_ipv6_unspecified(addr)) {
@@ -234,13 +188,13 @@ static bool compress_udp(iphc_compress_state_t *restrict cs)
     }
 
     /* UDP length should be set to payload length - if it's not, we can't compress it */
-    uint16_t udp_len = common_read_16_bit(cs->in + 4);
+    uint16_t udp_len = read_be16(cs->in + 4);
     if (udp_len != cs->len) {
         return false;
     }
 
-    uint16_t src_port = common_read_16_bit(cs->in + 0);
-    uint16_t dst_port = common_read_16_bit(cs->in + 2);
+    uint16_t src_port = read_be16(cs->in + 0);
+    uint16_t dst_port = read_be16(cs->in + 2);
 
     uint8_t *ptr = cs->out;
     if ((src_port & 0xfff0) == 0xf0b0 &&
@@ -257,21 +211,21 @@ static bool compress_udp(iphc_compress_state_t *restrict cs)
         }
         *ptr++ = NHC_UDP | NHC_UDP_PORT_COMPRESS_SRC;
         *ptr++ = src_port & 0xff;
-        ptr = common_write_16_bit(dst_port, ptr);
+        ptr = write_be16(ptr, dst_port);
     } else if ((dst_port & 0xff00) == 0xf000) {
         if (cs->out_space < 7) {
             return false;
         }
         *ptr++ = NHC_UDP | NHC_UDP_PORT_COMPRESS_DST;
-        ptr = common_write_16_bit(src_port, ptr);
+        ptr = write_be16(ptr, src_port);
         *ptr++ = dst_port & 0xff;
     } else {
         if (cs->out_space < 8) {
             return false;
         }
         *ptr++ = NHC_UDP | NHC_UDP_PORT_COMPRESS_NONE;
-        ptr = common_write_16_bit(src_port, ptr);
-        ptr = common_write_16_bit(dst_port, ptr);
+        ptr = write_be16(ptr, src_port);
+        ptr = write_be16(ptr, dst_port);
     }
 
     /* Checksum */
@@ -306,7 +260,7 @@ static bool compress_exthdr(uint8_t nhc, iphc_compress_state_t *restrict cs)
          * Could still "compress" this header in all cases, but no point if we don't
          * have following headers to compress - it takes 8 bytes either way.
          */
-        uint16_t offset = common_read_16_bit(in + 2) & 0xFFF8;
+        uint16_t offset = read_be16(in + 2) & 0xFFF8;
         if (offset != 0) {
             return false;
         }
@@ -401,7 +355,7 @@ static bool compress_ipv6(iphc_compress_state_t *restrict cs, bool from_nhc)
     uint_fast8_t iphc_bytes = from_nhc + 2;
 
     /* Payload length field must match, or we can't compress */
-    if (common_read_16_bit(in + 4) != cs->len - 40) {
+    if (read_be16(in + 4) != cs->len - 40) {
         return false;
     }
 
@@ -435,7 +389,7 @@ static bool compress_ipv6(iphc_compress_state_t *restrict cs, bool from_nhc)
 
     uint8_t ecn = (in[1] & 0x30) << 2;
     uint8_t dscp = (in[0] & 0x0F) << 2 | (in[1] & 0xC0) >> 6;
-    uint_fast24_t flow = common_read_24_bit(in + 1) & 0xFFFFF;
+    uint_fast24_t flow = read_be24(in + 1) & 0xFFFFF;
 
     if (flow == 0 && ecn == 0 && dscp == 0) {
         iphc[0] |= HC_TF_ELIDED;
@@ -494,7 +448,7 @@ static bool compress_ipv6(iphc_compress_state_t *restrict cs, bool from_nhc)
         *ptr++ = (ecn | dscp);
     }
     if ((iphc[0] & HC_TF_MASK) == HC_TF_ECN_DSCP_FLOW_LABEL || (iphc[0] & HC_TF_MASK) == HC_TF_ECN_FLOW_LABEL) {
-        ptr = common_write_24_bit(flow, ptr);    // "flow" includes ecn in 3-byte case
+        ptr = write_be24(ptr, flow);    // "flow" includes ecn in 3-byte case
     }
 
     if (!(iphc[0] & HC_NEXT_HEADER_MASK)) {

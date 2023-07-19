@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2018, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,22 +24,9 @@
 struct rpl_domain;
 struct fhss_api;
 
-/*!
- * \enum nwk_interface_id_e
- * \brief Determines the ID of the network interface.
- */
-/** Network interface IDs. */
-typedef enum nwk_interface_id {
-    IF_6LoWPAN,
-    IF_IPV6,
-} nwk_interface_id_e;
-
-extern int protocol_core_buffers_in_event_queue;
-
 struct net_if *protocol_stack_interface_info_get_by_id(int8_t nwk_id);
 struct net_if *protocol_stack_interface_info_get_by_bootstrap_id(int8_t id);
 struct net_if *protocol_stack_interface_info_get_by_rpl_domain(const struct rpl_domain *domain, int8_t last_id);
-struct net_if *protocol_stack_interface_info_get_by_fhss_api(const struct fhss_api *fhss_api);
 struct net_if *protocol_stack_interface_info_get_wisun_mesh(void);
 
 #endif

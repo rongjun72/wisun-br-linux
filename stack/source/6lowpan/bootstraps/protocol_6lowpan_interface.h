@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015, 2017, 2019, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/*
- * \file protocol_6lowpan_interface.h
- *
- */
-
 #ifndef PROTOCOL_6LOWPAN_INTERFACE_H_
 #define PROTOCOL_6LOWPAN_INTERFACE_H_
+#include <stdint.h>
+
 /**
  * 6LoWPAN interface activate
  */
@@ -30,8 +27,6 @@ int8_t nwk_6lowpan_up(struct net_if *cur);
  * 6LoWPAN interface deactivate
  */
 int8_t nwk_6lowpan_down(struct net_if *cur);
-
-void protocol_mac_reset(struct net_if *cur);
 
 
 #endif /* PROTOCOL_6LOWPAN_INTERFACE_H_ */

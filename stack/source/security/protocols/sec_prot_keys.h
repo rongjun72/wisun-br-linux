@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016-2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -583,7 +584,7 @@ uint8_t *sec_prot_keys_get_gtk_to_insert(sec_prot_gtk_t *sec_gtks, uint8_t *inde
  * \return >= 0 success
  *
  */
-int8_t sec_prot_keys_gtk_set(sec_prot_gtk_keys_t *gtks, uint8_t index, uint8_t *gtk, uint32_t lifetime);
+int8_t sec_prot_keys_gtk_set(sec_prot_gtk_keys_t *gtks, uint8_t index, const uint8_t gtk[GTK_LEN], uint32_t lifetime);
 
 /**
  * sec_prot_keys_gtk_clear clears Group Transient Key

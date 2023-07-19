@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016-2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,10 +21,13 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include <mbedtls/sha256.h>
+#if MBEDTLS_VERSION_MAJOR > 2
+#include <mbedtls/compat-2.x.h>
+#endif
 #include "common/rand.h"
 #include "common/trickle.h"
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 #include "service_libs/hmac/hmac_md.h"
 #include "service_libs/ieee_802_11/ieee_802_11.h"
 #include "service_libs/nist_aes_kw/nist_aes_kw.h"
@@ -369,7 +373,7 @@ uint8_t *sec_prot_lib_message_handle(uint8_t *ptk, uint16_t *kde_len, eapol_pdu_
         return NULL;
     }
 
-    uint8_t *key_data = eapol_pdu->msg.key.key_data;
+    const uint8_t *key_data = eapol_pdu->msg.key.key_data;
     uint16_t key_data_len = eapol_pdu->msg.key.key_data_length;
 
     uint8_t *kde = malloc(key_data_len);
@@ -470,7 +474,7 @@ int8_t sec_prot_lib_lgtk_read(uint8_t *kde, uint16_t kde_len, sec_prot_gtk_t *se
     return 0;
 }
 
-int8_t sec_prot_lib_mic_validate(uint8_t *ptk, uint8_t *mic, uint8_t *pdu, uint8_t pdu_size)
+int8_t sec_prot_lib_mic_validate(uint8_t *ptk, const uint8_t *mic, uint8_t *pdu, uint8_t pdu_size)
 {
     uint8_t recv_mic[EAPOL_KEY_MIC_LEN];
     memcpy(recv_mic, mic, EAPOL_KEY_MIC_LEN);
@@ -552,31 +556,19 @@ int8_t sec_prot_lib_gtkhash_generate(uint8_t *gtk, uint8_t *gtk_hash)
 
     mbedtls_sha256_init(&ctx);
 
-#if (MBEDTLS_VERSION_MAJOR >= 3)
-    if (mbedtls_sha256_starts(&ctx, 0) != 0) {
-#else
     if (mbedtls_sha256_starts_ret(&ctx, 0) != 0) {
-#endif
         ret_val = -1;
         goto error;
     }
 
-#if (MBEDTLS_VERSION_MAJOR >= 3)
-    if (mbedtls_sha256_update(&ctx, gtk, 16) != 0) {
-#else
     if (mbedtls_sha256_update_ret(&ctx, gtk, 16) != 0) {
-#endif
         ret_val = -1;
         goto error;
     }
 
     uint8_t output[32];
 
-#if (MBEDTLS_VERSION_MAJOR >= 3)
-    if (mbedtls_sha256_finish(&ctx, output) != 0) {
-#else
     if (mbedtls_sha256_finish_ret(&ctx, output) != 0) {
-#endif
         ret_val = -1;
         goto error;
     }

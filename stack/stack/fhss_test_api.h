@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +25,8 @@
 #define FHSS_TEST_API_H
 #include <stdint.h>
 
+struct fhss_api;
+
 /**
   * \brief Set optimal packet length
   *
@@ -33,7 +36,7 @@
   * \return  0 Success
   * \return -1 Failure
   */
-int8_t fhss_set_optimal_packet_length(const fhss_api_t *fhss_api, uint16_t packet_length);
+int8_t fhss_set_optimal_packet_length(const struct fhss_api *fhss_api, uint16_t packet_length);
 
 /**
   * \brief Set number of channel retries
@@ -44,6 +47,6 @@ int8_t fhss_set_optimal_packet_length(const fhss_api_t *fhss_api, uint16_t packe
   * \return  0 Success
   * \return -1 Failure
   */
-int8_t fhss_set_number_of_channel_retries(const fhss_api_t *fhss_api, uint8_t number_of_channel_retries);
+int8_t fhss_set_number_of_channel_retries(const struct fhss_api *fhss_api, uint8_t number_of_channel_retries);
 
 #endif // FHSS_TEST_API_H

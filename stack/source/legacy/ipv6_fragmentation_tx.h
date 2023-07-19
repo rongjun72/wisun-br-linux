@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2017, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +19,8 @@
 #define IPV6_FRAGMENTATION_TX_H
 
 #ifdef HAVE_IPV6_FRAGMENT
+
+typedef struct buffer buffer_t;
 
 buffer_t *ipv6_frag_down(buffer_t *dgram_buf);
 

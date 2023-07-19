@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +22,7 @@
 #include <stdbool.h>
 
 #include "6lowpan/ws/ws_common.h"
+#include "nwk_interface/protocol.h"
 
 typedef enum {
     WS_INIT_EVENT = 0,       /**< tasklet initializion event*/
@@ -70,6 +72,7 @@ typedef enum {
 struct rpl_instance;
 struct llc_neighbour_req;
 struct ws_stack_info;
+struct ws_llc_mngt_req;
 struct ws_neighbour_info;
 struct mcps_data_ie_list;
 struct mcps_data_ind;
@@ -110,10 +113,6 @@ bool ws_eapol_relay_state_active(struct net_if *cur);
 
 void ws_bootstrap_eapol_parent_synch(struct net_if *cur, struct llc_neighbour_req *neighbor_info);
 
-bool ws_bootstrap_validate_channel_plan(struct ws_us_ie *ws_us, struct ws_bs_ie *ws_bs, struct net_if *cur);
-
-bool ws_bootstrap_validate_channel_function(struct ws_us_ie *ws_us, struct ws_bs_ie *ws_bs);
-
 void ws_bootstrap_neighbor_set_stable(struct net_if *interface, const uint8_t *src64);
 
 int ws_bootstrap_stack_info_get(struct net_if *cur, struct ws_stack_info *info_ptr);
@@ -127,8 +126,6 @@ int ws_bootstrap_test_procedure_trigger(struct net_if *cur, ws_bootstrap_procedu
 /*
  * Functions shared with different bootstrap modes
  */
-
-bool ws_bootstrap_network_name_matches(const struct mcps_data_ie_list *ie_ext, const char *network_name_ptr);
 
 /*State machine transactions*/
 void ws_bootstrap_event_discovery_start(struct net_if *cur);
@@ -145,8 +142,6 @@ void ws_bootstrap_event_disconnect(struct net_if *cur, ws_bootstrap_event_type_e
 
 void ws_bootstrap_test_procedure_trigger_exec(struct net_if *cur, ws_bootstrap_procedure_e procedure);
 
-void ws_bootstrap_network_down(struct net_if *cur);
-
 // Bootstrap state machine state Functions
 bool ws_bootstrap_state_discovery(struct net_if *cur);
 bool ws_bootstrap_state_authenticate(struct net_if *cur);
@@ -156,30 +151,20 @@ bool ws_bootstrap_state_active(struct net_if *cur);
 void ws_bootstrap_state_disconnect(struct net_if *cur, ws_bootstrap_event_type_e event_type);
 void ws_bootstrap_state_change(struct net_if *cur, icmp_state_e nwk_bootstrap_state);
 
-void ws_bootstrap_candidate_list_clean(struct net_if *cur, uint8_t pan_max, uint32_t current_time, uint16_t pan_id);
-void ws_bootstrap_candidate_parent_store(parent_info_t *parent, const struct mcps_data_ind *data, ws_utt_ie_t *ws_utt, ws_us_ie_t *ws_us, ws_pan_information_t *pan_information);
-void ws_bootstrap_candidate_table_reset(struct net_if *cur);
-parent_info_t *ws_bootstrap_candidate_parent_get(struct net_if *cur, const uint8_t *addr, bool create);
-void ws_bootstrap_candidate_parent_sort(struct net_if *cur, parent_info_t *new_entry);
-parent_info_t *ws_bootstrap_candidate_parent_get_best(struct net_if *cur);
-
 void ws_bootstrap_primary_parent_set(struct net_if *cur, struct llc_neighbour_req *neighbor_info, ws_parent_synch_e synch_req);
 void ws_bootstrap_parent_confirm(struct net_if *cur, struct rpl_instance *instance);
-bool ws_bootstrap_neighbor_info_request(struct net_if *interface, const uint8_t *mac_64, struct llc_neighbour_req *neighbor_buffer, bool request_new);
+bool ws_bootstrap_neighbor_get(struct net_if *net_if, const uint8_t eui64[8], struct llc_neighbour_req *neighbor);
+bool ws_bootstrap_neighbor_add(struct net_if *net_if, const uint8_t eui64[8], struct llc_neighbour_req *neighbor, uint8_t role);
 void ws_bootstrap_neighbor_list_clean(struct net_if *interface);
-int8_t ws_bootstrap_neighbor_set(struct net_if *cur, parent_info_t *parent_ptr, bool clear_list);
 void ws_nud_table_reset(struct net_if *cur);
 void ws_address_registration_update(struct net_if *interface, const uint8_t addr[16]);
 
 
-void ws_bootstrap_configure_csma_ca_backoffs(struct net_if *cur, uint8_t max_backoffs, uint8_t min_be, uint8_t max_be);
 void ws_bootstrap_fhss_configure_channel_masks(struct net_if *cur, fhss_ws_configuration_t *fhss_configuration);
 int8_t ws_bootstrap_fhss_set_defaults(struct net_if *cur, fhss_ws_configuration_t *fhss_configuration);
 void ws_bootstrap_fhss_activate(struct net_if *cur);
 uint16_t ws_bootstrap_randomize_fixed_channel(uint16_t configured_fixed_channel, uint8_t number_of_channels, uint8_t *channel_mask);
 int ws_bootstrap_set_domain_rf_config(struct net_if *cur);
-void ws_bootstrap_configure_max_retries(struct net_if *cur, uint8_t max_mac_retries);
-void ws_bootstrap_configure_data_request_restart(struct net_if *cur, uint8_t cca_failure_restart_max, uint8_t tx_failure_restart_max, uint16_t blacklist_min_ms, uint16_t blacklist_max_ms);
 
 
 void ws_bootstrap_llc_hopping_update(struct net_if *cur, const fhss_ws_configuration_t *fhss_configuration);

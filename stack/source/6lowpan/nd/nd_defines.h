@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2014-2017, 2019, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,20 +20,13 @@
 #define ND_DEFINES_H_
 #include <stdint.h>
 #include <stdbool.h>
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 
 #include "nwk_interface/protocol.h"
 #include "core/ns_address_internal.h"
 #include "6lowpan/iphc_decode/lowpan_context.h"
 #include "common_protocols/icmpv6_prefix.h"
 
-typedef enum {
-    ND_READY = 0,
-    ND_RS_UNCAST = 2,
-    ND_RS_MULTICAST = 3,
-} nd_obj_state_e;
-
-#define nd_is_ready_state(state) ((state) == ND_READY)
 #define nd_is_bootstrap_state(state) (!nd_is_ready_state(state))
 
 typedef enum {
@@ -60,35 +54,12 @@ typedef struct nd_router_next_hop {
 // ourselves as a border router, with some confusing effects on lifetimes
 // (we're in danger of timing ourselves out as a border router)
 typedef struct nd_router {
-    nwk_interface_id_e nwk_id;
     uint8_t border_router[16];
-    uint8_t flags;
     uint16_t life_time;
-    uint16_t nd_re_validate;
-    nd_obj_state_e nd_state;
-    uint16_t ns_forward_timer;
-    uint16_t nd_timer;
-    uint8_t nd_bootstrap_tick;
     uint8_t ns_retry;
-    uint32_t abro_version_num;
-    bool trig_address_reg;
-    ipv6_ra_timing_t ra_timing;
-    prefix_list_t prefix_list;
-    lowpan_context_list_t context_list;
     nd_router_next_hop default_hop;
-    nd_router_next_hop *secondaty_hop;
-
     ns_list_link_t link;
-
 } nd_router_t;
-
-/* XXX why isn't this a substructure of nd_router_t? or share one */
-typedef struct nd_router_setup {
-    uint16_t life_time;
-    uint32_t abro_version_num;
-    prefix_list_t prefix_list;
-    lowpan_context_list_t context_list;
-} nd_router_setup_t;
 
 
 #endif

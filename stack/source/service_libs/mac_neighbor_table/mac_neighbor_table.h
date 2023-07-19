@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,9 +20,7 @@
 #define MAC_NEIGHBOR_TABLE_H_
 #include <stdint.h>
 #include <stdbool.h>
-#include "stack-services/ns_list.h"
-
-#include "nwk_interface/protocol.h"
+#include "common/ns_list.h"
 
 #define NEIGHBOR_CLASS_LINK_DEFAULT_LIFETIME 240
 
@@ -47,19 +46,15 @@ typedef struct mac_neighbor_table_entry {
     uint32_t        ms_tx_count;            /*!< Mode switch Tx success count */ // TODO: implement fallback mechanism in wbsrd
     uint32_t        ms_retries_count;       /*!< Mode switch Tx retries */ // TODO: implement fallback mechanism in wsbrd
     bool            mdr_capable:1;          /*!< Indicate if the neighbor supports MAC Mode Switch */
-    bool            rx_on_idle: 1;          /*!< True, RX on idle allways at idle state, false disable radio */
-    bool            ffd_device: 1;          /*!< True FFD device, false for RFD */
-    bool            advertisment: 1;
     bool            connected_device: 1;    /*!< True Link is connected and data rx is accepted , False RX data is not accepted*/
     bool            trusted_device: 1;      /*!< True mean use normal group key, false for enable pairwise key */
     bool            nud_active: 1;          /*!< True Neighbor NUD process is active, false not active process */
     unsigned        link_role: 2;           /*!< Link role: NORMAL_NEIGHBOUR, PRIORITY_PARENT_NEIGHBOUR, SECONDARY_PARENT_NEIGHBOUR, CHILD_NEIGHBOUR */
+    uint8_t         node_role;
     ns_list_link_t  link;
 } mac_neighbor_table_entry_t;
 
 typedef NS_LIST_HEAD(mac_neighbor_table_entry_t, link) mac_neighbor_table_list_t;
-
-#define mac_neighbor_info(interface) ((interface)->mac_parameters.mac_neighbor_table) /*!< Helper macro for give mac neighbor class pointer from interface pointer. */
 
 /**
  * Remove entry notify
@@ -221,7 +216,7 @@ mac_neighbor_table_entry_t *mac_neighbor_entry_get_priority(mac_neighbor_table_t
  * \param phy_mode_ids list of supported PhyModeId
  * \param mdr_capable indicate if the device support MDR Mode Switching capability
  */
-void mac_neighbor_update_pom(mac_neighbor_table_entry_t *neighbor_entry, uint8_t phy_mode_id_count, uint8_t *phy_mode_ids, uint8_t mdr_capable);
+void mac_neighbor_update_pom(mac_neighbor_table_entry_t *neighbor_entry, uint8_t phy_mode_id_count, const uint8_t *phy_mode_ids, uint8_t mdr_capable);
 
 /**
  * Find a PhyModeId matching both transmitter and received capabilities
@@ -234,5 +229,7 @@ void mac_neighbor_update_pom(mac_neighbor_table_entry_t *neighbor_entry, uint8_t
  * \param phy_mode_id phy_mode_id the transmitter want to transit the packet
  */
 uint8_t mac_neighbor_find_phy_mode_id(mac_neighbor_table_entry_t *neighbor_entry, uint8_t phy_mode_id);
+
+int mac_neighbor_lfn_count(const struct mac_neighbor_table *table);
 
 #endif

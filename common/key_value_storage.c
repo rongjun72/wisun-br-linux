@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include <libgen.h>
 #include <errno.h>
+#include <glob.h>
 #include "common/log.h"
 
 #include "key_value_storage.h"
@@ -115,4 +116,29 @@ int storage_parse_line(struct storage_parse_info *info)
     if (sscanf(info->key, "%*[^[][%u]", &info->key_array_index) != 1)
         info->key_array_index = UINT_MAX;
     return 0;
+}
+
+void storage_delete(const char *files[])
+{
+    char filename[PATH_MAX];
+    glob_t globbuf;
+    int ret;
+
+    if (!g_storage_prefix)
+        return;
+    for (; *files; files++) {
+        snprintf(filename, sizeof(filename), "%s%s", g_storage_prefix, *files);
+        ret = glob(filename, 0, NULL, &globbuf);
+        if (ret == GLOB_NOMATCH) {
+            continue;
+        } else if (ret) {
+            WARN("glob %s returned an error", filename);
+            return;
+        }
+        for (int i = 0; globbuf.gl_pathv[i]; i++) {
+            ret = unlink(globbuf.gl_pathv[i]);
+            WARN_ON(ret < 0, "unlink %s: %m", globbuf.gl_pathv[i]);
+        }
+        globfree(&globbuf);
+    }
 }

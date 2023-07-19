@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2017, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,11 +20,14 @@
 #define RPL_DATA_H_
 #include <stdint.h>
 #include <stdbool.h>
+#include "ipv6_stack/ipv6_routing_table.h"
 
 struct rpl_domain;
 struct rpl_instance;
 struct ipv6_route_info;
 struct ns_sockaddr;
+struct net_if;
+typedef struct buffer buffer_t;
 
 /* Internal API */
 void rpl_data_sr_invalidate(void);

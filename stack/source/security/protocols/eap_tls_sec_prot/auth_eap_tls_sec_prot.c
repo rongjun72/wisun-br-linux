@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +21,7 @@
 #include <stdlib.h>
 #include "common/log.h"
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 #include "stack/mac/fhss_config.h"
 
 #include "nwk_interface/protocol.h"
@@ -84,7 +85,7 @@ static int8_t auth_eap_tls_sec_prot_init(sec_prot_t *prot);
 
 static void auth_eap_tls_sec_prot_create_request(sec_prot_t *prot, sec_prot_keys_t *sec_keys);
 static void auth_eap_tls_sec_prot_delete(sec_prot_t *prot);
-static int8_t auth_eap_tls_sec_prot_receive(sec_prot_t *prot, void *pdu, uint16_t size);
+static int8_t auth_eap_tls_sec_prot_receive(sec_prot_t *prot, const void *pdu, uint16_t size);
 
 static void auth_eap_tls_sec_prot_state_machine(sec_prot_t *prot);
 
@@ -162,7 +163,7 @@ static void auth_eap_tls_sec_prot_create_request(sec_prot_t *prot, sec_prot_keys
     prot->state_machine_call(prot);
 }
 
-static int8_t auth_eap_tls_sec_prot_receive(sec_prot_t *prot, void *pdu, uint16_t size)
+static int8_t auth_eap_tls_sec_prot_receive(sec_prot_t *prot, const void *pdu, uint16_t size)
 {
     eap_tls_sec_prot_int_t *data = eap_tls_sec_prot_get(prot);
     int8_t ret_val = -1;
@@ -214,7 +215,7 @@ static int8_t auth_eap_tls_sec_prot_message_handle(sec_prot_t *prot)
 {
     eap_tls_sec_prot_int_t *data = eap_tls_sec_prot_get(prot);
 
-    uint8_t *data_ptr = data->recv_eapol_pdu.msg.eap.data_ptr;
+    const uint8_t *data_ptr = data->recv_eapol_pdu.msg.eap.data_ptr;
     uint16_t length = data->recv_eapol_pdu.msg.eap.length;
 
     bool new_seq_id = false;

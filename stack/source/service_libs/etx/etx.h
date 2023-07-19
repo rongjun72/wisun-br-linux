@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2014-2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -140,7 +141,7 @@ typedef void (etx_value_change_handler_t)(int8_t nwk_id, uint16_t previous_etx, 
  * \return 0 not 6LowPAN interface
  * \return 1 success
  */
-uint8_t etx_value_change_callback_register(enum nwk_interface_id nwk_id, int8_t interface_id, uint16_t hysteresis, etx_value_change_handler_t *callback_ptr);
+uint8_t etx_value_change_callback_register(int8_t interface_id, uint16_t hysteresis, etx_value_change_handler_t *callback_ptr);
 
 /**
  * \brief A function to allocte ETX storage list

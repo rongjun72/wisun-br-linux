@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,12 +26,12 @@
 #include "common/trickle.h"
 #include "common/named_values.h"
 #include "common/log_legacy.h"
-#include "stack-services/common_functions.h"
+#include "common/endian.h"
 #include "service_libs/etx/etx.h"
 #include "service_libs/mac_neighbor_table/mac_neighbor_table.h"
 #include "service_libs/blacklist/blacklist.h"
 #include "service_libs/random_early_detection/random_early_detection_api.h"
-#include "stack-scheduler/eventOS_event.h"
+#include "common/events_scheduler.h"
 #include "stack/net_interface.h"
 #include "stack/ws_management_api.h"
 #include "stack/net_rpl.h"
@@ -38,7 +39,9 @@
 #include "stack/mac/mac_common_defines.h"
 #include "stack/mac/sw_mac.h"
 #include "stack/mac/mac_api.h"
+#include "stack/mac/fhss_config.h"
 
+#include "app_wsbrd/rcp_api.h"
 #include "app_wsbrd/commandline_values.h"
 #include "nwk_interface/protocol.h"
 #include "ipv6_stack/ipv6_routing_table.h"
@@ -55,7 +58,6 @@
 #include "6lowpan/bootstraps/protocol_6lowpan_interface.h"
 #include "6lowpan/mac/mac_helper.h"
 #include "6lowpan/mac/mpx_api.h"
-#include "6lowpan/mac/mac_ie_lib.h"
 
 #include "6lowpan/ws/ws_common_defines.h"
 #include "6lowpan/ws/ws_common_defines.h"
@@ -73,22 +75,25 @@
 #include "6lowpan/ws/ws_eapol_pdu.h"
 #include "6lowpan/ws/ws_eapol_auth_relay.h"
 #include "6lowpan/ws/ws_eapol_relay.h"
+#include "6lowpan/ws/ws_mngt.h"
 
 #define TRACE_GROUP "wsbs"
 
 static int8_t ws_bootstrap_6lbr_fhss_configure(struct net_if *cur)
 {
-    // Read configuration of existing FHSS and start using the default values for any network
-    fhss_ws_configuration_t fhss_configuration = ws_common_get_current_fhss_configuration(cur);
     //GET BSI from BBR module
-    fhss_configuration.bsi = ws_bbr_bsi_generate(cur);
-    ws_bootstrap_fhss_configure_channel_masks(cur, &fhss_configuration);
+    cur->ws_info.fhss_conf.bsi = ws_bbr_bsi_generate(cur);
+    ws_bootstrap_fhss_configure_channel_masks(cur, &cur->ws_info.fhss_conf);
     // Randomize fixed channels. Only used if channel plan is fixed.
-    cur->ws_info->cfg->fhss.fhss_uc_fixed_channel = ws_bootstrap_randomize_fixed_channel(cur->ws_info->cfg->fhss.fhss_uc_fixed_channel, cur->ws_info->hopping_schedule.number_of_channels, fhss_configuration.domain_channel_mask);
-    cur->ws_info->cfg->fhss.fhss_bc_fixed_channel = ws_bootstrap_randomize_fixed_channel(cur->ws_info->cfg->fhss.fhss_bc_fixed_channel, cur->ws_info->hopping_schedule.number_of_channels, fhss_configuration.domain_channel_mask);
-    ws_bootstrap_fhss_set_defaults(cur, &fhss_configuration);
-    ns_fhss_ws_configuration_set(cur->ws_info->fhss_api, &fhss_configuration);
-    ws_bootstrap_llc_hopping_update(cur, &fhss_configuration);
+    cur->ws_info.cfg->fhss.fhss_uc_fixed_channel = ws_bootstrap_randomize_fixed_channel(cur->ws_info.cfg->fhss.fhss_uc_fixed_channel,
+                                                                                         cur->ws_info.hopping_schedule.number_of_channels,
+                                                                                         cur->ws_info.fhss_conf.domain_channel_mask);
+    cur->ws_info.cfg->fhss.fhss_bc_fixed_channel = ws_bootstrap_randomize_fixed_channel(cur->ws_info.cfg->fhss.fhss_bc_fixed_channel,
+                                                                                         cur->ws_info.hopping_schedule.number_of_channels,
+                                                                                         cur->ws_info.fhss_conf.domain_channel_mask);
+    ws_bootstrap_fhss_set_defaults(cur, &cur->ws_info.fhss_conf);
+    rcp_set_fhss_timings(&cur->ws_info.fhss_conf);
+    ws_bootstrap_llc_hopping_update(cur, &cur->ws_info.fhss_conf);
 
     return 0;
 }
@@ -112,8 +117,8 @@ static void ws_bootstrap_6lbr_eapol_congestion_init(struct net_if *cur)
 
     if (cur->llc_random_early_detection == NULL) {
         cur->llc_random_early_detection = random_early_detection_create(
-                                              cur->ws_info->cfg->sec_prot.max_simult_sec_neg_tx_queue_min,
-                                              cur->ws_info->cfg->sec_prot.max_simult_sec_neg_tx_queue_max,
+                                              cur->ws_info.cfg->sec_prot.max_simult_sec_neg_tx_queue_min,
+                                              cur->ws_info.cfg->sec_prot.max_simult_sec_neg_tx_queue_max,
                                               100, RED_AVERAGE_WEIGHT_EIGHTH);
     }
 
@@ -122,8 +127,8 @@ static void ws_bootstrap_6lbr_eapol_congestion_init(struct net_if *cur)
 
     if (cur->llc_eapol_random_early_detection == NULL) {
         cur->llc_eapol_random_early_detection = random_early_detection_create(
-                                                    cur->ws_info->cfg->sec_prot.max_simult_sec_neg_tx_queue_min,
-                                                    cur->ws_info->cfg->sec_prot.max_simult_sec_neg_tx_queue_max,
+                                                    cur->ws_info.cfg->sec_prot.max_simult_sec_neg_tx_queue_min,
+                                                    cur->ws_info.cfg->sec_prot.max_simult_sec_neg_tx_queue_max,
                                                     100, RED_AVERAGE_WEIGHT_EIGHTH);
     }
 }
@@ -148,83 +153,11 @@ void ws_bootstrap_6lbr_eapol_auth_relay_socket_cb(int fd)
     ws_eapol_auth_relay_socket_cb(fd);
 }
 
-static void ws_bootstrap_6lbr_pan_config_analyse(struct net_if *cur, const struct mcps_data_ind *data, const struct mcps_data_ie_list *ie_ext, ws_utt_ie_t *ws_utt, ws_us_ie_t *ws_us)
+void ws_bootstrap_6lbr_mngt_ind(struct net_if *cur, const struct mcps_data_ind *data, const struct mcps_data_ie_list *ie_ext, uint8_t message_type)
 {
-    ws_bs_ie_t ws_bs_ie;
-    ws_bt_ie_t ws_bt_ie;
-    uint16_t ws_pan_version;
-    llc_neighbour_req_t neighbor_info;
-
-    if (data->SrcPANId != cur->ws_info->network_pan_id)
-        return;
-
-    if (!ws_wh_bt_read(ie_ext->headerIeList, ie_ext->headerIeListLength, &ws_bt_ie)) {
-        WARN("Received corrupted PAN config: no broadcast timing information");
-        return;
-    }
-    if (!ws_wp_nested_bs_read(ie_ext->payloadIeList, ie_ext->payloadIeListLength, &ws_bs_ie)) {
-        WARN("Received corrupted PAN config: no broadcast schedule information");
-        return;
-    }
-    if (!ws_wp_nested_pan_version_read(ie_ext->payloadIeList, ie_ext->payloadIeListLength, &ws_pan_version)) {
-        WARN("Received corrupted PAN config: no PAN version");
-        return;
-    }
-
-    if (cur->ws_info->pan_information.pan_version == ws_pan_version)
-        trickle_consistent_heard(&cur->ws_info->trickle_pan_config);
-    else
-        trickle_inconsistent_heard(&cur->ws_info->trickle_pan_config, &cur->ws_info->trickle_params_pan_discovery);
-
-    if (ws_bootstrap_neighbor_info_request(cur, data->SrcAddr, &neighbor_info, false)) {
-        ws_neighbor_class_neighbor_unicast_time_info_update(neighbor_info.ws_neighbor, ws_utt, data->timestamp, (uint8_t *) data->SrcAddr);
-        ws_neighbor_class_neighbor_unicast_schedule_set(cur, neighbor_info.ws_neighbor, ws_us, data->SrcAddr);
-        ws_neighbor_class_neighbor_broadcast_time_info_update(neighbor_info.ws_neighbor, &ws_bt_ie, data->timestamp);
-        ws_neighbor_class_neighbor_broadcast_schedule_set(cur, neighbor_info.ws_neighbor, &ws_bs_ie);
-    }
-}
-
-static void ws_bootstrap_6lbr_pan_config_solicit_analyse(struct net_if *cur, const struct mcps_data_ind *data, ws_utt_ie_t *ws_utt, ws_us_ie_t *ws_us)
-{
-    llc_neighbour_req_t neighbor_info;
-
-    if (data->SrcPANId != cur->ws_info->network_pan_id) {
-        return;
-    }
-
-    if (ws_bootstrap_neighbor_info_request(cur, data->SrcAddr, &neighbor_info, false)) {
-        ws_neighbor_class_neighbor_unicast_time_info_update(neighbor_info.ws_neighbor, ws_utt, data->timestamp, (uint8_t *) data->SrcAddr);
-        ws_neighbor_class_neighbor_unicast_schedule_set(cur, neighbor_info.ws_neighbor, ws_us, data->SrcAddr);
-    }
-}
-
-static void ws_bootstrap_6lbr_pan_advertisement_analyse(struct net_if *cur, const struct mcps_data_ind *data, const struct mcps_data_ie_list *ie_ext)
-{
-    ws_pan_information_t pan_information;
-
-    if (data->SrcPANId != cur->ws_info->network_pan_id)
-        return;
-    if (!ws_wp_nested_pan_read(ie_ext->payloadIeList, ie_ext->payloadIeListLength, &pan_information)) {
-        WARN("Received corrupted PAN advertisement: no pan information");
-        return;
-    }
-    // Border router routing cost is 0, so "Routing Cost the same or worse" is
-    // always true
-    if (pan_information.routing_cost != 0xFFFF)
-        trickle_consistent_heard(&cur->ws_info->trickle_pan_advertisement);
-}
-
-void ws_bootstrap_6lbr_asynch_ind(struct net_if *cur, const struct mcps_data_ind *data, const struct mcps_data_ie_list *ie_ext, uint8_t message_type)
-{
-    ws_pom_ie_t pom_ie;
-    mac_neighbor_table_entry_t *neighbor;
-
-    // Check if we know the peer
-    neighbor = mac_neighbor_table_address_discover(mac_neighbor_info(cur), data->SrcAddr, ADDR_802_15_4_LONG);
-
     // Store weakest heard packet RSSI
-    if (cur->ws_info->weakest_received_rssi > data->signal_dbm) {
-        cur->ws_info->weakest_received_rssi = data->signal_dbm;
+    if (cur->ws_info.weakest_received_rssi > data->signal_dbm) {
+        cur->ws_info.weakest_received_rssi = data->signal_dbm;
     }
 
     if (data->SrcAddrMode != MAC_ADDR_MODE_64_BIT) {
@@ -232,73 +165,32 @@ void ws_bootstrap_6lbr_asynch_ind(struct net_if *cur, const struct mcps_data_ind
         return;
     }
     ws_stats_update(cur, STATS_WS_ASYNCH_RX, 1);
-    //Validate network name
-    switch (message_type) {
-        case WS_FT_PAN_ADVERT:
-        case WS_FT_PAN_ADVERT_SOL:
-        case WS_FT_PAN_CONF_SOL:
-        case WS_FT_LPA:
-        case WS_FT_LPAS:
-        case WS_FT_LPCS:
-            //Check Network Name
-            if (!ws_bootstrap_network_name_matches(ie_ext, cur->ws_info->cfg->gen.network_name)) {
-                // Not in our network
-                return;
-            }
-            break;
-        case WS_FT_PAN_CONF:
-        case WS_FT_LPC:
-            break;
-        default:
-            return;
-    }
-    //UTT-IE and US-IE are mandatory for all Asynch Messages
-    ws_utt_ie_t ws_utt;
-    if (!ws_wh_utt_read(ie_ext->headerIeList, ie_ext->headerIeListLength, &ws_utt)) {
-        // Corrupted
-        return;
-    }
-
-    ws_us_ie_t ws_us;
-    if (!ws_wp_nested_us_read(ie_ext->payloadIeList, ie_ext->payloadIeListLength, &ws_us)) {
-        // Corrupted
-        return;
-    }
-
-    if (!ws_bootstrap_validate_channel_plan(&ws_us, NULL, cur) ||
-            !ws_bootstrap_validate_channel_function(&ws_us, NULL)) {
-        return;
-    }
-
-    if (neighbor && ws_wp_nested_pom_read(ie_ext->payloadIeList, ie_ext->payloadIeListLength, &pom_ie)) {
-        // POM-IE is optional (PA, LPA, PAS, LPAS)
-        mac_neighbor_update_pom(neighbor, pom_ie.phy_op_mode_number, pom_ie.phy_op_mode_id, pom_ie.mdr_command_capable);
-    }
 
     //Handle Message's
     switch (message_type) {
-        case WS_FT_PAN_ADVERT:
-            // Analyse Advertisement
+        case WS_FT_PA:
             ws_stats_update(cur, STATS_WS_ASYNCH_RX_PA, 1);
-            ws_bootstrap_6lbr_pan_advertisement_analyse(cur, data, ie_ext);
+            ws_mngt_pa_analyze(cur, data, ie_ext);
             break;
-        case WS_FT_PAN_ADVERT_SOL:
+        case WS_FT_PAS:
             ws_stats_update(cur, STATS_WS_ASYNCH_RX_PAS, 1);
-            trickle_inconsistent_heard(&cur->ws_info->trickle_pan_advertisement, &cur->ws_info->trickle_params_pan_discovery);
-
+            ws_mngt_pas_analyze(cur, data, ie_ext);
             break;
-        case WS_FT_PAN_CONF:
+        case WS_FT_PC:
             ws_stats_update(cur, STATS_WS_ASYNCH_RX_PC, 1);
-            ws_bootstrap_6lbr_pan_config_analyse(cur, data, ie_ext, &ws_utt, &ws_us);
+            ws_mngt_pc_analyze(cur, data, ie_ext);
             break;
-        case WS_FT_PAN_CONF_SOL:
+        case WS_FT_PCS:
             ws_stats_update(cur, STATS_WS_ASYNCH_RX_PCS, 1);
-            trickle_inconsistent_heard(&cur->ws_info->trickle_pan_config, &cur->ws_info->trickle_params_pan_discovery);
-            ws_bootstrap_6lbr_pan_config_solicit_analyse(cur, data, &ws_utt, &ws_us);
+            ws_mngt_pcs_analyze(cur, data, ie_ext);
+            break;
+        case WS_FT_LPAS:
+            ws_mngt_lpas_analyze(cur, data, ie_ext);
+            break;
+        case WS_FT_LPCS:
+            ws_mngt_lpcs_analyze(cur, data, ie_ext);
             break;
         case WS_FT_LPA:
-        case WS_FT_LPAS:
-        case WS_FT_LPCS:
         case WS_FT_LPC:
             tr_warn("LFN messages are not yet supported");
         default:
@@ -309,17 +201,17 @@ void ws_bootstrap_6lbr_asynch_ind(struct net_if *cur, const struct mcps_data_ind
 
 void ws_bootstrap_6lbr_asynch_confirm(struct net_if *interface, uint8_t asynch_message)
 {
-    if (asynch_message == WS_FT_PAN_ADVERT)
+    if (asynch_message == WS_FT_PA)
         interface->pan_advert_running = false;
-    else if (asynch_message == WS_FT_PAN_CONF)
+    else if (asynch_message == WS_FT_PC)
         interface->pan_config_running = false;
     ws_stats_update(interface, STATS_WS_ASYNCH_TX, 1);
     if (interface->bootstrap_mode == ARM_NWK_BOOTSTRAP_MODE_6LoWPAN_BORDER_ROUTER) {
-        if (asynch_message == WS_FT_PAN_CONF && interface->ws_info->pending_key_index_info.state == PENDING_KEY_INDEX_ACTIVATE) {
-            interface->ws_info->pending_key_index_info.state = NO_PENDING_PROCESS;
-            tr_info("Activate new default key %u", interface->ws_info->pending_key_index_info.index);
+        if (asynch_message == WS_FT_PC && interface->ws_info.pending_key_index_info.state == PENDING_KEY_INDEX_ACTIVATE) {
+            interface->ws_info.pending_key_index_info.state = NO_PENDING_PROCESS;
+            tr_info("Activate new default key %u", interface->ws_info.pending_key_index_info.index);
             /* Deprecated: Unused by the RCP. */
-            mac_helper_security_auto_request_key_index_set(interface, interface->ws_info->pending_key_index_info.index, interface->ws_info->pending_key_index_info.index + 1);
+            interface->mac_parameters.mac_default_ffn_key_index = interface->ws_info.pending_key_index_info.index + 1;
         }
     }
 }
@@ -352,8 +244,8 @@ static const char *tr_excl_channel_mask(const uint_rev8_t *chan_mask, int num_ch
 
 static void ws_bootstrap_6lbr_print_config(struct net_if *cur)
 {
-    ws_hopping_schedule_t *hopping_schedule = &cur->ws_info->hopping_schedule;
-    const struct fhss_ws_configuration *fhss_configuration = ns_fhss_ws_configuration_get(cur->ws_info->fhss_api);
+    ws_hopping_schedule_t *hopping_schedule = &cur->ws_info.hopping_schedule;
+    const struct fhss_ws_configuration *fhss_configuration = &cur->ws_info.fhss_conf;
     uint8_t async_chan_mask[32];
     int length;
 
@@ -371,6 +263,18 @@ static void ws_bootstrap_6lbr_print_config(struct net_if *cur)
         INFO("  phy mode id: %d", hopping_schedule->phy_mode_id);
     else
         INFO("  mode: 0x%x", hopping_schedule->operating_mode);
+
+    if (!hopping_schedule->phy_op_modes[0])
+        INFO("  phy operating modes: disabled");
+    else
+        INFO("  phy operating modes: %s", tr_bytes(hopping_schedule->phy_op_modes,
+                                                   strlen((char *)hopping_schedule->phy_op_modes),
+                                                   NULL, 80, FMT_DEC | DELIM_COMMA | ELLIPSIS_ABRT));
+    if (hopping_schedule->rcp_rail_config_index < 0)
+        INFO("  RCP configuration index: not supported");
+    else
+        INFO("  RCP configuration index: %d", hopping_schedule->rcp_rail_config_index);
+
 
     INFO("  channel 0 frequency: %.1fMHz", hopping_schedule->ch0_freq / 1000000.);
     INFO("  channel spacing: %dkHz", ws_regdb_chan_spacing_value(hopping_schedule->channel_spacing) / 1000);
@@ -407,7 +311,7 @@ static void ws_bootstrap_6lbr_print_config(struct net_if *cur)
     }
 }
 
-void ws_bootstrap_6lbr_event_handler(struct net_if *cur, arm_event_s *event)
+void ws_bootstrap_6lbr_event_handler(struct net_if *cur, struct event_payload *event)
 {
     ws_bootstrap_event_type_e event_type;
     event_type = (ws_bootstrap_event_type_e)event->event_type;
@@ -418,12 +322,13 @@ void ws_bootstrap_6lbr_event_handler(struct net_if *cur, arm_event_s *event)
             break;
         case WS_DISCOVERY_START:
             tr_info("Discovery start");
-            protocol_mac_reset(cur);
+            rcp_reset_stack();
             ws_llc_reset(cur);
             lowpan_adaptation_interface_reset(cur->id);
             //Clear Pending Key Index State
-            cur->ws_info->pending_key_index_info.state = NO_PENDING_PROCESS;
-            cur->mac_parameters.mac_default_key_index = 0;
+            cur->ws_info.pending_key_index_info.state = NO_PENDING_PROCESS;
+            cur->mac_parameters.mac_default_ffn_key_index = 0;
+            cur->mac_parameters.mac_default_lfn_key_index = 0;
 
             ipv6_destination_cache_clean(cur->id);
 
@@ -441,8 +346,8 @@ void ws_bootstrap_6lbr_event_handler(struct net_if *cur, arm_event_s *event)
                 return;
             }
             // Clear Old information from stack
-            cur->ws_info->network_pan_id = 0xffff;
-            cur->ws_info->pan_information.pan_version_set = false;
+            cur->ws_info.network_pan_id = 0xffff;
+            cur->ws_info.pan_information.pan_version_set = false;
             ws_nud_table_reset(cur);
             ws_bootstrap_neighbor_list_clean(cur);
             ws_bootstrap_ip_stack_reset(cur);
@@ -450,48 +355,45 @@ void ws_bootstrap_6lbr_event_handler(struct net_if *cur, arm_event_s *event)
 
             uint16_t pan_id = ws_bbr_pan_id_get(cur);
             if (pan_id != 0xffff) {
-                cur->ws_info->network_pan_id = pan_id;
+                cur->ws_info.network_pan_id = pan_id;
             } else {
-                if (cur->ws_info->network_pan_id == 0xffff) {
-                    cur->ws_info->network_pan_id = rand_get_random_in_range(0, 0xfffd);
+                if (cur->ws_info.network_pan_id == 0xffff) {
+                    cur->ws_info.network_pan_id = rand_get_random_in_range(0, 0xfffd);
                 }
             }
-            if (!cur->ws_info->pan_information.pan_version_set) {
-                cur->ws_info->pan_information.pan_version = rand_get_random_in_range(0, 0xffff);
-                cur->ws_info->pan_information.pan_version_set = true;
+            if (!cur->ws_info.pan_information.pan_version_set) {
+                cur->ws_info.pan_information.pan_version = rand_get_random_in_range(0, 0xffff);
+                cur->ws_info.pan_information.pan_version_set = true;
             }
-            if (!cur->ws_info->pan_information.lpan_version_set) {
-                cur->ws_info->pan_information.lpan_version = rand_get_random_in_range(0, 0xffff);
-                cur->ws_info->pan_information.lpan_version_set = true;
+            if (!cur->ws_info.pan_information.lpan_version_set) {
+                cur->ws_info.pan_information.lpan_version = rand_get_random_in_range(0, 0xffff);
+                cur->ws_info.pan_information.lpan_version_set = true;
             }
-            cur->ws_info->pan_information.pan_size = 0;
-            cur->ws_info->pan_information.routing_cost = 0;
-            cur->ws_info->pan_information.rpl_routing_method = true;
-            cur->ws_info->pan_information.use_parent_bs = true;
-            cur->ws_info->pan_information.version = WS_FAN_VERSION_1_0;
+            cur->ws_info.pan_information.pan_size = 0;
+            cur->ws_info.pan_information.jm_plf = UINT8_MAX;
+            cur->ws_info.pan_information.routing_cost = 0;
+            cur->ws_info.pan_information.rpl_routing_method = true;
+            cur->ws_info.pan_information.use_parent_bs = true;
+            cur->ws_info.pan_information.version = WS_FAN_VERSION_1_0;
             // initialize for FAN 1.1 defaults
             if (ws_version_1_1(cur)) {
-                cur->ws_info->pan_information.version = WS_FAN_VERSION_1_1;
-                if (!cur->ws_info->pan_information.lpan_version_set) {
+                cur->ws_info.pan_information.version = WS_FAN_VERSION_1_1;
+                if (!cur->ws_info.pan_information.lpan_version_set) {
                     //Randomize LFN version
-                    cur->ws_info->pan_information.lpan_version = rand_get_random_in_range(0, 0xffff);
-                    cur->ws_info->pan_information.lpan_version_set = true;
+                    cur->ws_info.pan_information.lpan_version = rand_get_random_in_range(0, 0xffff);
+                    cur->ws_info.pan_information.lpan_version_set = true;
                 }
             }
 
-            gtkhash_t *gtkhash = ws_pae_controller_gtk_hash_ptr_get(cur);
-            gtkhash_t *lgtkhash = ws_pae_controller_lgtk_hash_ptr_get(cur);
-            ws_llc_set_gtkhash(cur, gtkhash);
-            ws_llc_set_lgtkhash(cur, lgtkhash);
             ws_bbr_pan_version_increase(cur);
             ws_bbr_lpan_version_increase(cur);
 
             // Set default parameters for FHSS when starting a discovery
-            ws_common_regulatory_domain_config(cur, &cur->ws_info->hopping_schedule);
+            ws_common_regulatory_domain_config(cur, &cur->ws_info.hopping_schedule);
             ws_bootstrap_6lbr_fhss_configure(cur);
             ws_bootstrap_set_domain_rf_config(cur);
             ws_bootstrap_fhss_activate(cur);
-            ns_fhss_ws_set_hop_count(cur->ws_info->fhss_api, 0);
+            rcp_set_fhss_hop_count(0);
 
             ws_bootstrap_6lbr_print_config(cur);
 
@@ -508,10 +410,10 @@ void ws_bootstrap_6lbr_event_handler(struct net_if *cur, arm_event_s *event)
             ws_eapol_auth_relay_start(cur, EAPOL_RELAY_SOCKET_PORT, ll_addr, PAE_AUTH_SOCKET_PORT);
 
             // Set PAN ID and network name to controller
-            ws_pae_controller_nw_info_set(cur, cur->ws_info->network_pan_id,
-                                          cur->ws_info->pan_information.pan_version,
-                                          cur->ws_info->pan_information.lpan_version,
-                                          cur->ws_info->cfg->gen.network_name);
+            ws_pae_controller_nw_info_set(cur, cur->ws_info.network_pan_id,
+                                          cur->ws_info.pan_information.pan_version,
+                                          cur->ws_info.pan_information.lpan_version,
+                                          cur->ws_info.cfg->gen.network_name);
 
             // Set backbone IP address get callback
             ws_pae_controller_auth_cb_register(cur, ws_bootstrap_6lbr_backbone_ip_addr_get);
@@ -522,14 +424,11 @@ void ws_bootstrap_6lbr_event_handler(struct net_if *cur, arm_event_s *event)
             // Initialize eapol congestion tracking
             ws_bootstrap_6lbr_eapol_congestion_init(cur);
 
-            // Set retry configuration for bootstrap ready state
-            ws_bootstrap_configure_max_retries(cur, WS_MAX_FRAME_RETRIES);
-
-            // Set TX failure request restart configuration
-            ws_bootstrap_configure_data_request_restart(cur, WS_CCA_REQUEST_RESTART_MAX, WS_TX_REQUEST_RESTART_MAX, WS_REQUEST_RESTART_BLACKLIST_MIN, WS_REQUEST_RESTART_BLACKLIST_MAX);
-
-            // Set CSMA-CA backoff configuration
-            ws_bootstrap_configure_csma_ca_backoffs(cur, WS_MAX_CSMA_BACKOFFS, WS_MAC_MIN_BE, WS_MAC_MAX_BE);
+            rcp_set_max_mac_retry(WS_MAX_FRAME_RETRIES);
+            rcp_set_max_rf_retry(WS_CCA_REQUEST_RESTART_MAX, WS_TX_REQUEST_RESTART_MAX, WS_REQUEST_RESTART_BLACKLIST_MIN, WS_REQUEST_RESTART_BLACKLIST_MAX);
+            rcp_set_max_csma_backoffs(WS_MAX_CSMA_BACKOFFS);
+            rcp_set_min_be(WS_MAC_MIN_BE);
+            rcp_set_max_be(WS_MAC_MAX_BE);
 
             ws_bootstrap_event_operation_start(cur);
             break;

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -153,7 +154,7 @@ rpl_instance_t *rpl_neighbour_instance(const rpl_neighbour_t *neighbour);
 void rpl_instance_neighbours_changed(rpl_instance_t *instance, rpl_dodag_t *dodag);
 void rpl_instance_run_parent_selection(rpl_instance_t *instance);
 
-void rpl_upward_print_instance(rpl_instance_t *instance, route_print_fn_t *print_fn);
+void rpl_upward_print_instance(rpl_instance_t *instance);
 
 bool rpl_upward_read_dodag_info(const rpl_instance_t *instance, struct rpl_dodag_info *dodag_info);
 bool rpl_upward_accept_prefix_update(const rpl_dodag_t *dodag_info, const rpl_neighbour_t *neighbour, const rpl_neighbour_t *pref_parent);

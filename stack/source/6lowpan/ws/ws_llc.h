@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,12 +20,13 @@
 #define WS_LLC_H_
 #include <stdint.h>
 #include <stdbool.h>
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 #include "stack/mac/mac_common_defines.h"
 #include "stack/mac/channel_list.h"
 
 #include "6lowpan/ws/ws_neighbor_class.h"
 
+typedef enum mac_data_priority mac_data_priority_e;
 struct net_if;
 struct mcps_data_ind;
 struct mcps_data_ie_list;
@@ -37,58 +39,45 @@ struct mac_neighbor_table_entry;
 struct ws_neighbor_temp_class;
 struct mpx_api;
 
+struct wh_ie_list {
+    bool utt:   1;
+    bool bt:    1;
+    bool fc:    1;
+    bool rsl:   1;
+    bool ea:    1;
+    bool lutt:  1;
+    bool lbt:   1;
+    bool nr:    1;
+    bool lus:   1;
+    bool flus:  1;
+    bool lbs:   1;
+    bool lnd:   1;
+    bool lto:   1;
+    bool panid: 1;
+    bool lbc:   1;
+};
 
-/**
- * @brief wh_ie_sub_list_t ws asynch header IE elemnt request list
- */
-typedef struct wh_ie_sub_list {
-    bool utt_ie: 1;  /**< Unicast Timing and Frame type information */
-    bool bt_ie: 1;   /**< Broadcast timing information */
-    bool fc_ie: 1;   /**< Flow Control for Extended Direct Frame Exchange */
-    bool rsl_ie: 1;  /**< Received Signal Level information */
-    bool vh_ie: 1;   /**< Vendor header information */
-    bool ea_ie: 1;   /**< EAPOL autheticator EUI-64 header information */
-    bool lutt_ie: 1;  /**< LFN Unicast Timing and Frame Type information */
-    bool lbt_ie: 1;   /**< LFN Broadcast Timing information */
-    bool nr_ie: 1;    /**< Node Role information */
-    bool lus_ie: 1;   /**< LFN Unicast Schedule information */
-    bool flus_ie: 1;  /**< FFN for LFN unicast Schedule information */
-    bool lbs_ie: 1;   /**< LFN Broadcast Schedule information */
-    bool lnd_ie: 1;   /**< LFN Network Discovery information */
-    bool lto_ie: 1;   /**< LFN Timing information */
-    bool panid_ie: 1; /**< PAN Identifier information */
-    bool lbc_ie: 1;   /**< LFN Broadcast Configuration information */
-} wh_ie_sub_list_t;
+struct wp_ie_list {
+    bool us:       1;
+    bool bs:       1;
+    bool pan:      1;
+    bool netname:  1;
+    bool panver:   1;
+    bool gtkhash:  1;
+    bool lgtkhash: 1;
+    bool lfnver:   1;
+    bool lcp:      1;
+    bool lbats:    1;
+    bool pom:      1;
+    bool jm:       1;
+};
 
-/**
- * @brief wp_nested_ie_sub_list_t ws asynch Nested Payload sub IE element request list
- */
-typedef struct wp_nested_ie_sub_list {
-    bool us_ie: 1;                  /**< Unicast Schedule information */
-    bool bs_ie: 1;                  /**< Broadcast Schedule information */
-    bool vp_ie: 1;                  /**< Vendor Payload information */
-    bool pan_ie: 1;                 /**< PAN Information */
-    bool net_name_ie: 1;            /**< Network Name information */
-    bool pan_version_ie: 1;         /**< Pan configuration version */
-    bool gtkhash_ie: 1;             /**< GTK Hash information */
-    bool lgtkhash_ie: 1;            /**< LFN GTK Hash */
-    bool lfnver_ie: 1;              /**< LFN Version */
-    bool lcp_ie: 1;                 /**< LFN Channel Plan information */
-    bool lbats_ie: 1;               /**< LFN Broadcast Additional Transmit Schedule */
-    bool pom_ie: 1;                 /**< PHY Operating Modes information */
-} wp_nested_ie_sub_list_t;
-
-/**
- * @brief asynch_request_t Asynch message request parameters
- */
-typedef struct asynch_request {
-    unsigned  message_type: 4;                              /**< Asynch message type: WS_FT_PAN_ADVERT, WS_FT_PAN_ADVERT_SOL, WS_FT_PAN_CONF or WS_FT_PAN_CONF_SOL. */
-    wh_ie_sub_list_t wh_requested_ie_list;                  /**< WH-IE header list to message. */
-    wp_nested_ie_sub_list_t wp_requested_nested_ie_list;    /**< WP-IE Nested IE list to message. */
-    struct mlme_security security;                               /**< Request MAC security paramaters */
-    struct channel_list channel_list;                     /**< Channel List. */
-} asynch_request_t;
-
+struct ws_llc_mngt_req {
+    uint8_t frame_type;
+    struct wh_ie_list wh_ies;
+    struct wp_ie_list wp_ies;
+    struct mlme_security security;
+};
 
 /**
  * @brief LLC neighbour info request parameters
@@ -118,13 +107,10 @@ typedef struct ws_neighbor_temp_class {
 
 typedef NS_LIST_HEAD(ws_neighbor_temp_class_t, link) ws_neighbor_temp_list_t;
 
-/**
- * @brief ws_asynch_ind ws asynch data indication
- * @param interface Interface pointer
- * @param data MCPS-DATA.indication specific values
- * @param ie_ext Information element list
- */
-typedef void ws_asynch_ind(struct net_if *interface, const struct mcps_data_ind *data, const struct mcps_data_ie_list *ie_ext, uint8_t message_type);
+typedef void ws_mngt_ind(struct net_if *interface,
+                         const struct mcps_data_ind *data,
+                         const struct mcps_data_ie_list *ie_ext,
+                         uint8_t frame_type);
 
 /**
  * @brief ws_asynch_confirm ws asynch data confirmation to asynch message request
@@ -134,27 +120,7 @@ typedef void ws_asynch_ind(struct net_if *interface, const struct mcps_data_ind 
  */
 typedef void ws_asynch_confirm(struct net_if *interface, uint8_t asynch_message);
 
-/**
- * @brief ws_asynch_confirm ws asynch data confirmation to asynch message request
- * @param interface The interface pointer
- * @param mac_64 Neighbor 64-bit address
- * @param neighbor_buffer Buffer where neighbor infor is buffered
- * @param request_new true if is possible to allocate new entry
- *
- * @return true when neighbor info is available
- * @return false when no neighbor info
- */
-typedef bool ws_neighbor_info_request(struct net_if *interface, const uint8_t *mac_64, struct llc_neighbour_req *neighbor_buffer, bool request_new);
-
-/**
- * @brief ws_llc_create ws LLC module create
- * @param interface Interface pointer
- * @param asynch_ind_cb Asynch indication
- * @param ie_ext Information element list
- *
- * Function allocate and init LLC class and init it 2 supported 2 API: ws asynch and MPX user are internally registered.
- */
-int8_t ws_llc_create(struct net_if *interface, ws_asynch_ind *asynch_ind_cb, ws_asynch_confirm *asynch_cnf_cb, ws_neighbor_info_request *ws_neighbor_info_request_cb);
+int8_t ws_llc_create(struct net_if *interface, ws_mngt_ind *mngt_ind_cb, ws_asynch_confirm *asynch_cnf_cb);
 
 /**
  * @brief ws_llc_reset Reset ws LLC parametrs and clean messages
@@ -190,67 +156,19 @@ struct mpx_api *ws_llc_mpx_api_get(struct net_if *interface);
  * @return -2 Parameter problem
  *
  */
-int8_t ws_llc_asynch_request(struct net_if *interface, asynch_request_t *request);
+int8_t ws_llc_asynch_request(struct net_if *interface, struct ws_llc_mngt_req *request);
 
-
-/**
- * @brief ws_llc_set_vendor_header_data Configure WS vendor Header data information (Data of WH_IE_VH_TYPE IE element)
- * @param interface Interface pointer
- * @param vendor_header pointer to vendor header this pointer must keep alive when it is configured to LLC
- * @param vendor_header_length configured vendor header length
- *
- */
-void ws_llc_set_vendor_header_data(struct net_if *interface, uint8_t *vendor_header, uint8_t vendor_header_length);
+int ws_llc_mngt_lfn_request(struct net_if *interface, const struct ws_llc_mngt_req *req,
+                            const uint8_t dst[8], mac_data_priority_e priority);
 
 /**
- * @brief ws_llc_set_vendor_payload_data Configure WS vendor payload data information (Data of WP_PAYLOAD_IE_VP_TYPE IE element)
- * @param interface Interface pointer
- * @param vendor_payload pointer to vendor payload this pointer must keep alive when it is configured to LLC
- * @param vendor_payload_length configured vendor payload length
- *
- */
-void ws_llc_set_vendor_payload_data(struct net_if *interface, uint8_t *vendor_payload, uint8_t vendor_payload_length);
-
-/**
- * @brief ws_llc_set_network_name Configure WS Network name (Data of WP_PAYLOAD_IE_NETNAME_TYPE IE element)
+ * @brief ws_llc_set_network_name Configure WS Network name (Data of WS_WPIE_NETNAME IE element)
  * @param interface Interface pointer
  * @param name_length configured network name length
  * @param name pointer to network name this pointer must keep alive when it is configured to LLC
  *
  */
 void ws_llc_set_network_name(struct net_if *interface, uint8_t *name, uint8_t name_length);
-
-/**
- * @brief ws_llc_set_gtkhash Configure WS GTK hash information (Data of WP_PAYLOAD_IE_GTKHASH_TYPE IE element)
- * @param interface Interface pointer
- * @param gtkhash pointer to GTK hash which length is 32 bytes this pointer must keep alive when it is configured to LLC
- *
- */
-void  ws_llc_set_gtkhash(struct net_if *interface, gtkhash_t *gtkhash);
-
-/**
- * @brief ws_llc_set_lgtkhash Configure WS LFN GTK hash information (Data of WP_PAYLOAD_IE_LGTKHASH_TYPE IE element)
- * @param interface Interface pointer
- * @param gtkhash pointer to LGTK hashes. This pointer must keep alive when it is configured to LLC
- *
- */
-void  ws_llc_set_lgtkhash(struct net_if *interface, gtkhash_t *lgtkhash);
-
-/**
- * @brief ws_llc_set_pan_information_pointer Configure WS PAN information (Data of WP_PAYLOAD_IE_PAN_TYPE IE element)
- * @param interface Interface pointer
- * @param pan_information_pointer pointer to Pan information this pointer must keep alive when it is configured to LLC
- *
- */
-void ws_llc_set_pan_information_pointer(struct net_if *interface, struct ws_pan_information *pan_information_pointer);
-
-/**
- * @brief ws_llc_hopping_schedule_config Configure channel hopping
- * @param interface Interface pointer
- * @param hopping_schedule pointer to Channel hopping schedule
- *
- */
-void ws_llc_hopping_schedule_config(struct net_if *interface, struct ws_hopping_schedule *hopping_schedule);
 
 void ws_llc_timer_seconds(struct net_if *interface, uint16_t seconds_update);
 
@@ -269,7 +187,7 @@ void ws_llc_free_multicast_temp_entry(struct net_if *interface, ws_neighbor_temp
 void ws_llc_set_base_phy_mode_id(struct net_if *interface, uint8_t phy_mode_id);
 
 /**
- * @brief Configure WS POM information (Data of WP_PAYLOAD_IE_POM_TYPE IE element)
+ * @brief Configure WS POM information (Data of WS_WPIE_POM IE element)
  * @param interface Interface pointer
  * @param phy_op_mode_number length of phy_operating_modes
  * @param phy_operating_modes pointer to phy_operating_modes array. This pointer must be kept alive when it is configured to LLC
@@ -278,5 +196,16 @@ void ws_llc_set_base_phy_mode_id(struct net_if *interface, uint8_t phy_mode_id);
 void ws_llc_set_phy_operating_mode(struct net_if *interface, uint8_t *phy_operating_modes);
 
 int8_t ws_llc_set_mode_switch(struct net_if *interface, int mode, uint8_t phy_mode_id, uint8_t *neighbor_mac_address);
+
+const char *tr_ws_frame(uint8_t frame_type);
+
+typedef struct mcps_data_ind          mcps_data_ind_t;
+typedef struct mcps_data_conf         mcps_data_conf_t;
+typedef struct mcps_data_conf_payload mcps_data_conf_payload_t;
+typedef struct mcps_ack_data_payload  mcps_ack_data_payload_t;
+typedef struct mcps_data_ie_list      mcps_data_ie_list_t;
+
+void ws_llc_mac_confirm_cb(int8_t net_if_id, const mcps_data_conf_t *data, const mcps_data_conf_payload_t *conf_data);
+void ws_llc_mac_indication_cb(int8_t net_if_id, const mcps_data_ind_t *data, const mcps_data_ie_list_t *ie_ext);
 
 #endif

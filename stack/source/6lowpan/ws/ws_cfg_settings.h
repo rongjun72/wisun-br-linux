@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2020-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +18,12 @@
 
 #ifndef WS_CFG_STORAGE_H_
 #define WS_CFG_STORAGE_H_
+#include <stdbool.h>
 #include <stdint.h>
+
+#include "common/int24.h"
+
+struct net_if;
 
 /**
  * \brief Struct ws_gen_cfg_t General configuration
@@ -101,16 +107,18 @@ typedef struct ws_sec_timer_cfg {
     uint32_t ptk_lifetime;              /**< PTK lifetime; minutes; default 86400 */
     uint32_t gtk_expire_offset;         /**< GTK lifetime; GTK_EXPIRE_OFFSET; minutes; default 43200 */
     uint16_t gtk_new_act_time;          /**< GTK_NEW_ACTIVATION_TIME (1/X of expire offset); default 720 */
-    uint16_t gtk_request_imin;          /**< GTK_REQUEST_IMIN; minutes; range 1-255; default 4 */
-    uint16_t gtk_request_imax;          /**< GTK_REQUEST_IMAX; minutes; range (2-2^8)*Imin; default 64 */
-    uint16_t gtk_max_mismatch;          /**< GTK_MAX_MISMATCH; minutes; default 64 */
     uint8_t  gtk_new_install_req;       /**< GTK_NEW_INSTALL_REQUIRED; percent of GTK lifetime; range 1-100; default 80 */
     uint16_t ffn_revocat_lifetime_reduct; /**< FFN_REVOCATION_LIFETIME_REDUCTION (reduction of lifetime); default 30 */
     uint32_t lgtk_expire_offset;        /**< LGTK lifetime; LGTK_EXPIRE_OFFSET; minutes; default 129600 */
     uint16_t lgtk_new_act_time;         /**< LGTK_NEW_ACTIVATION_TIME (1/X of expire offset); default 720 */
-    uint16_t lgtk_max_mismatch;         /**< LGTK_MAX_MISMATCH; minutes; default 64 */
     uint8_t  lgtk_new_install_req;      /**< LGTK_NEW_INSTALL_REQUIRED; percent of LGTK lifetime; range 1-100; default 80 */
     uint16_t lfn_revocat_lifetime_reduct; /**< LFN_REVOCATION_LIFETIME_REDUCTION (reduction of lifetime); default 30 */
+#ifdef HAVE_PAE_SUPP
+    uint16_t gtk_request_imin;          /**< GTK_REQUEST_IMIN; minutes; range 1-255; default 4 */
+    uint16_t gtk_request_imax;          /**< GTK_REQUEST_IMAX; minutes; range (2-2^8)*Imin; default 64 */
+    uint16_t gtk_max_mismatch;          /**< GTK_MAX_MISMATCH; minutes; default 64 */
+    uint16_t lgtk_max_mismatch;         /**< LGTK_MAX_MISMATCH; minutes; default 64 */
+#endif
 } ws_sec_timer_cfg_t;
 
 /**
@@ -214,7 +222,7 @@ int8_t ws_cfg_sec_prot_get(ws_sec_prot_cfg_t *cfg);
 int8_t ws_cfg_sec_prot_validate(ws_sec_prot_cfg_t *new_cfg);
 int8_t ws_cfg_sec_prot_set(struct net_if *cur, ws_sec_prot_cfg_t *new_cfg, uint8_t flags);
 
-uint32_t ws_cfg_neighbour_temporary_lifetime_get(void);
+uint32_t ws_cfg_neighbour_temporary_lifetime_get(uint8_t role);
 void ws_cfg_neighbour_temporary_lifetime_set(uint32_t lifetime);
 
 #endif // WS_CFG_STORAGE_H_

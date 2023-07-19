@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2008, 2010-2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,7 +29,7 @@
 #ifndef _NS_ADDRESS_H
 #define _NS_ADDRESS_H
 #include <stdbool.h>
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 
 #define ADDR_MULTICAST_MAX 3
 #define ADDR_SIZE 16
@@ -162,7 +163,6 @@ int_fast8_t addr_delete(struct net_if *cur, const uint8_t address[static 16]);
 int_fast8_t addr_deprecate(struct net_if *cur, const uint8_t address[static 16]);
 void addr_delete_matching(struct net_if *cur, const uint8_t *prefix, uint8_t prefix_len, if_address_source_e source);
 void addr_delete_entry(struct net_if *cur, if_address_entry_t *addr);
-void addr_set_non_preferred(struct net_if *cur, if_address_source_e source);
 
 void addr_notification_register(if_address_notification_fn fn);
 void addr_cb(struct net_if *interface, if_address_entry_t *addr, if_address_callback_e reason);
@@ -205,11 +205,6 @@ uint_fast8_t addr_ipv6_scope(const uint8_t addr[static 16], const struct net_if 
 bool addr_ipv6_equal(const uint8_t a[static 16], const uint8_t b[static 16]);
 bool addr_iid_matches_eui64(const uint8_t iid[static 8], const uint8_t eui64[static 8]);
 bool addr_iid_matches_lowpan_short(const uint8_t iid[static 8], uint16_t short_addr);
-bool addr_iid_reserved(const uint8_t iid[static 8]);
-int_fast8_t addr_opaque_iid_key_set(const void *secret_key, uint8_t key_len);
-int_fast8_t addr_opaque_initial_iid_set(const void *iid);
-bool addr_opaque_iid_key_is_set(void);
-void addr_generate_opaque_iid(struct net_if *cur, uint8_t addr[static 16]);
 bool addr_iid_from_outer(uint8_t iid_out[static 8], const sockaddr_t *addr_in);
 
 uint8_t *addr_ipv6_write_from_lowpan_short(uint8_t dst[static 16], const uint8_t prefix[static 8], uint16_t short_addr);

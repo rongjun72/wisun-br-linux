@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Silicon Laboratories Inc. (www.silabs.com)
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  *
  * The licensor of this software is Silicon Laboratories Inc. Your use of this
  * software is governed by the terms of the Silicon Labs Master Software License
@@ -22,10 +22,11 @@ struct os_ctxt;
 int uart_open(const char *device, int bitrate, bool hardflow);
 int uart_tx(struct os_ctxt *ctxt, const void *buf, unsigned int len);
 int uart_rx(struct os_ctxt *ctxt, void *buf, unsigned int len);
+void uart_handle_crc_error(struct os_ctxt *ctxt, uint16_t crc, uint32_t frame_len, uint8_t header, uint8_t irq_err_counter);
 
 // These functions are exported for debug purposes
 size_t uart_rx_hdlc(struct os_ctxt *ctxt, uint8_t *buf, size_t buf_len);
-size_t uart_decode_hdlc(uint8_t *out, size_t out_len, const uint8_t *in, size_t in_len);
+size_t uart_decode_hdlc(uint8_t *out, size_t out_len, const uint8_t *in, size_t in_len, bool inhibit_crc_warning);
 size_t uart_encode_hdlc(uint8_t *out, const uint8_t *in, size_t in_len, uint16_t crc);
 
 #endif

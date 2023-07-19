@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2013-2017, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +18,7 @@
 #ifndef _NS_RPL_H
 #define _NS_RPL_H
 #include <stdint.h>
+#include <stddef.h>
 
 /**
  * \file net_rpl.h
@@ -33,10 +35,6 @@
  * - arm_nwk_6lowpan_rpl_dodag_route_update(), Update route info to the root.
  * - arm_nwk_6lowpan_rpl_dodag_dao_trig(), Increment the DAO Trigger Sequence Number (DTSN), to cause downstream nodes to refresh their Destination Advertisement Objects (DAOs).
  * - arm_nwk_6lowpan_rpl_dodag_version_increment(), Increment the DODAG version to trigger a global DODAG repair.
- *
- * \section rpl-recommend RECOMMEND API for router and border router:
- * - rpl_instance_list_read(), Read active RPL instance list.
- * - rpl_read_dodag_info(), Read RPL DODAG information to rpl_dodag_info_t structure by selected RPL instance ID.
  *
  * \section rpl-dodag-init Steps to define a new RPL DODAG instance:
  *  1. Allocate RPL root base with arm_nwk_6lowpan_rpl_dodag_init().
@@ -127,7 +125,7 @@
 
 /*!
  * \struct rpl_dodag_info
- * \brief RPL Instance DODAG info structure for rpl_read_dodag_info. Read RFC 6550 for more information and to make sure you know what you are doing.
+ * \brief RPL Instance DODAG info structure for rpl_control_read_dodag_infoo. Read RFC 6550 for more information and to make sure you know what you are doing.
  */
 typedef struct rpl_dodag_info {
     uint8_t dodag_id[16];           /**< RPL DODAG ID. */
@@ -280,32 +278,6 @@ int8_t arm_nwk_6lowpan_rpl_dodag_dao_trig(int8_t interface_id);
   *
   */
 int8_t arm_nwk_6lowpan_rpl_dodag_version_increment(int8_t interface_id);
-/**
-  * \brief Read RPL instance list of a node.
-  *
-  * Global instances are output as a single byte containing the instance ID;
-  * local instances are output as the instance ID followed by the 16-byte DODAG ID.
-  *
-  * \param buffer_ptr A pointer to the location of the instance IDs.
-  * \param buffer_size Instance list buffer size.
-  *
-  * \return RPL instance count (not necessarily number of bytes, if local instances).
-  *
-  */
-uint8_t rpl_instance_list_read(uint8_t *buffer_ptr, uint8_t buffer_size);
-/**
-  * \brief Read DODAG information by given RPL instance ID.
-  *
-  * If it is a local instance ID, dodag_ptr must contain the DODAG ID on entry.
-  *
-  * \param dodag_ptr A pointer to DODAG information structure.
-  * \param instance_id Read instance ID.
-  *
-  * \return 1, Read OK.
-  * \return 0, Read fail.
-  *
-  */
-uint8_t rpl_read_dodag_info(rpl_dodag_info_t *dodag_ptr, uint8_t instance_id);
 /**
   * \brief RPL DODAG preference set.
   *

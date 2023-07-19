@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2019, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,12 +19,10 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "common/endian.h"
 #include "common/utils.h"
 #include "common/log_legacy.h"
-#include "common/hal_interrupt.h"
-#include "stack-services/ns_list.h"
-#include "stack-services/common_functions.h"
-#include "service_libs/whiteboard/whiteboard.h"
+#include "common/ns_list.h"
 #include "service_libs/etx/etx.h"
 
 #include "legacy/ns_socket.h"

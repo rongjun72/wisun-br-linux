@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2014-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,6 +39,7 @@
 
 // Headers below this are implementation details - users of protocol.h shouldn't rely on them
 #include "6lowpan/iphc_decode/lowpan_context.h"
+#include "6lowpan/ws/ws_common.h"
 #include "ipv6_stack/ipv6_routing_table.h"
 
 struct mac_neighbor_table;
@@ -95,12 +97,7 @@ typedef enum {
 } interface_mode_e;
 
 typedef enum arm_internal_event_type {
-    ARM_IN_TASKLET_INIT_EVENT = 0, /**< Tasklet Init come always when generate tasklet*/
-    ARM_IN_NWK_INTERFACE_EVENT = 1, /**< Interface Bootstrap  or state update event */
-    ARM_IN_SOCKET_EVENT = 5,    /**< Interface Bootstrap  or state update event */
     ARM_IN_INTERFACE_BOOTSTRAP_CB, /** call net_bootstrap_cb_run */
-    ARM_IN_INTERFACE_PROTOCOL_HANDLE, /** protocol_buffer_poll */
-    ARM_IN_SECURITY_ECC_CALLER
 } arm_internal_event_type_e;
 
 typedef enum {
@@ -108,8 +105,6 @@ typedef enum {
     ARM_NWK_BOOTSTRAP_MODE_6LoWPAN_HOST,
     ARM_NWK_BOOTSTRAP_MODE_6LoWPAN_SLEEPY_HOST,
     ARM_NWK_BOOTSTRAP_MODE_6LoWPAN_BORDER_ROUTER,
-    ARM_NWK_BOOTSTRAP_MODE_ETHERNET_ROUTER,
-    ARM_NWK_BOOTSTRAP_MODE_ETHERNET_HOST,
 } arm_nwk_bootstrap_mode_e;
 
 typedef enum {
@@ -121,14 +116,12 @@ typedef enum {
     ARM_NWK_SNIFFER_MODE,
 } arm_nwk_interface_mode_e;
 
-#define INTERFACE_NWK_BOOTSTRAP_ADDRESS_REGISTER_READY   1
 #define INTERFACE_NWK_BOOTSTRAP_ACTIVE                   2
 #define INTERFACE_NWK_ACTIVE                            8
 #define INTERFACE_NWK_ROUTER_DEVICE                     16
 #define INTERFACE_NWK_CONF_MAC_RX_OFF_IDLE              64
 
 struct nd_router;
-struct nd_router_setup;
 
 typedef struct mac_cordinator {
     unsigned cord_adr_mode: 2;
@@ -136,30 +129,16 @@ typedef struct mac_cordinator {
 } mac_cordinator_s;
 
 typedef struct arm_15_4_mac_parameters {
+    uint16_t mtu;
     /* Security API USE */
     unsigned mac_security_level: 3;
     unsigned mac_key_id_mode: 2;
-    uint8_t mac_prev_key_index;
-    uint8_t mac_next_key_index;
-    uint8_t mac_default_key_index;
-    /* security mlme attribute */
-    uint8_t mac_prev_key_attribute_id;
-    uint8_t mac_default_key_attribute_id;
-    uint8_t mac_next_key_attribute_id;
-    uint32_t security_frame_counter;
-    bool shortAdressValid: 1;
-    /* MAC PIB boolean */
+    uint8_t mac_default_ffn_key_index;
+    uint8_t mac_default_lfn_key_index;
     bool SecurityEnabled: 1;
     bool RxOnWhenIdle: 1;
-    /* MAC PIB boolean */
-    channel_list_t mac_channel_list;
     uint8_t mac_channel;
     uint16_t pan_id;
-    uint16_t mac_short_address;
-    mac_cordinator_s mac_cordinator_info;
-    cca_threshold_table_s cca_thr_table;
-    uint8_t number_of_fhss_channel_retries;
-    uint16_t mac_in_direct_entry_timeout;
     struct mac_neighbor_table *mac_neighbor_table;
 } arm_15_4_mac_parameters_t;
 
@@ -179,27 +158,8 @@ typedef struct if_6lowpan_dad_entry {
     bool active;                // RFC 4941 temporary address
 } if_6lowpan_dad_entry_t;
 
-typedef enum {
-    IPV6_LL_CONFIG,
-    IPV6_ROUTER_SOLICITATION,
-    IPV6_GP_GEN,
-    IPV6_GP_CONFIG,
-    IPV6_READY,
-    IPV6_DHCPV6_SOLICITATION,
-    IPV6_DHCPV6_ADDRESS_REQUEST,
-    IPV6_DHCPV6_ADDRESS_REQ_FAIL,
-    //IPV6_DHCPV6_PREFIX_READY
-} ipv6_nd_state_e;
-
 typedef struct ipv6_interface_info {
-    net_ipv6_mode_e ipv6_stack_mode;
-    ipv6_nd_state_e IPv6_ND_state;
-    net_ipv6_accept_ra_e accept_ra;
-    uint8_t     wb_table_ttl;
-    uint16_t    ND_TIMER;
     uint8_t     static_prefix64[8];
-    uint8_t     routerSolicitationRetryCounter;
-    bool        temporaryUlaAddressState;
 } ipv6_interface_info_t;
 
 struct thread_info;
@@ -207,25 +167,13 @@ struct ws_info;
 struct auth_info;
 struct rpl_domain;
 
-/* Structure to keep track of timing of multicast adverts - potentially
- * multiple required: one for our own adverts in the interface structure below,
- * and one for each ABRO that we relay (in nd_router_t).
- */
-typedef struct ipv6_ra_timing {
-    uint32_t rtr_adv_last_send_time;    // monotonic time
-    uint8_t initial_rtr_adv_count;
-} ipv6_ra_timing_t;
-
 struct net_if {
-    nwk_interface_id_e nwk_id;
     int8_t id;
     int8_t bootStrapId;
     uint8_t zone_index[16];
-    int8_t net_start_tasklet;
     const char *interface_name;
     ns_list_link_t link;
     arm_nwk_bootstrap_mode_e bootstrap_mode;
-    net_6lowpan_gp_address_mode_e lowpan_address_mode;
     arm_nwk_interface_mode_e nwk_mode;
     uint8_t configure_flags;
     uint8_t lowpan_info;
@@ -245,9 +193,6 @@ struct net_if {
     uint16_t lowpan_desired_short_address;
     bool global_address_available : 1;
     bool reallocate_short_address_if_duplicate : 1;
-    bool iids_map_to_mac : 1;
-    bool opaque_slaac_iids : 1;
-    bool ip_multicast_as_mac_unicast_to_parent : 1;
     uint8_t dad_failures;
     ipv6_neighbour_cache_t ipv6_neighbour_cache;
     bool is_dhcp_relay_agent_enabled;
@@ -270,19 +215,9 @@ struct net_if {
     bool ip_forwarding : 1;
     bool ip_multicast_forwarding : 1;
     bool adv_send_advertisements : 1;
-    bool rtr_adv_unicast_to_rs : 1;
     uint8_t rtr_adv_flags;
-    uint8_t max_ra_delay_time;          // 100ms ticks
-    uint8_t min_delay_between_ras;      // 100ms ticks
-    uint8_t max_initial_rtr_advertisements;
-    uint16_t max_initial_rtr_adv_interval; // 100ms ticks
-    uint8_t adv_cur_hop_limit;
-    uint32_t adv_reachable_time;
-    uint32_t adv_retrans_timer;
-    uint16_t adv_link_mtu;
     uint16_t min_rtr_adv_interval;      // 100ms ticks
     uint16_t max_rtr_adv_interval;      // 100ms ticks
-    ipv6_ra_timing_t ra_timing;
     /* RFC 4862 Node Configuration */
     uint8_t dup_addr_detect_transmits;
     uint16_t pmtu_lifetime;             // s
@@ -295,13 +230,11 @@ struct net_if {
     struct red_info *random_early_detection;
     struct red_info *llc_random_early_detection;
     struct red_info *llc_eapol_random_early_detection;
-    struct ws_info *ws_info;
+    struct ws_info ws_info;
     struct rpl_domain *rpl_domain;
 
-    struct mac_api *mac_api;
+    struct rcp *rcp;
     arm_15_4_mac_parameters_t mac_parameters;
-
-    struct eth_mac_api *eth_mac_api;
 
     int8_t (*if_down)(struct net_if *cur);
     int8_t (*if_up)(struct net_if *cur, const uint8_t * ipv6_address);
@@ -323,20 +256,17 @@ typedef NS_LIST_HEAD(struct net_if, link) protocol_interface_list_t;
 
 extern protocol_interface_list_t protocol_interface_info_list;
 
-void nwk_interface_print_neigh_cache(route_print_fn_t *print_fn);
+void nwk_interface_print_neigh_cache();
 void nwk_interface_flush_neigh_cache(void);
 
 //void nwk_interface_dhcp_process_callback(int8_t interfaceID, bool status,uint8_t * routerId,  dhcpv6_client_server_data_t *server, bool reply);
 
 void protocol_core_interface_info_reset(struct net_if *entry);
 
-void arm_net_protocol_packet_handler(buffer_t *buf, struct net_if *cur_interface);
-
 uint8_t nwk_bootstrap_ready(struct net_if *cur);
 
-struct net_if *protocol_stack_interface_info_get(nwk_interface_id_e nwk_id);
-bool nwk_interface_compare_mac_address(struct net_if *cur, uint_fast8_t addrlen, const uint8_t addr[/*addrlen*/]);
-struct net_if *protocol_stack_interface_generate_lowpan(struct mac_api *api);
+struct net_if *protocol_stack_interface_info_get();
+struct net_if *protocol_stack_interface_generate_lowpan(struct rcp *rcp, int mtu);
 uint32_t protocol_stack_interface_set_reachable_time(struct net_if *cur, uint32_t base_reachable_time);
 void net_bootstrap_cb_run(uint8_t event);
 

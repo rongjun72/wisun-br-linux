@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,12 +24,15 @@
 #include <fnmatch.h>
 #include <arpa/inet.h>
 #include <mbedtls/sha256.h>
+#if MBEDTLS_VERSION_MAJOR > 2
+#include <mbedtls/compat-2.x.h>
+#endif
 #include "common/log.h"
 #include "common/named_values.h"
 #include "common/key_value_storage.h"
 #include "common/parsers.h"
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 #include "stack/mac/fhss_config.h"
 #include "stack/ns_address.h"
 #include "stack/ws_management_api.h"
@@ -42,6 +46,7 @@
 #include "6lowpan/ws/ws_config.h"
 #include "6lowpan/ws/ws_common.h"
 #include "6lowpan/ws/ws_cfg_settings.h"
+#include "6lowpan/ws/ws_mngt.h"
 #include "6lowpan/ws/ws_pae_timers.h"
 #include "6lowpan/ws/ws_pae_supp.h"
 #include "6lowpan/ws/ws_pae_auth.h"
@@ -615,31 +620,19 @@ int8_t ws_pae_controller_gak_from_gtk(uint8_t *gak, uint8_t *gtk, char *network_
 
     mbedtls_sha256_init(&ctx);
 
-#if (MBEDTLS_VERSION_MAJOR >= 3)
-    if (mbedtls_sha256_starts(&ctx, 0) != 0) {
-#else
     if (mbedtls_sha256_starts_ret(&ctx, 0) != 0) {
-#endif
         ret_val = -1;
         goto error;
     }
 
-#if (MBEDTLS_VERSION_MAJOR >= 3)
-    if (mbedtls_sha256_update(&ctx, input, network_name_len + GTK_LEN) != 0) {
-#else
     if (mbedtls_sha256_update_ret(&ctx, input, network_name_len + GTK_LEN) != 0) {
-#endif
         ret_val = -1;
         goto error;
     }
 
     uint8_t output[32];
 
-#if (MBEDTLS_VERSION_MAJOR >= 3)
-    if (mbedtls_sha256_finish(&ctx, output) != 0) {
-#else
     if (mbedtls_sha256_finish_ret(&ctx, output) != 0) {
-#endif
         ret_val = -1;
         goto error;
     }
@@ -996,7 +989,7 @@ static int8_t ws_pae_controller_nvm_nw_info_write(struct net_if *interface_ptr,
     if (!info)
         return -1;
     fprintf(info->file, "pan_id = %#04x\n", pan_id);
-    str_bytes_ascii(network_name, strlen(network_name), str_buf, sizeof(str_buf), ONLY_ALNUM);
+    str_bytes(network_name, strlen(network_name), NULL, str_buf, sizeof(str_buf), FMT_ASCII_ALNUM);
     fprintf(info->file, "network_name = %s\n", str_buf);
     str_key(gtk_eui64, 8, str_buf, sizeof(str_buf));
     fprintf(info->file, "eui64 = %s\n", str_buf);
@@ -1066,7 +1059,7 @@ static int8_t ws_pae_controller_nvm_nw_info_read(struct net_if *interface_ptr,
             *pan_id = strtoull(info->value, NULL, 0);
         } else if (!fnmatch("network_name", info->key, 0)) {
             if (parse_escape_sequences(network_name, info->value, 33))
-                WARN("%s:%d: invalid escape sequence", info->filename, info->linenr);
+                WARN("%s:%d: parsing error (escape sequence or too long)", info->filename, info->linenr);
         } else if (!fnmatch("eui64", info->key, 0)) {
             if (parse_byte_array(gtk_eui64, 8, info->value))
                 WARN("%s:%d: invalid EUI64: %s", info->filename, info->linenr, info->value);
@@ -1847,14 +1840,14 @@ int8_t ws_pae_controller_node_keys_remove(int8_t interface_id, uint8_t *eui_64)
     return ws_pae_auth_node_keys_remove(controller->interface_ptr, eui_64);
 }
 
-int8_t ws_pae_controller_node_access_revoke_start(int8_t interface_id, bool is_lgtk)
+int8_t ws_pae_controller_node_access_revoke_start(int8_t interface_id, bool is_lgtk, uint8_t new_gtk[GTK_LEN])
 {
     pae_controller_t *controller = ws_pae_controller_get_or_create(interface_id);
     if (!controller) {
         return -1;
     }
 
-    return ws_pae_auth_node_access_revoke_start(controller->interface_ptr, is_lgtk);
+    return ws_pae_auth_node_access_revoke_start(controller->interface_ptr, is_lgtk, new_gtk);
 }
 
 int8_t ws_pae_controller_node_limit_set(int8_t interface_id, uint16_t limit)
@@ -1907,6 +1900,8 @@ static void ws_pae_controller_gtk_hash_set(struct net_if *interface_ptr, gtkhash
     }
     pae_controller_gtk_t *gtk_struct = is_lgtk ? &controller->lgtks : &controller->gtks;
 
+    if (!memcmp(gtk_struct->gtkhash, gtkhash, sizeof(gtk_struct->gtkhash)))
+        return;
     memcpy(gtk_struct->gtkhash, gtkhash, sizeof(gtk_struct->gtkhash));
 
     tr_info("%s hash set %s %s %s %s",
@@ -1927,6 +1922,8 @@ static void ws_pae_controller_gtk_hash_set(struct net_if *interface_ptr, gtkhash
     } else {
         gtk_struct->gtkhash_set = true;
     }
+    if (is_lgtk)
+        ws_mngt_lpc_pae_cb(interface_ptr);
 }
 #endif
 
@@ -2102,8 +2099,8 @@ static void ws_pae_controller_frame_counter_store(pae_controller_t *entry, bool 
         fprintf(info->file, "# stored time: %" PRIu64 "\n", ws_pae_current_time_get());
         // FIXME: It seems harmless, but entry->sec_keys_nw_info.pan_version and
         //        entry->sec_keys_nw_info.lpan_version are not set on wsnode.
-        //        They could be replaced by ws_info->pan_information.pan_version
-        //        and ws_info->pan_information.lpan_version
+        //        They could be replaced by ws_info.pan_information.pan_version
+        //        and ws_info.pan_information.lpan_version
         fprintf(info->file, "pan_version = %d\n", entry->sec_keys_nw_info.pan_version);
         fprintf(info->file, "lpan_version = %d\n", entry->sec_keys_nw_info.lpan_version);
         for (i = 0; i < GTK_NUM; i++) {
@@ -2209,7 +2206,7 @@ static pae_controller_t *ws_pae_controller_get_or_create(int8_t interface_id)
     return controller;
 }
 
-sec_prot_gtk_keys_t *ws_pae_controller_get_gtks(int8_t interface_id)
+sec_prot_gtk_keys_t *ws_pae_controller_get_transient_keys(int8_t interface_id, bool is_lfn)
 {
     struct net_if *cur = protocol_stack_interface_info_get_by_id(interface_id);
     pae_controller_t *controller = ws_pae_controller_get(cur);
@@ -2218,7 +2215,5 @@ sec_prot_gtk_keys_t *ws_pae_controller_get_gtks(int8_t interface_id)
         return NULL;
     if (!controller)
         return NULL;
-    return &controller->gtks.gtks;
+    return is_lfn ? &controller->lgtks.gtks : &controller->gtks.gtks;
 }
-
-

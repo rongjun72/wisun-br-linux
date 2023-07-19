@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +18,9 @@
 
 #ifndef SUPP_EAP_TLS_SEC_PROT_H_
 #define SUPP_EAP_TLS_SEC_PROT_H_
+#include <stdint.h>
+
+struct kmp_service;
 
 /*
  * Supplicant (peer) EAP-TLS security protocol. Specified in RFC 5216.
@@ -31,7 +35,7 @@
  * \return < 0 failure
  * \return >= 0 success
  */
-int8_t supp_eap_tls_sec_prot_register(kmp_service_t *service);
+int8_t supp_eap_tls_sec_prot_register(struct kmp_service *service);
 
 #endif
 

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2017, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +20,7 @@
 #define BLACKLIST_H_
 #include <stdint.h>
 #include <stdbool.h>
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 
 #define BLACKLIST_DEFAULT_TIMER_TIMEOUT           4
 #define BLACKLIST_DEFAULT_TIMER_MAX_TIMEOUT       40

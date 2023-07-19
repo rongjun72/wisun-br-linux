@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Silicon Laboratories Inc. (www.silabs.com)
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  *
  * The licensor of this software is Silicon Laboratories Inc. Your use of this
  * software is governed by the terms of the Silicon Labs Master Software License
@@ -10,8 +10,8 @@
  *
  * [1]: https://www.silabs.com/about-us/legal/master-software-license-agreement
  */
-#ifndef WS_PHY_H
-#define WS_PHY_H
+#ifndef WS_REGDB_H
+#define WS_REGDB_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -108,5 +108,7 @@ const struct chan_params *ws_regdb_chan_params_universal(int chan0_freq, int cha
 
 int ws_regdb_chan_spacing_id(int val);
 int ws_regdb_chan_spacing_value(int id);
+
+bool ws_regdb_is_std(uint8_t reg_domain, uint8_t phy_mode_id);
 
 #endif

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016-2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +20,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 
 #include "nwk_interface/protocol.h"
 #include "6lowpan/mac/mpx_api.h"
@@ -133,7 +134,7 @@ static int8_t kmp_eapol_pdu_if_send(kmp_service_t *service, uint8_t instance_id,
     return ret;
 }
 
-int8_t kmp_eapol_pdu_if_receive(struct net_if *interface_ptr, const uint8_t *eui_64, void *pdu, uint16_t size)
+int8_t kmp_eapol_pdu_if_receive(struct net_if *interface_ptr, const uint8_t *eui_64, const void *pdu, uint16_t size)
 {
     kmp_service_t *service = NULL;
 
@@ -151,9 +152,9 @@ int8_t kmp_eapol_pdu_if_receive(struct net_if *interface_ptr, const uint8_t *eui
     kmp_addr_t addr;
     kmp_address_init(KMP_ADDR_EUI_64, &addr, eui_64);
 
-    eapol_kmp_pdu_t *eapol_kmp_pdu = pdu;
+    const eapol_kmp_pdu_t *eapol_kmp_pdu = pdu;
     uint16_t data_pdu_size = size - sizeof(uint8_t);
-    void *data_pdu = &eapol_kmp_pdu->kmp_data;
+    const void *data_pdu = &eapol_kmp_pdu->kmp_data;
 
     kmp_type_e type = kmp_api_type_from_id_get(eapol_kmp_pdu->kmp_id);
     if (type == KMP_TYPE_NONE) {

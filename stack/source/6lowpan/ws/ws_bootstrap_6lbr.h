@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,12 +20,17 @@
 #define WS_BOOTSTRAP_6LBR_H_
 #include <stdint.h>
 #include "common/log.h"
+#include "common/events_scheduler.h"
+
+struct net_if;
+struct mcps_data_ind;
+struct mcps_data_ie_list;
 
 #ifdef HAVE_WS_BORDER_ROUTER
 
-void ws_bootstrap_6lbr_asynch_ind(struct net_if *cur, const struct mcps_data_ind *data, const struct mcps_data_ie_list *ie_ext, uint8_t message_type);
+void ws_bootstrap_6lbr_mngt_ind(struct net_if *cur, const struct mcps_data_ind *data, const struct mcps_data_ie_list *ie_ext, uint8_t message_type);
 void ws_bootstrap_6lbr_asynch_confirm(struct net_if *interface, uint8_t asynch_message);
-void ws_bootstrap_6lbr_event_handler(struct net_if *cur, arm_event_s *event);
+void ws_bootstrap_6lbr_event_handler(struct net_if *cur, struct event_payload *event);
 void ws_bootstrap_6lbr_state_machine(struct net_if *cur);
 void ws_bootstrap_6lbr_seconds_timer(struct net_if *cur, uint32_t seconds);
 int ws_bootstrap_6lbr_eapol_relay_get_socket_fd();
@@ -34,7 +40,7 @@ void ws_bootstrap_6lbr_eapol_auth_relay_socket_cb(int fd);
 
 #else
 
-static inline void ws_bootstrap_6lbr_asynch_ind(struct net_if *cur, const struct mcps_data_ind *data, const struct mcps_data_ie_list *ie_ext, uint8_t message_type)
+static inline void ws_bootstrap_6lbr_mngt_ind(struct net_if *cur, const struct mcps_data_ind *data, const struct mcps_data_ie_list *ie_ext, uint8_t message_type)
 {
     BUG("not compiled with HAVE_WS_BORDER_ROUTER");
 }

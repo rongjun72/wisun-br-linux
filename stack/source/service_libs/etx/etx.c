@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2014-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +19,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "common/log_legacy.h"
-#include "stack-services/common_functions.h"
+#include "common/endian.h"
 #include "service_libs/mac_neighbor_table/mac_neighbor_table.h"
 #include "service_libs/etx/etx.h"
 #include "stack/mac/platform/arm_hal_phy.h"
@@ -314,12 +315,9 @@ uint16_t etx_read(int8_t interface_id, addrtype_e addr_type, const uint8_t *addr
     }
 
     uint8_t attribute_index;
-    if (interface->nwk_id == IF_IPV6) {
-        return 1;
-    }
 
     //Must Support old MLE table and new still same time
-    mac_neighbor_table_entry_t *mac_neighbor = mac_neighbor_table_address_discover(mac_neighbor_info(interface), addr_ptr + PAN_ID_LEN, addr_type);
+    mac_neighbor_table_entry_t *mac_neighbor = mac_neighbor_table_address_discover(interface->mac_parameters.mac_neighbor_table, addr_ptr + PAN_ID_LEN, addr_type);
     if (!mac_neighbor) {
         return 0xffff;
     }
@@ -405,9 +403,9 @@ static uint16_t etx_current_calc(uint16_t etx, uint8_t accumulated_failures)
  * \return 0 not 6LowPAN interface
  * \return 1 success
  */
-uint8_t etx_value_change_callback_register(nwk_interface_id_e nwk_id, int8_t interface_id, uint16_t hysteresis, etx_value_change_handler_t *callback_ptr)
+uint8_t etx_value_change_callback_register(int8_t interface_id, uint16_t hysteresis, etx_value_change_handler_t *callback_ptr)
 {
-    if ((nwk_id == IF_6LoWPAN) && hysteresis && callback_ptr) {
+    if (hysteresis && callback_ptr) {
         etx_info.hysteresis = hysteresis << 4;
         etx_info.callback_ptr = callback_ptr;
         etx_info.interface_id = interface_id;
@@ -643,13 +641,13 @@ void etx_neighbor_remove(int8_t interface_id, uint8_t attribute_index, const uin
 
 void etx_cache_timer(int seconds_update)
 {
-    struct net_if *interface = protocol_stack_interface_info_get(IF_6LoWPAN);
+    struct net_if *interface = protocol_stack_interface_info_get();
 
     if (!etx_info.cache_sample_requested) {
         return;
     }
 
-    if (!interface || !mac_neighbor_info(interface)) {
+    if (!interface || !interface->mac_parameters.mac_neighbor_table) {
         return;
     }
 
@@ -657,7 +655,7 @@ void etx_cache_timer(int seconds_update)
         return;
     }
 
-    ns_list_foreach(mac_neighbor_table_entry_t, neighbour, &mac_neighbor_info(interface)->neighbour_list) {
+    ns_list_foreach(mac_neighbor_table_entry_t, neighbour, &interface->mac_parameters.mac_neighbor_table->neighbour_list) {
 
         etx_storage_t *etx_entry = etx_storage_entry_get(interface->id, neighbour->index);
 

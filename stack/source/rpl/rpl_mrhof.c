@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2019, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +18,8 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include "common/log_legacy.h"
-#include "stack-services/common_functions.h"
+#include "common/endian.h"
+#include "common/serial_number_arithmetic.h"
 #include "service_libs/etx/etx.h"
 #include "stack/net_rpl.h"
 
@@ -310,7 +312,7 @@ static rpl_neighbour_t *rpl_mrhof_select_best_parent(rpl_instance_t *instance, c
 
         /* Prefer parent that most recently sent a DIO */
         if (c->dio_timestamp != best->dio_timestamp) {
-            if (common_serial_number_greater_32(c->dio_timestamp, best->dio_timestamp)) {
+            if (serial_number_cmp32(c->dio_timestamp, best->dio_timestamp)) {
                 goto new_best;
             } else {
                 continue;

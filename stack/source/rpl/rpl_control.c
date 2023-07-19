@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,7 +38,7 @@
 #include "app_wsbrd/tun.h"
 #include "common/bits.h"
 #include "common/log_legacy.h"
-#include "stack-services/common_functions.h"
+#include "common/endian.h"
 #include "service_libs/etx/etx.h" /* slight ick */
 #include "stack/net_rpl.h"
 #include "stack/timers.h"
@@ -148,18 +149,6 @@ static void rpl_control_publish_own_addresses(rpl_domain_t *domain, rpl_instance
             }
         }
         last_id = cur->id;
-    }
-}
-
-void rpl_control_publish_host_address(rpl_domain_t *domain, const uint8_t addr[16], uint32_t lifetime)
-{
-    ns_list_foreach(rpl_instance_t, instance, &domain->instances) {
-        if (!rpl_instance_am_root(instance)) {
-            /* TODO - Wouldn't need to publish host address if within a published prefix */
-            uint32_t descriptor = 0;
-            bool want_descriptor = rpl_policy_target_descriptor_for_host_address(domain, addr, &descriptor);
-            rpl_instance_publish_dao_target(instance, addr, 128, lifetime, false, want_descriptor, descriptor);
-        }
     }
 }
 
@@ -527,7 +516,7 @@ void rpl_control_set_domain_on_interface(struct net_if *cur, rpl_domain_t *domai
     }
     /* This is a bit icky - why assume that our Objective Functions use ETX? */
     /* But this is the easiest place to add an interface registration */
-    etx_value_change_callback_register(cur->nwk_id, cur->id,  rpl_policy_etx_hysteresis(domain), rpl_control_etx_change_callback);
+    etx_value_change_callback_register(cur->id, rpl_policy_etx_hysteresis(domain), rpl_control_etx_change_callback);
 }
 
 void rpl_control_remove_domain_from_interface(struct net_if *cur)
@@ -844,11 +833,11 @@ static const uint8_t *rpl_control_read_conf(rpl_dodag_conf_t *conf_out, const ui
     conf_out->dio_interval_doublings = opt[3];
     conf_out->dio_interval_min = opt[4];
     conf_out->dio_redundancy_constant = opt[5];
-    conf_out->dag_max_rank_increase = common_read_16_bit(opt + 6);
-    conf_out->min_hop_rank_increase = common_read_16_bit(opt + 8);
-    conf_out->objective_code_point = common_read_16_bit(opt + 10);
+    conf_out->dag_max_rank_increase = read_be16(opt + 6);
+    conf_out->min_hop_rank_increase = read_be16(opt + 8);
+    conf_out->objective_code_point = read_be16(opt + 10);
     conf_out->default_lifetime = opt[13];
-    conf_out->lifetime_unit = common_read_16_bit(opt + 14);
+    conf_out->lifetime_unit = read_be16(opt + 14);
     return opt + 16;
 }
 
@@ -861,12 +850,12 @@ static uint8_t *rpl_control_write_conf(uint8_t *opt_out, const rpl_dodag_conf_t 
     opt_out[3] = conf->dio_interval_doublings;
     opt_out[4] = conf->dio_interval_min;
     opt_out[5] = conf->dio_redundancy_constant;
-    common_write_16_bit(conf->dag_max_rank_increase, opt_out + 6);
-    common_write_16_bit(conf->min_hop_rank_increase, opt_out + 8);
-    common_write_16_bit(conf->objective_code_point, opt_out + 10);
+    write_be16(opt_out + 6, conf->dag_max_rank_increase);
+    write_be16(opt_out + 8, conf->min_hop_rank_increase);
+    write_be16(opt_out + 10, conf->objective_code_point);
     opt_out[12] = 0; // reserved
     opt_out[13] = conf->default_lifetime;
-    common_write_16_bit(conf->lifetime_unit, opt_out + 14);
+    write_be16(opt_out + 14, conf->lifetime_unit);
     return opt_out + 16;
 }
 
@@ -916,14 +905,12 @@ static void rpl_control_process_prefix_options(struct net_if *cur, rpl_instance_
         }
         uint8_t prefix_len = ptr[2];
         uint8_t flags = ptr[3];
-        uint32_t valid = common_read_32_bit(ptr + 4);
-        uint32_t preferred = common_read_32_bit(ptr + 8);
+        uint32_t valid = read_be32(ptr + 4);
+        uint32_t preferred = read_be32(ptr + 8);
         const uint8_t *prefix = ptr + 16;
 
-        if (ws_info(cur)) {
-            //For Wi-SUN Interoperability force length to 64
-            prefix_len = 64;
-        }
+        //For Wi-SUN Interoperability force length to 64
+        prefix_len = 64;
 
         if (rpl_upward_accept_prefix_update(dodag, neighbour, pref_parent)) {
 
@@ -1021,7 +1008,7 @@ static void rpl_control_process_route_options(rpl_instance_t *instance, rpl_doda
         }
         uint8_t prefix_len = ptr[2];
         uint8_t flags = ptr[3];
-        uint32_t lifetime = common_read_32_bit(ptr + 4);
+        uint32_t lifetime = read_be32(ptr + 4);
         const uint8_t *prefix = ptr + 8;
         if (opt_len < 6 + (prefix_len + 7u) / 8) {
             tr_warn("Malformed RIO");
@@ -1091,7 +1078,7 @@ malformed:
 
     instance_id = ptr[0];
     version_num = ptr[1];
-    rank = common_read_16_bit(ptr + 2);
+    rank = read_be16(ptr + 2);
     g_mop_prf = ptr[4];
     dtsn = ptr[5];
     dodagid = ptr + 8;
@@ -1411,7 +1398,7 @@ void rpl_control_transmit_dio(rpl_domain_t *domain, struct net_if *cur, uint8_t 
     uint8_t *ptr = buffer_data_pointer(buf);
     ptr[0] = instance_id;
     ptr[1] = dodag_version;
-    common_write_16_bit(rank, ptr + 2);
+    write_be16(ptr + 2, rank);
     ptr[4] = g_mop_prf;
     ptr[5] = dtsn;
     ptr[6] = 0;
@@ -1437,9 +1424,9 @@ void rpl_control_transmit_dio(rpl_domain_t *domain, struct net_if *cur, uint8_t 
         ptr[1] = 30;
         ptr[2] = prefix->prefix_len;
         ptr[3] = prefix->options & (PIO_R | PIO_A | PIO_L);
-        common_write_32_bit(prefix->lifetime, ptr + 4);
-        common_write_32_bit(prefix->preftime, ptr + 8);
-        common_write_32_bit(0, ptr + 12); // reserved
+        write_be32(ptr + 4, prefix->lifetime);
+        write_be32(ptr + 8, prefix->preftime);
+        write_be32(ptr + 12, 0); // reserved
         memcpy(ptr + 16, prefix->prefix, 16);
         ptr += 32;
         /* Transmitting a multicast DIO decrements the hold count for 0 lifetime prefixes */
@@ -1458,7 +1445,7 @@ void rpl_control_transmit_dio(rpl_domain_t *domain, struct net_if *cur, uint8_t 
         ptr[1] = 6 + prefix_bytes;
         ptr[2] = route->prefix_len;
         ptr[3] = route->flags;
-        common_write_32_bit(route->lifetime, ptr + 4);
+        write_be32(ptr + 4, route->lifetime);
         bitcpy0(ptr + 8, route->prefix, route->prefix_len);
         ptr += 8 + prefix_bytes;
         /* Transmitting a multicast DIO decrements the hold count for 0 lifetime routes */
@@ -1857,15 +1844,6 @@ void rpl_control_fast_timer(int ticks)
 
 }
 
-#if 0
-static void trace_info_print(const char *fmt, ...)
-{
-    va_list ap;
-    va_start(ap, fmt);
-    vtracef(1, TRACE_GROUP, fmt, ap);
-    va_end(ap);
-}
-#endif
 void rpl_control_slow_timer(int seconds)
 {
     bool purge = rpl_alloc_total > rpl_purge_threshold;
@@ -1882,17 +1860,16 @@ void rpl_control_slow_timer(int seconds)
         }
     }
 
-#if 0 // If including this, make sure to include the above trace_info_print helper function as well.
+#if 0
     static int rpl_print_timer;
     if ((rpl_print_timer += seconds) >= 50) {
         rpl_print_timer = 0;
-        void arm_print_routing_table2(void (*print_fn)(const char *fmt, ...));
-        struct net_if *cur = protocol_stack_interface_info_get(IF_6LoWPAN);
+        struct net_if *cur = protocol_stack_interface_info_get();
         if (cur) {
-            ipv6_neighbour_cache_print(&cur->ipv6_neighbour_cache, trace_info_print);
+            ipv6_neighbour_cache_print(&cur->ipv6_neighbour_cache);
         }
-        arm_print_routing_table2(trace_info_print);
-        rpl_control_print(trace_info_print);
+        arm_print_routing_table2();
+        rpl_control_print();
     }
 #endif
 }
@@ -1956,12 +1933,12 @@ uint16_t rpl_control_current_rank(const struct rpl_instance *instance)
 }
 
 
-static void rpl_domain_print(const rpl_domain_t *domain, route_print_fn_t *print_fn)
+static void rpl_domain_print(const rpl_domain_t *domain)
 {
-    print_fn("RPL Domain %p", (void *) domain);
+    tr_debug("RPL Domain %p", (void *) domain);
     ns_list_foreach(rpl_instance_t, instance, &domain->instances) {
-        rpl_upward_print_instance(instance, print_fn);
-        rpl_downward_print_instance(instance, print_fn);
+        rpl_upward_print_instance(instance);
+        rpl_downward_print_instance(instance);
     }
 }
 
@@ -1970,7 +1947,7 @@ uint16_t rpl_control_route_table_get(struct rpl_instance *instance, uint8_t *pre
     return rpl_downward_route_table_get(instance, prefix, output_table, output_table_len);
 }
 
-void rpl_control_print(route_print_fn_t *print_fn)
+void rpl_control_print()
 {
     unsigned t = g_monotonic_time_100ms % 10;
     unsigned s_full = g_monotonic_time_100ms / 10;
@@ -1979,9 +1956,9 @@ void rpl_control_print(route_print_fn_t *print_fn)
     unsigned h = m / 60;
     m %= 60;
     // %zu doesn't work on some Mbed toolchains
-    print_fn("Time %02u:%02u:%02u.%u (%u.%u) RPL memory usage %" PRIu32, h, m, s, t, s_full, t, (uint32_t) rpl_alloc_total);
+    tr_debug("Time %02u:%02u:%02u.%u (%u.%u) RPL memory usage %" PRIu32, h, m, s, t, s_full, t, (uint32_t) rpl_alloc_total);
     ns_list_foreach(rpl_domain_t, domain, &rpl_domains) {
-        rpl_domain_print(domain, print_fn);
+        rpl_domain_print(domain);
     }
 }
 

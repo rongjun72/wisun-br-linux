@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,15 +25,17 @@
 #include "common/rand.h"
 #include "common/ws_regdb.h"
 #include "common/log_legacy.h"
-#include "stack-services/common_functions.h"
-#include "stack-services/ns_list.h"
+#include "common/endian.h"
+#include "common/ns_list.h"
+#include "common/utils.h"
 #include "service_libs/etx/etx.h"
 #include "service_libs/mac_neighbor_table/mac_neighbor_table.h"
 #include "service_libs/blacklist/blacklist.h"
-#include "stack-scheduler/eventOS_event.h"
-#include "stack/mac/mac_common_defines.h"
+#include "common/events_scheduler.h"
 #include "stack/net_interface.h"
 #include "stack/ws_management_api.h"
+#include "stack/mac/fhss_config.h"
+#include "stack/mac/mac_common_defines.h"
 #include "stack/mac/mac_api.h"
 
 #include "common_protocols/icmpv6.h"
@@ -79,7 +82,7 @@ int8_t ws_common_generate_channel_list(const struct net_if *cur,
     memset(channel_mask, 0xFF, 32);
     if (chan_params && chan_params->chan_allowed)
         parse_bitmask(channel_mask, 32, chan_params->chan_allowed);
-    if (cur->ws_info->regulation == REG_REGIONAL_ARIB) {
+    if (cur->ws_info.regulation == REG_REGIONAL_ARIB) {
         // For now, ARIB is not supported for custom channel plans
         BUG_ON(!chan_params);
         // For now, ARIB is not supported outside of Japan
@@ -138,43 +141,35 @@ uint16_t ws_common_channel_number_calc(uint8_t regulatory_domain, uint8_t operat
 
 int8_t ws_common_allocate_and_init(struct net_if *cur)
 {
+    memset(&cur->ws_info, 0, sizeof(ws_info_t));
+    ns_list_init(&cur->ws_info.active_nud_process);
+    ns_list_init(&cur->ws_info.free_nud_entries);
 
-    if (!cur->ws_info) {
-        cur->ws_info = malloc(sizeof(ws_info_t));
-    }
-    if (!cur->ws_info) {
-        return -1;
-    }
+    ns_list_init(&cur->ws_info.parent_list_free);
+    ns_list_init(&cur->ws_info.parent_list_reserved);
 
-    memset(cur->ws_info, 0, sizeof(ws_info_t));
-    ns_list_init(&cur->ws_info->active_nud_process);
-    ns_list_init(&cur->ws_info->free_nud_entries);
+    cur->ws_info.version = test_pan_version;
 
-    ns_list_init(&cur->ws_info->parent_list_free);
-    ns_list_init(&cur->ws_info->parent_list_reserved);
+    cur->ws_info.network_pan_id = 0xffff;
+    cur->ws_info.pan_information.use_parent_bs = true;
+    cur->ws_info.pan_information.rpl_routing_method = true;
+    cur->ws_info.pan_information.pan_version_set = false;
+    cur->ws_info.pan_information.version = WS_FAN_VERSION_1_0;
+    cur->ws_info.pending_key_index_info.state = NO_PENDING_PROCESS;
 
-    cur->ws_info->version = test_pan_version;
-
-    cur->ws_info->network_pan_id = 0xffff;
-    cur->ws_info->pan_information.use_parent_bs = true;
-    cur->ws_info->pan_information.rpl_routing_method = true;
-    cur->ws_info->pan_information.pan_version_set = false;
-    cur->ws_info->pan_information.version = WS_FAN_VERSION_1_0;
-    cur->ws_info->pending_key_index_info.state = NO_PENDING_PROCESS;
-
-    cur->ws_info->hopping_schedule.regulatory_domain = REG_DOMAIN_EU;
-    cur->ws_info->hopping_schedule.operating_mode = OPERATING_MODE_3;
-    cur->ws_info->hopping_schedule.operating_class = 2;
+    cur->ws_info.hopping_schedule.regulatory_domain = REG_DOMAIN_EU;
+    cur->ws_info.hopping_schedule.operating_mode = OPERATING_MODE_3;
+    cur->ws_info.hopping_schedule.operating_class = 2;
     // Clock drift value 255 indicates that information is not provided
-    cur->ws_info->hopping_schedule.clock_drift = 255;
+    cur->ws_info.hopping_schedule.clock_drift = 255;
     // Timing accuracy is given from 0 to 2.55msec with 10usec resolution
-    cur->ws_info->hopping_schedule.timing_accuracy = 100;
-    ws_common_regulatory_domain_config(cur, &cur->ws_info->hopping_schedule);
-    cur->ws_info->pending_key_index_info.state = NO_PENDING_PROCESS;
+    cur->ws_info.hopping_schedule.timing_accuracy = 100;
+    ws_common_regulatory_domain_config(cur, &cur->ws_info.hopping_schedule);
+    cur->ws_info.pending_key_index_info.state = NO_PENDING_PROCESS;
 
     // initialize for FAN 1.1 defaults
     if (ws_version_1_1(cur)) {
-        cur->ws_info->pan_information.version = WS_FAN_VERSION_1_1;
+        cur->ws_info.pan_information.version = WS_FAN_VERSION_1_1;
     }
     return 0;
 }
@@ -201,7 +196,7 @@ void ws_common_state_machine(struct net_if *cur)
 
 void ws_common_seconds_timer(int seconds)
 {
-    struct net_if *cur = protocol_stack_interface_info_get(IF_6LoWPAN);
+    struct net_if *cur = protocol_stack_interface_info_get();
 
     if (!(cur->lowpan_info & INTERFACE_NWK_ACTIVE))
         return;
@@ -216,7 +211,7 @@ void ws_common_seconds_timer(int seconds)
 
 void ws_common_fast_timer(int ticks)
 {
-    struct net_if *cur = protocol_stack_interface_info_get(IF_6LoWPAN);
+    struct net_if *cur = protocol_stack_interface_info_get();
 
     if (!(cur->lowpan_info & INTERFACE_NWK_ACTIVE))
         return;
@@ -236,7 +231,7 @@ void ws_common_create_ll_address(uint8_t *ll_address, const uint8_t *mac64)
 void ws_common_neighbor_update(struct net_if *cur, const uint8_t *ll_address)
 {
     //Neighbor connectected update
-    mac_neighbor_table_entry_t *mac_neighbor = mac_neighbor_entry_get_by_ll64(mac_neighbor_info(cur), ll_address, false, NULL);
+    mac_neighbor_table_entry_t *mac_neighbor = mac_neighbor_entry_get_by_ll64(cur->mac_parameters.mac_neighbor_table, ll_address, false, NULL);
     if (mac_neighbor) {
         ws_nud_entry_remove_active(cur, mac_neighbor);
     }
@@ -282,7 +277,7 @@ static void ws_common_neighbour_address_reg_link_update(struct net_if *interface
     /*
      * ARO registration from child can update the link timeout so we don't need to send extra NUD if ARO received
      */
-    mac_neighbor_table_entry_t *mac_neighbor = mac_neighbor_entry_get_by_mac64(mac_neighbor_info(interface), eui64, false, false);
+    mac_neighbor_table_entry_t *mac_neighbor = mac_neighbor_entry_get_by_mac64(interface->mac_parameters.mac_neighbor_table, eui64, false, false);
 
     if (mac_neighbor) {
         if (mac_neighbor->link_lifetime < link_lifetime) {
@@ -301,7 +296,7 @@ static void ws_common_neighbour_address_reg_link_update(struct net_if *interface
 uint8_t ws_common_allow_child_registration(struct net_if *interface, const uint8_t *eui64, uint16_t aro_timeout)
 {
     uint8_t child_count = 0;
-    uint8_t max_child_count = mac_neighbor_info(interface)->list_total_size - ws_common_temporary_entry_size(mac_neighbor_info(interface)->list_total_size);
+    uint8_t max_child_count = interface->mac_parameters.mac_neighbor_table->list_total_size - ws_common_temporary_entry_size(interface->mac_parameters.mac_neighbor_table->list_total_size);
 
     if (aro_timeout == 0) {
         //DeRegister Address Reg
@@ -328,7 +323,7 @@ uint8_t ws_common_allow_child_registration(struct net_if *interface, const uint8
         return ARO_TOPOLOGICALLY_INCORRECT;
     }
 
-    ns_list_foreach_safe(mac_neighbor_table_entry_t, cur, &mac_neighbor_info(interface)->neighbour_list) {
+    ns_list_foreach_safe(mac_neighbor_table_entry_t, cur, &interface->mac_parameters.mac_neighbor_table->neighbour_list) {
 
         if (ipv6_neighbour_has_registered_by_eui64(&interface->ipv6_neighbour_cache, cur->mac64)) {
             child_count++;
@@ -336,12 +331,12 @@ uint8_t ws_common_allow_child_registration(struct net_if *interface, const uint8
     }
 
     if (child_count >= max_child_count) {
-        tr_warn("Child registration not allowed %d/%d, max:%d", child_count, max_child_count, mac_neighbor_info(interface)->list_total_size);
+        tr_warn("Child registration not allowed %d/%d, max:%d", child_count, max_child_count, interface->mac_parameters.mac_neighbor_table->list_total_size);
         return ARO_FULL;
     }
 
     ws_common_neighbour_address_reg_link_update(interface, eui64, link_lifetime);
-    tr_info("Child registration allowed %d/%d, max:%d", child_count, max_child_count, mac_neighbor_info(interface)->list_total_size);
+    tr_info("Child registration allowed %d/%d, max:%d", child_count, max_child_count, interface->mac_parameters.mac_neighbor_table->list_total_size);
 
     ws_stats_update(interface, STATS_WS_CHILD_ADD, 1);
     return ARO_SUCCESS;
@@ -349,31 +344,13 @@ uint8_t ws_common_allow_child_registration(struct net_if *interface, const uint8
 
 bool ws_common_negative_aro_mark(struct net_if *interface, const uint8_t *eui64)
 {
-    mac_neighbor_table_entry_t *neighbour = mac_neighbor_table_address_discover(mac_neighbor_info(interface), eui64, ADDR_802_15_4_LONG);
+    mac_neighbor_table_entry_t *neighbour = mac_neighbor_table_address_discover(interface->mac_parameters.mac_neighbor_table, eui64, ADDR_802_15_4_LONG);
     if (!neighbour) {
         return false;
     }
 
     ws_bootstrap_mac_neighbor_short_time_set(interface, eui64, WS_NEIGHBOUR_TEMPORARY_NEIGH_MAX_LIFETIME);
     return true;
-}
-
-uint32_t ws_common_latency_estimate_get(struct net_if *cur)
-{
-    uint32_t latency = 0;
-
-    if (ws_cfg_network_config_get(cur) <= CONFIG_SMALL) {
-        // Also has the certificate settings
-        latency = 5000;
-    } else if (ws_cfg_network_config_get(cur) <= CONFIG_MEDIUM) {
-        latency = 10000;
-    } else if (ws_cfg_network_config_get(cur) <= CONFIG_LARGE) {
-        latency = 20000;
-    } else  {
-        latency = 30000;
-    }
-
-    return latency;
 }
 
 uint32_t ws_common_datarate_get_from_phy_mode(uint8_t phy_mode_id, uint8_t operating_mode)
@@ -388,58 +365,7 @@ uint32_t ws_common_datarate_get_from_phy_mode(uint8_t phy_mode_id, uint8_t opera
 
 uint32_t ws_common_datarate_get(struct net_if *cur)
 {
-    return ws_common_datarate_get_from_phy_mode(cur->ws_info->hopping_schedule.phy_mode_id, cur->ws_info->hopping_schedule.operating_mode);
-}
-
-uint32_t ws_common_usable_application_datarate_get(struct net_if *cur)
-{
-    /* Usable data rate is a available data rate when removed ACK and wait times required to send a packet
-     *
-     * Estimated to be around 70% with following assumptions with 150kbs data rate
-     * Average ACK size 48 bytes
-     * Average tACK 2ms
-     * Average CCA check time + processing 7ms
-     * Delays in bytes with 150kbs data rate 168 + 48 bytes for ACK 216 bytes
-     * Usable data rate is 1 - 216/(216 + 500) about 70%
-     */
-    return 70 * ws_common_datarate_get_from_phy_mode(cur->ws_info->hopping_schedule.phy_mode_id, cur->ws_info->hopping_schedule.operating_mode) / 100;
-}
-
-
-uint32_t ws_common_network_size_estimate_get(struct net_if *cur)
-{
-    uint32_t network_size_estimate = 100;
-
-    if ((cur->ws_info->cfg->gen.network_size != NETWORK_SIZE_AUTOMATIC) &&
-            (cur->ws_info->cfg->gen.network_size != NETWORK_SIZE_CERTIFICATE)) {
-        network_size_estimate = cur->ws_info->cfg->gen.network_size * 100;
-    }
-
-    return network_size_estimate;
-}
-
-uint32_t ws_common_connected_time_get(struct net_if *cur)
-{
-    if (!ws_info(cur)) {
-        return 0;
-    }
-    if (cur->ws_info->connected_time == 0) {
-        // We are not connected
-        return 0;
-    }
-    return cur->ws_info->uptime - cur->ws_info->connected_time;
-}
-
-uint32_t ws_common_authentication_time_get(struct net_if *cur)
-{
-    if (!ws_info(cur)) {
-        return 0;
-    }
-    if (cur->ws_info->authentication_time == 0) {
-        // Authentication was not done when joined to network so time is not known
-        return 0;
-    }
-    return cur->ws_info->uptime - cur->ws_info->authentication_time;
+    return ws_common_datarate_get_from_phy_mode(cur->ws_info.hopping_schedule.phy_mode_id, cur->ws_info.hopping_schedule.operating_mode);
 }
 
 void ws_common_primary_parent_update(struct net_if *interface, mac_neighbor_table_entry_t *neighbor)
@@ -459,18 +385,36 @@ void ws_common_border_router_alive_update(struct net_if *interface)
     }
 
     // After successful DAO ACK connection to border router is verified
-    interface->ws_info->pan_timeout_timer = interface->ws_info->cfg->timing.pan_timeout;
+    interface->ws_info.pan_timeout_timer = interface->ws_info.cfg->timing.pan_timeout;
 }
 
-fhss_ws_configuration_t ws_common_get_current_fhss_configuration(struct net_if *cur)
+bool ws_common_is_valid_nr(uint8_t node_role)
 {
-    fhss_ws_configuration_t fhss_configuration;
-    memset(&fhss_configuration, 0, sizeof(fhss_ws_configuration_t));
-    if (ns_fhss_ws_configuration_get(cur->ws_info->fhss_api)) {
-        memcpy(&fhss_configuration, ns_fhss_ws_configuration_get(cur->ws_info->fhss_api), sizeof(fhss_ws_configuration_t));
-    } else {
-        tr_error("FHSS configuration could not be read");
+    switch (node_role) {
+    case WS_NR_ROLE_BR:
+    case WS_NR_ROLE_ROUTER:
+    case WS_NR_ROLE_LFN:
+        return true;
     }
-    return fhss_configuration;
+    return false;
 }
 
+uint8_t ws_common_calc_plf(uint16_t pan_size, uint8_t network_size)
+{
+    uint16_t max_size;
+
+    switch (network_size) {
+    case NETWORK_SIZE_SMALL:
+        max_size = 100;
+        break;
+    case NETWORK_SIZE_MEDIUM:
+        max_size = 1000;
+        break;
+    case NETWORK_SIZE_LARGE:
+        max_size = 10000;
+        break;
+    default:
+        return UINT8_MAX;
+    }
+    return MIN(100 * pan_size / max_size, 100);
+}

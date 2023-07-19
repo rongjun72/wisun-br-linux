@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,7 +29,7 @@
 #include <stdbool.h>
 #include <assert.h>
 #include "common/trickle.h"
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 
 #include "common_protocols/icmpv6_prefix.h"
 #include "rpl/rpl_control.h"

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -78,6 +79,7 @@ typedef struct fhss_ws_configuration {
 
     /** Broadcast interval. Duration between broadcast dwell intervals. Range: 0-16777216 milliseconds. */
     uint32_t fhss_broadcast_interval;
+    uint32_t lfn_bc_interval;
 
     /** Broadcast dwell interval. Range: 15-250 milliseconds. */
     uint8_t fhss_bc_dwell_interval;

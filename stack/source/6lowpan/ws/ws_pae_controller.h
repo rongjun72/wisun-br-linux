@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,16 +25,15 @@
 
 #include "security/protocols/sec_prot.h"
 #include "security/protocols/sec_prot_keys.h"
-#include "nwk_interface/protocol_abstract.h"
 
-
-typedef enum {
+typedef enum auth_result {
     AUTH_RESULT_OK = 0,                    // Successful
     AUTH_RESULT_ERR_NO_MEM = -1,           // No memory
     AUTH_RESULT_ERR_TX_ERR = -2,           // TX error (e.g. no acknowledge was received)
     AUTH_RESULT_ERR_UNSPEC = -3            // Other reason
 } auth_result_e;
 
+struct net_if;
 struct nvm_tlv_entry;
 struct ws_sec_timer_cfg;
 struct ws_sec_prot_cfg;
@@ -454,7 +454,7 @@ int8_t ws_pae_controller_node_keys_remove(int8_t interface_id, uint8_t *eui_64);
  * \return >= 0 success
  *
  */
-int8_t ws_pae_controller_node_access_revoke_start(int8_t interface_id, bool is_lgtk);
+int8_t ws_pae_controller_node_access_revoke_start(int8_t interface_id, bool is_lgtk, uint8_t new_gtk[GTK_LEN]);
 
 /**
  * ws_pae_controller_node_limit_set set node limit
@@ -732,7 +732,7 @@ void ws_pae_controller_slow_timer(int seconds);
 
 int8_t ws_pae_controller_gak_from_gtk(uint8_t *gak, uint8_t *gtk, char *network_name);
 
-sec_prot_gtk_keys_t *ws_pae_controller_get_gtks(int8_t interface_id);
+sec_prot_gtk_keys_t *ws_pae_controller_get_transient_keys(int8_t interface_id, bool is_lfn);
 
 
 #endif

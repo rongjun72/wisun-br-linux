@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,20 +19,24 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include "common/endian.h"
 #include "common/rand.h"
 #include "common/dhcp_server.h"
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
-#include "stack-services/common_functions.h"
+#include "common/ns_list.h"
+#include "common/version.h"
 #include "service_libs/etx/etx.h"
 #include "service_libs/mac_neighbor_table/mac_neighbor_table.h"
 #include "service_libs/random_early_detection/random_early_detection_api.h"
-#include "stack-scheduler/eventOS_event.h"
+#include "common/events_scheduler.h"
 #include "stack/mac/mac_api.h"
 #include "stack/mac/mac_mcps.h"
 #include "stack/mac/mac_common_defines.h"
 #include "stack/timers.h"
 
+#include "app_wsbrd/wsbr.h"
+#include "app_wsbrd/wsbr_mac.h"
+#include "app_wsbrd/rcp_api.h"
 #include "core/ns_address_internal.h"
 #include "legacy/ns_socket.h"
 #include "nwk_interface/protocol.h"
@@ -73,7 +78,6 @@ typedef struct fragmenter_tx_entry {
     bool fragmented_data: 1;
     bool first_fragment: 1;
     bool indirect_data: 1;
-    bool indirect_data_cached: 1; /*!< Data cached for delayed transmission as mac request is already active */
     buffer_t *buf;
     uint8_t *fragmenter_buf;
     ns_list_link_t      link; /*!< List link entry */
@@ -86,7 +90,6 @@ typedef struct fragmenter_interface {
     int8_t interface_id;
     uint16_t local_frag_tag;
     uint8_t msduHandle;
-    fragmenter_tx_list_t indirect_tx_queue;
     uint8_t *fragment_indirect_tx_buffer; //Used for write fragmentation header
     uint16_t mtu_size;
     fragmenter_tx_entry_t active_broadcast_tx_buf; //Current active direct broadcast tx process
@@ -95,9 +98,6 @@ typedef struct fragmenter_interface {
     uint16_t directTxQueue_size;
     uint16_t directTxQueue_level;
     uint16_t activeTxList_size;
-    uint16_t indirect_big_packet_threshold;
-    uint16_t max_indirect_big_packets_total;
-    uint16_t max_indirect_small_packets_per_child;
     uint32_t last_rx_high_priority;
     bool fragmenter_active; /*!< Fragmenter state */
     adaptation_etx_update_cb *etx_update_cb;
@@ -125,7 +125,6 @@ static void lowpan_adaptation_tx_queue_write(struct net_if *cur, fragmenter_inte
 static buffer_t *lowpan_adaptation_tx_queue_read(struct net_if *cur, fragmenter_interface_t *interface_ptr);
 
 /* Data direction and message length validation */
-static bool lowpan_adaptation_indirect_data_request(mac_neighbor_table_entry_t *entry_ptr);
 static bool lowpan_adaptation_request_longer_than_mtu(struct net_if *cur, buffer_t *buf, fragmenter_interface_t *interface_ptr);
 
 /* Common data tx request process functions */
@@ -147,8 +146,6 @@ static bool lowpan_adaptation_tx_process_ready(fragmenter_tx_entry_t *tx_ptr);
 static int8_t lowpan_message_fragmentation_init(buffer_t *buf, fragmenter_tx_entry_t *frag_entry, struct net_if *cur, fragmenter_interface_t *interface_ptr);
 static bool lowpan_message_fragmentation_message_write(const fragmenter_tx_entry_t *frag_entry, mcps_data_req_t *dataReq);
 static bool lowpan_adaptation_indirect_queue_free_message(struct net_if *cur, fragmenter_interface_t *interface_ptr, fragmenter_tx_entry_t *tx_ptr);
-
-static fragmenter_tx_entry_t *lowpan_adaptation_indirect_mac_data_request_active(fragmenter_interface_t *interface_ptr, fragmenter_tx_entry_t *tx_ptr);
 
 static bool lowpan_buffer_tx_allowed(fragmenter_interface_t *interface_ptr, buffer_t *buf);
 static bool lowpan_adaptation_purge_from_mac(struct net_if *cur, fragmenter_interface_t *interface_ptr,  uint8_t msduhandle);
@@ -275,15 +272,6 @@ static bool lowpan_adaptation_request_longer_than_mtu(struct net_if *cur, buffer
     }
 }
 
-static bool lowpan_adaptation_indirect_data_request(mac_neighbor_table_entry_t *entry_ptr)
-{
-    if (entry_ptr && !(entry_ptr->rx_on_idle)) {
-        return true;
-    }
-    return false;
-}
-
-
 static void lowpan_active_buffer_state_reset(fragmenter_tx_entry_t *tx_buffer)
 {
     if (tx_buffer->buf) {
@@ -326,8 +314,7 @@ static uint8_t lowpan_data_request_unique_handle_get(fragmenter_interface_t *int
     while (!valid_info) {
         handle = interface_ptr->msduHandle++;
         if (!lowpan_listed_tx_handle_verify(handle, &interface_ptr->activeUnicastList)
-                && !lowpan_active_tx_handle_verify(handle, interface_ptr->active_broadcast_tx_buf.buf)
-                && !lowpan_listed_tx_handle_verify(handle, &interface_ptr->indirect_tx_queue)) {
+                && !lowpan_active_tx_handle_verify(handle, interface_ptr->active_broadcast_tx_buf.buf)) {
             valid_info = true;
         }
     }
@@ -358,11 +345,8 @@ static void lowpan_list_free(fragmenter_tx_list_t *list, bool fragment_buf_free)
 }
 
 
-int8_t lowpan_adaptation_interface_init(int8_t interface_id, uint16_t mac_mtu_size)
+int8_t lowpan_adaptation_interface_init(int8_t interface_id)
 {
-    if (mac_mtu_size == 0) {
-        return -2;
-    }
     //Remove old interface
     lowpan_adaptation_interface_free(interface_id);
 
@@ -379,7 +363,6 @@ int8_t lowpan_adaptation_interface_init(int8_t interface_id, uint16_t mac_mtu_si
     interface_ptr->msduHandle = rand_get_8bit();
     interface_ptr->local_frag_tag = rand_get_16bit();
 
-    ns_list_init(&interface_ptr->indirect_tx_queue);
     ns_list_init(&interface_ptr->directTxQueue);
     ns_list_init(&interface_ptr->activeUnicastList);
     interface_ptr->activeTxList_size = 0;
@@ -404,9 +387,6 @@ int8_t lowpan_adaptation_interface_free(int8_t interface_id)
     lowpan_list_free(&interface_ptr->activeUnicastList, false);
     interface_ptr->activeTxList_size = 0;
     lowpan_active_buffer_state_reset(&interface_ptr->active_broadcast_tx_buf);
-
-    //Free Indirect entry
-    lowpan_list_free(&interface_ptr->indirect_tx_queue, true);
 
     buffer_free_list(&interface_ptr->directTxQueue);
     interface_ptr->directTxQueue_size = 0;
@@ -433,9 +413,6 @@ int8_t lowpan_adaptation_interface_reset(int8_t interface_id)
     lowpan_active_buffer_state_reset(&interface_ptr->active_broadcast_tx_buf);
     //Clean fragmented message flag
     interface_ptr->fragmenter_active = false;
-
-    //Free Indirect entry
-    lowpan_list_free(&interface_ptr->indirect_tx_queue, true);
 
     buffer_free_list(&interface_ptr->directTxQueue);
     interface_ptr->directTxQueue_size = 0;
@@ -516,7 +493,6 @@ static fragmenter_tx_entry_t *lowpan_indirect_entry_allocate(uint16_t fragment_b
     indirec_entry->buf = NULL;
     indirec_entry->fragmented_data = false;
     indirec_entry->first_fragment = true;
-    indirec_entry->indirect_data_cached = false;
 
     return indirec_entry;
 }
@@ -596,11 +572,11 @@ static bool lowpan_message_fragmentation_message_write(const fragmenter_tx_entry
         ptr += frag_entry->unfrag_len;
     }
     if (frag_entry->first_fragment) {
-        ptr = common_write_16_bit(((uint16_t) LOWPAN_FRAG1 << 8) | frag_entry->size, ptr);
-        ptr = common_write_16_bit(frag_entry->tag, ptr);
+        ptr = write_be16(ptr, ((uint16_t) LOWPAN_FRAG1 << 8) | frag_entry->size);
+        ptr = write_be16(ptr, frag_entry->tag);
     } else {
-        ptr = common_write_16_bit(((uint16_t) LOWPAN_FRAGN << 8) | frag_entry->size, ptr);
-        ptr = common_write_16_bit(frag_entry->tag, ptr);
+        ptr = write_be16(ptr, ((uint16_t) LOWPAN_FRAGN << 8) | frag_entry->size);
+        ptr = write_be16(ptr, frag_entry->tag);
         *ptr++ = frag_entry->offset;
     }
     memcpy(ptr, buffer_data_pointer(frag_entry->buf), frag_entry->frag_len);
@@ -658,11 +634,10 @@ buffer_t *lowpan_adaptation_data_process_tx_preprocess(struct net_if *cur, buffe
         buf->dst_sa.addr_type = ADDR_802_15_4_SHORT;
         buf->dst_sa.address[2] = 0xff;
         buf->dst_sa.address[3] = 0xff;
-        buf->link_specific.ieee802_15_4.indirectTxProcess = false;
         buf->link_specific.ieee802_15_4.requestAck = false;
     } else {
 
-        neigh_entry_ptr = mac_neighbor_table_address_discover(mac_neighbor_info(cur), buf->dst_sa.address + 2, buf->dst_sa.addr_type);
+        neigh_entry_ptr = mac_neighbor_table_address_discover(cur->mac_parameters.mac_neighbor_table, buf->dst_sa.address + 2, buf->dst_sa.addr_type);
 
         //Validate neighbour
         if (!buf->options.ll_security_bypass_tx && neigh_entry_ptr) {
@@ -673,30 +648,21 @@ buffer_t *lowpan_adaptation_data_process_tx_preprocess(struct net_if *cur, buffe
                 //tr_warn("Drop TX to unassociated %s", trace_sockaddr(&buf->dst_sa, true));
                 goto tx_error_handler;
             }
-        } else if (ws_info(cur) && !neigh_entry_ptr) {
+        } else if (!neigh_entry_ptr) {
             //Do not accept to send unknow device
             goto tx_error_handler;
         }
         buf->link_specific.ieee802_15_4.requestAck = true;
-        buf->link_specific.ieee802_15_4.indirectTxProcess = lowpan_adaptation_indirect_data_request(neigh_entry_ptr);
     }
 
-    if (buf->link_specific.ieee802_15_4.key_id_mode != B_SECURITY_KEY_ID_2) {
-
-        if (!buf->link_specific.ieee802_15_4.requestAck) {
-            buf->link_specific.ieee802_15_4.key_id_mode = B_SECURITY_KEY_ID_MODE_DEFAULT;
-        } else if (ws_info(cur) || (neigh_entry_ptr && !neigh_entry_ptr->trusted_device)) {
-            buf->link_specific.ieee802_15_4.key_id_mode  = B_SECURITY_KEY_ID_MODE_DEFAULT;
-        } else {
-            buf->link_specific.ieee802_15_4.key_id_mode  = B_SECURITY_KEY_ID_IMPLICIT;
-        }
-    }
+    if (buf->link_specific.ieee802_15_4.key_id_mode != B_SECURITY_KEY_ID_2)
+        buf->link_specific.ieee802_15_4.key_id_mode = B_SECURITY_KEY_ID_MODE_DEFAULT;
 
     return buf;
 
 tx_error_handler:
     if (neigh_entry_ptr && neigh_entry_ptr->nud_active) {
-        mac_neighbor_info(cur)->active_nud_process--;
+        cur->mac_parameters.mac_neighbor_table->active_nud_process--;
         neigh_entry_ptr->nud_active = false;
 
     }
@@ -708,10 +674,10 @@ tx_error_handler:
 static void lowpan_adaptation_data_request_primitiv_set(const buffer_t *buf, mcps_data_req_t *dataReq, struct net_if *cur)
 {
     memset(dataReq, 0, sizeof(mcps_data_req_t));
+    mac_neighbor_table_entry_t *ngb;
 
     //Check do we need fragmentation
 
-    dataReq->InDirectTx = buf->link_specific.ieee802_15_4.indirectTxProcess;
     dataReq->TxAckReq = buf->link_specific.ieee802_15_4.requestAck;
     dataReq->SrcAddrMode = buf->src_sa.addr_type;
     dataReq->DstAddrMode = buf->dst_sa.addr_type;
@@ -728,12 +694,17 @@ static void lowpan_adaptation_data_request_primitiv_set(const buffer_t *buf, mcp
 
     //Set Messages
     if (!buf->options.ll_security_bypass_tx) {
-        dataReq->Key.SecurityLevel = mac_helper_default_security_level_get(cur);
+        dataReq->Key.SecurityLevel = cur->mac_parameters.mac_security_level;
         if (dataReq->Key.SecurityLevel) {
             switch (buf->link_specific.ieee802_15_4.key_id_mode) {
                 case B_SECURITY_KEY_ID_MODE_DEFAULT:
-                    dataReq->Key.KeyIndex = mac_helper_default_key_index_get(cur);
-                    dataReq->Key.KeyIdMode = mac_helper_default_security_key_id_mode_get(cur);
+                    ngb = mac_neighbor_table_address_discover(cur->mac_parameters.mac_neighbor_table,
+                                                              dataReq->DstAddr, dataReq->DstAddrMode);
+                    if (ngb && ngb->node_role == WS_NR_ROLE_LFN)
+                        dataReq->Key.KeyIndex = cur->mac_parameters.mac_default_lfn_key_index;
+                    else
+                        dataReq->Key.KeyIndex = cur->mac_parameters.mac_default_ffn_key_index;
+                    dataReq->Key.KeyIdMode = cur->mac_parameters.mac_key_id_mode;
                     break;
                 case B_SECURITY_KEY_ID_IMPLICIT:
                     dataReq->Key.KeyIdMode = MAC_KEY_ID_MODE_IMPLICIT;
@@ -742,209 +713,25 @@ static void lowpan_adaptation_data_request_primitiv_set(const buffer_t *buf, mcp
                 case B_SECURITY_KEY_ID_2:
                     dataReq->Key.KeyIndex = 0xff;
                     dataReq->Key.KeyIdMode = MAC_KEY_ID_MODE_SRC4_IDX;
-                    common_write_32_bit(0xffffffff, dataReq->Key.Keysource);
+                    write_be32(dataReq->Key.Keysource, 0xffffffff);
                     break;
             }
         }
     }
 }
 
-static bool lowpan_adaptation_indirect_cache_sanity_check(struct net_if *cur, fragmenter_interface_t *interface_ptr)
-{
-    fragmenter_tx_entry_t *active_tx_entry;
-    ns_list_foreach(fragmenter_tx_entry_t, fragmenter_tx_entry, &interface_ptr->indirect_tx_queue) {
-        if (fragmenter_tx_entry->indirect_data_cached == false) {
-            // active entry, jump to next one
-            continue;
-        }
-
-        // cached entry found, check if it has pending data reguest
-        active_tx_entry = lowpan_adaptation_indirect_mac_data_request_active(interface_ptr, fragmenter_tx_entry);
-
-        if (active_tx_entry == NULL) {
-            // entry is in cache and is not sent to mac => trigger this
-            tr_debug_extra("sanity check, push seq %d to addr %s", fragmenter_tx_entry->buf->seq, tr_ipv6(fragmenter_tx_entry->buf->dst_sa.address));
-            fragmenter_tx_entry->indirect_data_cached = false;
-            lowpan_data_request_to_mac(cur, fragmenter_tx_entry->buf, fragmenter_tx_entry, interface_ptr);
-            return true;
-        }
-    }
-
-    return false;
-}
-
-static bool lowpan_adaptation_indirect_cache_trigger(struct net_if *cur, fragmenter_interface_t *interface_ptr, fragmenter_tx_entry_t *tx_ptr)
-{
-    tr_debug_extra("lowpan_adaptation_indirect_cache_trigger()");
-
-    if (ns_list_count(&interface_ptr->indirect_tx_queue) == 0) {
-        return false;
-    }
-
-    /* Trigger first cached entry */
-    ns_list_foreach(fragmenter_tx_entry_t, fragmenter_tx_entry, &interface_ptr->indirect_tx_queue) {
-        if (fragmenter_tx_entry->indirect_data_cached) {
-            if (addr_ipv6_equal(tx_ptr->buf->dst_sa.address, fragmenter_tx_entry->buf->dst_sa.address)) {
-                tr_debug_extra("Pushing seq %d to addr %s", fragmenter_tx_entry->buf->seq, tr_ipv6(fragmenter_tx_entry->buf->dst_sa.address));
-                fragmenter_tx_entry->indirect_data_cached = false;
-                lowpan_data_request_to_mac(cur, fragmenter_tx_entry->buf, fragmenter_tx_entry, interface_ptr);
-                return true;
-            }
-        }
-    }
-
-    /* Sanity check, If nothing can be triggered from own address, check cache queue */
-    return lowpan_adaptation_indirect_cache_sanity_check(cur, interface_ptr);
-}
-
-static fragmenter_tx_entry_t *lowpan_adaptation_indirect_mac_data_request_active(fragmenter_interface_t *interface_ptr, fragmenter_tx_entry_t *tx_ptr)
-{
-    ns_list_foreach(fragmenter_tx_entry_t, fragmenter_tx_entry, &interface_ptr->indirect_tx_queue) {
-        if (fragmenter_tx_entry->indirect_data_cached == false) {
-            if (addr_ipv6_equal(tx_ptr->buf->dst_sa.address, fragmenter_tx_entry->buf->dst_sa.address)) {
-                tr_debug_extra("active seq: %d", fragmenter_tx_entry->buf->seq);
-                return fragmenter_tx_entry;
-            }
-        }
-    }
-    return NULL;
-}
-
-static fragmenter_tx_entry_t *lowpan_adaptation_indirect_first_cached_request_get(fragmenter_interface_t *interface_ptr, fragmenter_tx_entry_t *tx_ptr)
-{
-    ns_list_foreach(fragmenter_tx_entry_t, fragmenter_tx_entry, &interface_ptr->indirect_tx_queue) {
-        if (fragmenter_tx_entry->indirect_data_cached == true) {
-            if (addr_ipv6_equal(tx_ptr->buf->dst_sa.address, fragmenter_tx_entry->buf->dst_sa.address)) {
-                tr_debug_extra("first cached seq: %d", fragmenter_tx_entry->buf->seq);
-                return fragmenter_tx_entry;
-            }
-        }
-    }
-    return NULL;
-}
-
-static bool lowpan_adaptation_is_priority_message(buffer_t *buf)
-{
-    // DHCP messages
-    if (buf->dst_sa.port == DHCPV6_SERVER_PORT ||
-        buf->dst_sa.port == DHCPV6_SERVER_PORT ||
-        buf->src_sa.port == DHCPV6_CLIENT_PORT ||
-        buf->src_sa.port == DHCPV6_CLIENT_PORT) {
-        return true;
-    }
-
-    // ICMPv6 messages
-    if (buf->options.type == ICMPV6_TYPE_ERROR_DESTINATION_UNREACH ||
-            buf->options.type == ICMPV6_TYPE_ERROR_PACKET_TOO_BIG ||
-            buf->options.type == ICMPV6_TYPE_ERROR_TIME_EXCEEDED ||
-            buf->options.type == ICMPV6_TYPE_ERROR_PARAMETER_PROBLEM) {
-        return true;
-    }
-    return false;
-}
-
-static bool lowpan_adaptation_make_room_for_small_packet(struct net_if *cur, fragmenter_interface_t *interface_ptr, mac_neighbor_table_entry_t *neighbour_to_count, fragmenter_tx_entry_t *new_entry)
-{
-    if (interface_ptr->max_indirect_small_packets_per_child == 0) {
-        // this means there is always space for small packets - no need to check further
-        return true;
-    }
-
-    uint_fast16_t count = 0;
-    fragmenter_tx_entry_t *low_priority_msg_ptr = NULL;
-
-    ns_list_foreach_reverse_safe(fragmenter_tx_entry_t, tx_entry, &interface_ptr->indirect_tx_queue) {
-        mac_neighbor_table_entry_t *tx_neighbour = mac_neighbor_table_address_discover(mac_neighbor_info(cur), tx_entry->buf->dst_sa.address + 2, tx_entry->buf->dst_sa.addr_type);
-        if (tx_neighbour == neighbour_to_count && buffer_data_length(tx_entry->buf) <= interface_ptr->indirect_big_packet_threshold) {
-            if (!lowpan_adaptation_is_priority_message(tx_entry->buf)) {
-                // if there is sub priorities inside message example age here you could compare
-                low_priority_msg_ptr = tx_entry;
-            }
-            if (++count >= interface_ptr->max_indirect_small_packets_per_child) {
-                if (!low_priority_msg_ptr) {
-                    // take last entry if no low priority entry found
-                    if (lowpan_adaptation_is_priority_message(new_entry->buf)) {
-                        low_priority_msg_ptr = tx_entry;
-                    } else {
-                        return false;
-                    }
-                }
-                tr_debug_extra("Purge seq: %d", low_priority_msg_ptr->buf->seq);
-                if (lowpan_adaptation_indirect_queue_free_message(cur, interface_ptr, low_priority_msg_ptr) == false) {
-                    /* entry could not be purged from mac, try next entry */
-                    tr_debug_extra("Purge failed, try next");
-                    count--;
-                }
-                low_priority_msg_ptr = NULL;
-            }
-        }
-    }
-    return true;
-}
-
-static bool lowpan_adaptation_make_room_for_big_packet(struct net_if *cur, fragmenter_interface_t *interface_ptr, fragmenter_tx_entry_t *new_entry)
-{
-    if (interface_ptr->max_indirect_big_packets_total == 0) {
-        // this means there is always space for big packets - no need to check further
-        return true;
-    }
-
-    uint_fast16_t count = 0;
-    fragmenter_tx_entry_t *low_priority_msg_ptr = NULL;
-
-    ns_list_foreach_reverse_safe(fragmenter_tx_entry_t, tx_entry, &interface_ptr->indirect_tx_queue) {
-        if (buffer_data_length(tx_entry->buf) > interface_ptr->indirect_big_packet_threshold) {
-            if (!lowpan_adaptation_is_priority_message(tx_entry->buf)) {
-                // if there is sub priorities inside message example age here you could compare
-                low_priority_msg_ptr = tx_entry;
-            }
-            if (++count >= interface_ptr->max_indirect_big_packets_total) {
-                if (!low_priority_msg_ptr) {
-                    // take last entry if no low priority entry found
-                    if (lowpan_adaptation_is_priority_message(new_entry->buf)) {
-                        low_priority_msg_ptr = tx_entry;
-                    } else {
-                        return false;
-                    }
-                }
-                tr_debug_extra("Purge seq: %d", low_priority_msg_ptr->buf->seq);
-                if (lowpan_adaptation_indirect_queue_free_message(cur, interface_ptr, low_priority_msg_ptr) == false) {
-                    tr_debug_extra("Purge failed, try next entry");
-                    /* entry could not be purged from mac, try next entry */
-                    count--;
-                }
-                low_priority_msg_ptr = NULL;
-            }
-        }
-    }
-    return true;
-}
-
 static void lowpan_data_request_to_mac(struct net_if *cur, buffer_t *buf, fragmenter_tx_entry_t *tx_ptr, fragmenter_interface_t *interface_ptr)
 {
     mcps_data_req_t dataReq;
 
+    BUG_ON(!interface_ptr->mpx_api);
     lowpan_adaptation_data_request_primitiv_set(buf, &dataReq, cur);
     if (tx_ptr->fragmented_data) {
         dataReq.msdu = tx_ptr->fragmenter_buf;
-        //Call fragmenter
-        bool more_fragments = lowpan_message_fragmentation_message_write(tx_ptr, &dataReq);
-        if (dataReq.InDirectTx) {
-            dataReq.PendingBit |= more_fragments;
-        }
+        lowpan_message_fragmentation_message_write(tx_ptr, &dataReq);
     } else {
         dataReq.msduLength = buffer_data_length(buf);
         dataReq.msdu = buffer_data_pointer(buf);
-    }
-    if (buf->link_specific.ieee802_15_4.rf_channel_switch) {
-        //Switch channel if selected channel is different
-        if (cur->mac_parameters.mac_channel != buf->link_specific.ieee802_15_4.selected_channel) {
-            uint8_t channel = cur->mac_parameters.mac_channel;
-            mac_helper_mac_channel_set(cur, buf->link_specific.ieee802_15_4.selected_channel);
-            buf->link_specific.ieee802_15_4.selected_channel = channel;
-        } else {
-            buf->link_specific.ieee802_15_4.rf_channel_switch = false;
-        }
     }
     //Define data priority
     mac_data_priority_e data_priority;
@@ -967,14 +754,8 @@ static void lowpan_data_request_to_mac(struct net_if *cur, buffer_t *buf, fragme
             break;
     }
 
-    if (interface_ptr->mpx_api) {
-        dataReq.ExtendedFrameExchange = buf->options.edfe_mode;
-        interface_ptr->mpx_api->mpx_data_request(interface_ptr->mpx_api, &dataReq, interface_ptr->mpx_user_id, data_priority);
-    } else {
-        mcps_data_req_ie_list_t ie_list;
-        memset(&ie_list, 0, sizeof(mcps_data_req_ie_list_t));
-        cur->mac_api->mcps_data_req_ext(cur->mac_api, &dataReq, &ie_list, NULL, data_priority, 0);
-    }
+    dataReq.ExtendedFrameExchange = buf->options.edfe_mode;
+    interface_ptr->mpx_api->mpx_data_request(interface_ptr->mpx_api, &dataReq, interface_ptr->mpx_user_id, data_priority);
 }
 
 static bool lowpan_adaptation_is_destination_tx_active(fragmenter_tx_list_t *list, buffer_t *buf)
@@ -992,10 +773,7 @@ static bool lowpan_adaptation_is_destination_tx_active(fragmenter_tx_list_t *lis
 static bool lowpan_buffer_tx_allowed(fragmenter_interface_t *interface_ptr, buffer_t *buf)
 {
     bool is_unicast = buf->link_specific.ieee802_15_4.requestAck;
-    // Indirect allowed always
-    if (buf->link_specific.ieee802_15_4.indirectTxProcess) {
-        return true;
-    }
+
     // Do not accept any other TX when fragmented TX active. Prevents other frames to be sent in between two fragments.
     if (interface_ptr->fragmenter_active) {
         return false;
@@ -1111,7 +889,7 @@ bool lowpan_adaptation_expedite_forward_state_get(struct net_if *cur)
 
 void lowpan_adaptation_interface_slow_timer(int seconds)
 {
-    struct net_if *cur = protocol_stack_interface_info_get(IF_6LoWPAN);
+    struct net_if *cur = protocol_stack_interface_info_get();
     fragmenter_interface_t *interface_ptr;
 
     if (!(cur->lowpan_info & INTERFACE_NWK_ACTIVE))
@@ -1158,12 +936,11 @@ int lowpan_adaptation_queue_size(int8_t interface_id)
 
 int8_t lowpan_adaptation_interface_tx(struct net_if *cur, buffer_t *buf)
 {
-    bool is_room_for_new_message;
     if (!buf) {
         return -1;
     }
 
-    if (!cur || !cur->mac_api || !cur->mac_api->mcps_data_req) {
+    if (!cur) {
         goto tx_error_handler;
     }
 
@@ -1203,9 +980,9 @@ int8_t lowpan_adaptation_interface_tx(struct net_if *cur, buffer_t *buf)
     if (fragmented_needed) {
         // If fragmentation TX buffer not allocated, do it now.
         if (!interface_ptr->fragment_indirect_tx_buffer && !interface_ptr->mtu_size) {
-            interface_ptr->fragment_indirect_tx_buffer = malloc(cur->mac_api->mtu);
+            interface_ptr->fragment_indirect_tx_buffer = malloc(cur->mac_parameters.mtu);
             if (interface_ptr->fragment_indirect_tx_buffer) {
-                interface_ptr->mtu_size = cur->mac_api->mtu;
+                interface_ptr->mtu_size = cur->mac_parameters.mtu;
             } else {
                 tr_error("Failed to allocate fragmentation buffer");
                 goto tx_error_handler;
@@ -1213,7 +990,6 @@ int8_t lowpan_adaptation_interface_tx(struct net_if *cur, buffer_t *buf)
         }
     }
     bool is_unicast = buf->link_specific.ieee802_15_4.requestAck;
-    bool indirect = buf->link_specific.ieee802_15_4.indirectTxProcess;
 
     if (!lowpan_buffer_tx_allowed(interface_ptr, buf)) {
 
@@ -1239,7 +1015,7 @@ int8_t lowpan_adaptation_interface_tx(struct net_if *cur, buffer_t *buf)
         buf->options.ll_security_bypass_tx = false;
     }
 
-    fragmenter_tx_entry_t *tx_ptr = lowpan_adaptation_tx_process_init(interface_ptr, indirect, fragmented_needed, is_unicast);
+    fragmenter_tx_entry_t *tx_ptr = lowpan_adaptation_tx_process_init(interface_ptr, false, fragmented_needed, is_unicast);
     if (!tx_ptr) {
         goto tx_error_handler;
     }
@@ -1250,70 +1026,12 @@ int8_t lowpan_adaptation_interface_tx(struct net_if *cur, buffer_t *buf)
         //Fragmentation init
         if (lowpan_message_fragmentation_init(buf, tx_ptr, cur, interface_ptr)) {
             tr_error("Fragment init fail");
-            if (indirect) {
-                free(tx_ptr->fragmenter_buf);
-                free(tx_ptr);
-            } else {
-                tx_ptr->buf = NULL;
-            }
+            tx_ptr->buf = NULL;
             goto tx_error_handler;
         }
 
         tx_ptr->tag = interface_ptr->local_frag_tag++;
-        if (!indirect) {
-            interface_ptr->fragmenter_active = true;
-        }
-    }
-
-    if (indirect) {
-        //Add to indirectQUue
-        fragmenter_tx_entry_t *tx_ptr_cached;
-        mac_neighbor_table_entry_t *neigh_entry_ptr = mac_neighbor_table_address_discover(mac_neighbor_info(cur), buf->dst_sa.address + PAN_ID_LEN, buf->dst_sa.addr_type);
-        if (neigh_entry_ptr) {
-            buf->link_specific.ieee802_15_4.indirectTTL = (uint32_t) neigh_entry_ptr->link_lifetime * 1000;
-        } else {
-            buf->link_specific.ieee802_15_4.indirectTTL = cur->mac_parameters.mac_in_direct_entry_timeout;
-        }
-
-        tr_debug_extra("indirect seq: %d, addr=%s", tx_ptr->buf->seq, tr_ipv6(buf->dst_sa.address));
-
-        // Make room for new message if needed */
-        if (buffer_data_length(buf) <= interface_ptr->indirect_big_packet_threshold) {
-            is_room_for_new_message = lowpan_adaptation_make_room_for_small_packet(cur, interface_ptr, neigh_entry_ptr, tx_ptr);
-        } else {
-            is_room_for_new_message = lowpan_adaptation_make_room_for_big_packet(cur, interface_ptr, tx_ptr);
-        }
-
-        if (lowpan_adaptation_indirect_mac_data_request_active(interface_ptr, tx_ptr)) {
-            // mac is handling previous data request, add new one to be cached */
-            tr_debug_extra("caching seq: %d", tx_ptr->buf->seq);
-            tx_ptr->indirect_data_cached = true;
-        }
-
-        if (is_room_for_new_message) {
-            ns_list_add_to_end(&interface_ptr->indirect_tx_queue, tx_ptr);
-        } else {
-            if (tx_ptr->fragmenter_buf) {
-                free(tx_ptr->fragmenter_buf);
-            }
-            free(tx_ptr);
-            goto tx_error_handler;
-        }
-
-        // Check if current message can be delivered to MAC or should some cached message be delivered first
-        tx_ptr_cached = lowpan_adaptation_indirect_first_cached_request_get(interface_ptr, tx_ptr);
-        if (tx_ptr->indirect_data_cached == false && tx_ptr_cached) {
-            tr_debug_extra("sending cached seq: %d", tx_ptr_cached->buf->seq);
-            // set current message to cache
-            tx_ptr->indirect_data_cached = true;
-            // swap entries
-            tx_ptr = tx_ptr_cached;
-            tx_ptr->indirect_data_cached = false;
-            buf = tx_ptr_cached->buf;
-        } else if (tx_ptr->indirect_data_cached == true) {
-            // There is mac data request ongoing and new req was sent to cache
-            return 0;
-        }
+        interface_ptr->fragmenter_active = true;
     }
 
     lowpan_data_request_to_mac(cur, buf, tx_ptr, interface_ptr);
@@ -1377,10 +1095,7 @@ static void lowpan_adaptation_data_process_clean(fragmenter_interface_t *interfa
     buffer_t *buf = tx_ptr->buf;
 
     tx_ptr->buf = NULL;
-    if (buf->link_specific.ieee802_15_4.indirectTxProcess) {
-        //release from list and free entry
-        lowpan_list_entry_free(&interface_ptr->indirect_tx_queue, tx_ptr);
-    } else if (buf->link_specific.ieee802_15_4.requestAck) {
+    if (buf->link_specific.ieee802_15_4.requestAck) {
         ns_list_remove(&interface_ptr->activeUnicastList, tx_ptr);
         free(tx_ptr);
         interface_ptr->activeTxList_size--;
@@ -1409,14 +1124,8 @@ int8_t lowpan_adaptation_interface_tx_confirm(struct net_if *cur, const mcps_dat
         tx_ptr = &interface_ptr->active_broadcast_tx_buf;
     } else {
         tx_ptr = lowpan_listed_tx_handle_verify(confirm->msduHandle, &interface_ptr->activeUnicastList);
-        if (tx_ptr) {
+        if (tx_ptr)
             active_direct_confirm = true;
-        } else {
-            tx_ptr = lowpan_listed_tx_handle_verify(confirm->msduHandle, &interface_ptr->indirect_tx_queue);
-            if (tx_ptr) {
-                active_direct_confirm = false;
-            }
-        }
     }
 
     if (!tx_ptr) {
@@ -1444,34 +1153,15 @@ int8_t lowpan_adaptation_interface_tx_confirm(struct net_if *cur, const mcps_dat
         interface_ptr->etx_update_cb(cur, buf, confirm);
     }
 
-    //Switch original channel back
-    if (buf->link_specific.ieee802_15_4.rf_channel_switch) {
-        mac_helper_mac_channel_set(cur, buf->link_specific.ieee802_15_4.selected_channel);
-        buf->link_specific.ieee802_15_4.rf_channel_switch = false;
-    }
-
     if (confirm->status == MLME_SUCCESS) {
         //Check is there more packets
         if (lowpan_adaptation_tx_process_ready(tx_ptr)) {
-            bool triggered_from_indirect_cache = false;
-            if (tx_ptr->fragmented_data && active_direct_confirm) {
+            if (tx_ptr->fragmented_data && active_direct_confirm)
                 interface_ptr->fragmenter_active = false;
-            }
-
-            if (tx_ptr->buf->link_specific.ieee802_15_4.indirectTxProcess) {
-                triggered_from_indirect_cache = lowpan_adaptation_indirect_cache_trigger(cur, interface_ptr, tx_ptr);
-            }
-
             lowpan_adaptation_data_process_clean(interface_ptr, tx_ptr, map_mlme_status_to_socket_event(confirm->status));
-
-            if (triggered_from_indirect_cache) {
-                return 0;
-            }
         } else {
             lowpan_data_request_to_mac(cur, buf, tx_ptr, interface_ptr);
         }
-    } else if ((confirm->status == MLME_BUSY_CHAN) && !ws_info(cur)) {
-        tr_error("unexpected: !ws_info(cur)");
     } else if ((buf->link_specific.ieee802_15_4.requestAck) && (confirm->status == MLME_TRANSACTION_EXPIRED)) {
         lowpan_adaptation_tx_queue_write_to_front(cur, interface_ptr, buf);
         ns_list_remove(&interface_ptr->activeUnicastList, tx_ptr);
@@ -1486,7 +1176,7 @@ int8_t lowpan_adaptation_interface_tx_confirm(struct net_if *cur, const mcps_dat
 
         tr_error("MCPS Data fail by status %u", confirm->status);
         if (buf->dst_sa.addr_type == ADDR_802_15_4_SHORT) {
-            tr_info("Dest addr: %x", common_read_16_bit(buf->dst_sa.address + 2));
+            tr_info("Dest addr: %x", read_be16(buf->dst_sa.address + 2));
         } else if (buf->dst_sa.addr_type == ADDR_802_15_4_LONG) {
             tr_info("Dest addr: %s", tr_eui64(buf->dst_sa.address + 2));
         }
@@ -1527,19 +1217,13 @@ static bool mac_data_is_broadcast_addr(const sockaddr_t *addr)
 
 static bool mcps_data_indication_neighbor_validate(struct net_if *cur, const sockaddr_t *addr)
 {
-    if (ws_info(cur)) {
-        mac_neighbor_table_entry_t *neighbor = mac_neighbor_table_address_discover(mac_neighbor_info(cur), addr->address + 2, addr->addr_type);
-        if (neighbor && (neighbor->connected_device ||  neighbor->trusted_device)) {
-            return true;
-        }
+    mac_neighbor_table_entry_t *neighbor;
 
-        /* Otherwise, we don't know them */
-        return false;
-    } else {
-        //6lowpan without MLE don't can't do validation
-        return true;
-    }
+    if (!cur->mac_parameters.mac_neighbor_table)
+        return true; // FIXME: shouldn't we return false? is this case even possible?
 
+    neighbor = mac_neighbor_table_address_discover(cur->mac_parameters.mac_neighbor_table, addr->address + 2, addr->addr_type);
+    return neighbor && (neighbor->connected_device || neighbor->trusted_device);
 }
 
 void lowpan_adaptation_interface_data_ind(struct net_if *cur, const mcps_data_ind_t *data_ind)
@@ -1554,10 +1238,10 @@ void lowpan_adaptation_interface_data_ind(struct net_if *cur, const mcps_data_in
     buf->options.lqi = data_ind->mpduLinkQuality;
     buf->options.dbm = data_ind->signal_dbm;
     buf->src_sa.addr_type = (addrtype_e)data_ind->SrcAddrMode;
-    ptr = common_write_16_bit(data_ind->SrcPANId, buf->src_sa.address);
+    ptr = write_be16(buf->src_sa.address, data_ind->SrcPANId);
     memcpy(ptr, data_ind->SrcAddr, 8);
     buf->dst_sa.addr_type = (addrtype_e)data_ind->DstAddrMode;
-    ptr = common_write_16_bit(data_ind->DstPANId, buf->dst_sa.address);
+    ptr = write_be16(buf->dst_sa.address, data_ind->DstPANId);
     memcpy(ptr, data_ind->DstAddr, 8);
     //Set Link specific stuff to seperately
     buf->link_specific.ieee802_15_4.srcPanId = data_ind->SrcPANId;
@@ -1575,7 +1259,7 @@ void lowpan_adaptation_interface_data_ind(struct net_if *cur, const mcps_data_in
         }
     } else {
         buf->link_specific.ieee802_15_4.fc_security = false;
-        if (mac_helper_default_security_level_get(cur) ||
+        if (cur->mac_parameters.mac_security_level ||
                 !mcps_data_indication_neighbor_validate(cur, &buf->src_sa)) {
             //SET By Pass
             buf->options.ll_security_bypass_rx = true;
@@ -1651,10 +1335,9 @@ static bool lowpan_adaptation_purge_from_mac(struct net_if *cur, fragmenter_inte
             mac_purge_success = true;
         }
     } else {
-        if (cur->mac_api->mcps_purge_req) {
-            if (cur->mac_api->mcps_purge_req(cur->mac_api, &purge_req) == 0) {
-                mac_purge_success = true;
-            }
+        if (!version_older_than(g_ctxt.rcp.version_api, 0, 4, 0)) {
+            rcp_tx_drop(msduhandle);
+            mac_purge_success = true;
         }
     }
 
@@ -1663,16 +1346,8 @@ static bool lowpan_adaptation_purge_from_mac(struct net_if *cur, fragmenter_inte
 
 static bool lowpan_adaptation_indirect_queue_free_message(struct net_if *cur, fragmenter_interface_t *interface_ptr, fragmenter_tx_entry_t *tx_ptr)
 {
-    tr_debug("Purge from indirect handle %u, cached %d", tx_ptr->buf->seq, tx_ptr->indirect_data_cached);
-    if (tx_ptr->indirect_data_cached == false) {
-        if (lowpan_adaptation_purge_from_mac(cur, interface_ptr, tx_ptr->buf->seq) == false) {
-            // MAC purge failed
-            return false;
-        }
-    }
-
+    tr_debug("Purge from indirect handle %u", tx_ptr->buf->seq);
     lowpan_adaptation_data_process_clean(interface_ptr, tx_ptr, SOCKET_TX_FAIL);
-
     return true;
 }
 
@@ -1681,7 +1356,7 @@ void lowpan_adaptation_neigh_remove_free_tx_tables(struct net_if *cur_interface,
     //Free first by defined short address
     if (entry_ptr->mac16 < 0xfffe) {
         uint8_t temp_address[2];
-        common_write_16_bit(entry_ptr->mac16, temp_address);
+        write_be16(temp_address, entry_ptr->mac16);
         lowpan_adaptation_free_messages_from_queues_by_address(cur_interface, temp_address, ADDR_802_15_4_SHORT);
     }
     lowpan_adaptation_free_messages_from_queues_by_address(cur_interface, entry_ptr->mac64, ADDR_802_15_4_LONG);
@@ -1694,14 +1369,6 @@ int8_t lowpan_adaptation_free_messages_from_queues_by_address(struct net_if *cur
 
     if (!interface_ptr) {
         return -1;
-    }
-
-    //Check first indirect queue
-    ns_list_foreach_safe(fragmenter_tx_entry_t, entry, &interface_ptr->indirect_tx_queue) {
-        if (lowpan_tx_buffer_address_compare(&entry->buf->dst_sa, address_ptr, adr_type)) {
-            //Purge from mac
-            lowpan_adaptation_indirect_queue_free_message(cur, interface_ptr, entry);
-        }
     }
 
     //Check next direct queue
@@ -1722,21 +1389,6 @@ int8_t lowpan_adaptation_free_messages_from_queues_by_address(struct net_if *cur
             socket_tx_buffer_event_and_free(entry, SOCKET_TX_FAIL);
         }
     }
-
-    return 0;
-}
-
-int8_t lowpan_adaptation_indirect_queue_params_set(struct net_if *cur, uint16_t indirect_big_packet_threshold, uint16_t max_indirect_big_packets_total, uint16_t max_indirect_small_packets_per_child)
-{
-    fragmenter_interface_t *interface_ptr = lowpan_adaptation_interface_discover(cur->id);
-
-    if (!interface_ptr) {
-        return -1;
-    }
-
-    interface_ptr->indirect_big_packet_threshold = indirect_big_packet_threshold;
-    interface_ptr->max_indirect_big_packets_total = max_indirect_big_packets_total;
-    interface_ptr->max_indirect_small_packets_per_child = max_indirect_small_packets_per_child;
 
     return 0;
 }

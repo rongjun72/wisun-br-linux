@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2008-2017, 2019-2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -206,7 +207,7 @@ int16_t socket_buffer_sendmsg(int8_t sid, buffer_t *buf, const struct msghdr *ms
 socket_t *socket_pointer_get(int8_t socket);
 void socket_inet_pcb_set_buffer_hop_limit(const inet_pcb_t *socket, buffer_t *buf, const int16_t *msg_hoplimit);
 bool socket_validate_listen_backlog(const socket_t *socket_ptr);
-void socket_list_print(route_print_fn_t *print_fn, char sep);
+void socket_list_print(char sep);
 socket_t *socket_reference(socket_t *);
 socket_t *socket_dereference(socket_t *);
 
@@ -259,9 +260,10 @@ static inline socket_error_e socket_up(buffer_t *buf)
 
 static inline void socket_tx_buffer_event_and_free(buffer_t *buf, uint8_t status)
 {
+    buffer_free(buf);
 }
 
-static inline void socket_list_print(route_print_fn_t *print_fn, char sep)
+static inline void socket_list_print(char sep)
 {
     WARN();
 }

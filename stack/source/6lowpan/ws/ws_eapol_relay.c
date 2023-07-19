@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +24,7 @@
 #include <netinet/in.h>
 #include <net/if.h>
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 #include "stack/mac/fhss_config.h"
 #include "stack/mac/mac_api.h"
 #include "stack/mac/mac_mcps.h"
@@ -47,13 +48,13 @@
 typedef struct eapol_relay {
     struct net_if *interface_ptr;         /**< Interface pointer */
     ns_address_t remote_addr;                               /**< Remote address (border router address) */
-    int8_t socket_id;                                       /**< Socket ID for relay */
+    int socket_id;                                          /**< Socket ID for relay */
     ns_list_link_t link;                                    /**< Link */
 } eapol_relay_t;
 
 static eapol_relay_t *ws_eapol_relay_get(struct net_if *interface_ptr);
 static int8_t ws_eapol_relay_eapol_pdu_address_check(struct net_if *interface_ptr, const uint8_t *eui_64);
-static int8_t ws_eapol_relay_eapol_pdu_receive(struct net_if *interface_ptr, const uint8_t *eui_64, void *pdu, uint16_t size);
+static int8_t ws_eapol_relay_eapol_pdu_receive(struct net_if *interface_ptr, const uint8_t *eui_64, const void *pdu, uint16_t size);
 #ifdef HAVE_SOCKET_API
 static void ws_eapol_relay_socket_cb(void *cb);
 #endif
@@ -69,7 +70,7 @@ static eapol_relay_t * g_eapol_relay = NULL;
 
 int ws_eapol_relay_get_socket_fd()
 {
-    struct net_if *interface_ptr = protocol_stack_interface_info_get(IF_6LoWPAN);
+    struct net_if *interface_ptr = protocol_stack_interface_info_get();
     eapol_relay_t *eapol_relay = ws_eapol_relay_get(interface_ptr);
     if (eapol_relay)
         return eapol_relay->socket_id;
@@ -105,17 +106,19 @@ int8_t ws_eapol_relay_start(struct net_if *interface_ptr, uint16_t local_port, c
     struct wsbr_ctxt *ctxt = &g_ctxt;
     struct sockaddr_in6 sockaddr = { .sin6_family = AF_INET6, .sin6_addr = IN6ADDR_ANY_INIT, .sin6_port = htons(local_port) };
     eapol_relay->socket_id = socket(AF_INET6, SOCK_DGRAM, 0);
-    setsockopt(eapol_relay->socket_id, SOL_SOCKET, SO_BINDTODEVICE, ctxt->config.tun_dev, IF_NAMESIZE);
-    if (bind(eapol_relay->socket_id, (struct sockaddr *) &sockaddr, sizeof(sockaddr)) < 0) {
-        tr_error("could not create eapol_auth_relay->socket_id socket: %m");
-    }
+    if (eapol_relay->socket_id < 0)
+        FATAL(1, "%s: socket: %m", __func__);
+    if (setsockopt(eapol_relay->socket_id, SOL_SOCKET, SO_BINDTODEVICE, ctxt->config.tun_dev, IF_NAMESIZE) < 0)
+        FATAL(1, "%s: setsocketopt: %m", __func__);
+    if (bind(eapol_relay->socket_id, (struct sockaddr *) &sockaddr, sizeof(sockaddr)) < 0)
+        FATAL(1, "%s: bind: %m", __func__);
 #else
     eapol_relay->socket_id = socket_open(IPV6_NH_UDP, local_port, &ws_eapol_relay_socket_cb);
-#endif
     if (eapol_relay->socket_id < 0) {
         free(eapol_relay);
         return -1;
     }
+#endif
 #ifdef HAVE_SOCKET_API
     int16_t tc = IP_DSCP_CS6 << IP_TCLASS_DSCP_SHIFT;
     socket_setsockopt(eapol_relay->socket_id, SOCKET_IPPROTO_IPV6, SOCKET_IPV6_TCLASS, &tc, sizeof(tc));
@@ -170,7 +173,7 @@ static int8_t ws_eapol_relay_eapol_pdu_address_check(struct net_if *interface_pt
     return 0;
 }
 
-static int8_t ws_eapol_relay_eapol_pdu_receive(struct net_if *interface_ptr, const uint8_t *eui_64, void *pdu, uint16_t size)
+static int8_t ws_eapol_relay_eapol_pdu_receive(struct net_if *interface_ptr, const uint8_t *eui_64, const void *pdu, uint16_t size)
 {
     eapol_relay_t *eapol_relay = ws_eapol_relay_get(interface_ptr);
     if (!eapol_relay) {
@@ -232,7 +235,7 @@ static void ws_eapol_relay_socket_cb(void *cb)
     }
 
     //First 8 byte is EUID64 and rsr payload
-    if (ws_eapol_pdu_send_to_mpx(eapol_relay->interface_ptr, socket_pdu, socket_pdu + 8, data_len - 8, socket_pdu, NULL, 0) < 0) {
+    if (data_len < 8 || ws_eapol_pdu_send_to_mpx(eapol_relay->interface_ptr, socket_pdu, socket_pdu + 8, data_len - 8, socket_pdu, NULL, 0) < 0) {
         free(socket_pdu);
     }
 }

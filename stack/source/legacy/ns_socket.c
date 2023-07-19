@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2008-2015, 2017-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,12 +26,10 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <inttypes.h>
+#include "common/endian.h"
 #include "common/rand.h"
 #include "common/log_legacy.h"
-#include "stack-services/ip6string.h"
-#include "stack-services/common_functions.h"
-#include "stack-scheduler/eventOS_event.h"
-#include "stack-scheduler/eventOS_scheduler.h"
+#include "common/events_scheduler.h"
 
 #include "nwk_interface/protocol.h"
 #include "common_protocols/ipv6.h"
@@ -117,7 +116,7 @@ socket_t *socket_pointer_get(int8_t socket)
 static void socket_data_event_push(buffer_t *buf)
 {
     buf->socket = socket_reference(buf->socket);
-    arm_event_s event = {
+    struct event_payload event = {
         .receiver = socket_event_handler,
         .sender = 0,
         .event_type = ARM_SOCKET_DATA_CB,
@@ -125,14 +124,14 @@ static void socket_data_event_push(buffer_t *buf)
         .priority = ARM_LIB_HIGH_PRIORITY_EVENT,
     };
 
-    if (eventOS_event_send(&event) != 0) {
+    if (event_send(&event) != 0) {
         buffer_free(buf);
     }
 }
 
 bool socket_data_queued_event_push(socket_t *socket)
 {
-    arm_event_s event = {
+    struct event_payload event = {
         .receiver = socket_event_handler,
         .sender = 0,
         .event_type = ARM_SOCKET_DATA_QUEUED_CB,
@@ -140,7 +139,7 @@ bool socket_data_queued_event_push(socket_t *socket)
         .priority = ARM_LIB_HIGH_PRIORITY_EVENT,
     };
 
-    if (eventOS_event_send(&event) != 0) {
+    if (event_send(&event) != 0) {
         socket_dereference(socket);
         return false;
     }
@@ -150,7 +149,7 @@ bool socket_data_queued_event_push(socket_t *socket)
 static void socket_cb_event_run(const socket_cb_event_t *event)
 {
     if (event->socket->id != -1) {
-        eventOS_scheduler_set_active_tasklet(event->socket->tasklet);
+        event_scheduler_set_active_tasklet(event->socket->tasklet);
 
         if (event->socket->flags & SOCKET_BUFFER_CB) {
             static socket_buffer_callback_t socket_cb_event_buffer;
@@ -175,7 +174,7 @@ static void socket_cb_event_run(const socket_cb_event_t *event)
 static void socket_buffer_cb_run(socket_t *socket, buffer_t *buffer)
 {
 
-    eventOS_scheduler_set_active_tasklet(socket->tasklet);
+    event_scheduler_set_active_tasklet(socket->tasklet);
 
     static socket_buffer_callback_t socket_cb_buffer;
     socket_cb_buffer.event_type = SOCKET_DATA;
@@ -195,7 +194,7 @@ void socket_cb_run(socket_t *socket)
 
     buffer_t *buf = ns_list_get_first(&socket->rcvq.bufs);
 
-    eventOS_scheduler_set_active_tasklet(socket->tasklet);
+    event_scheduler_set_active_tasklet(socket->tasklet);
 
     static socket_callback_t socket_cb_structure;
 
@@ -208,7 +207,7 @@ void socket_cb_run(socket_t *socket)
     socket->u.live.fptr(&socket_cb_structure);
 }
 
-void socket_tasklet_event_handler(arm_event_s *event)
+void socket_tasklet_event_handler(struct event_payload *event)
 {
     switch (event->event_type) {
         case ARM_SOCKET_INIT:
@@ -271,7 +270,7 @@ void socket_tasklet_event_handler(arm_event_s *event)
 void socket_init(void)
 {
     if (socket_event_handler == -1) {
-        socket_event_handler = eventOS_event_handler_create(&socket_tasklet_event_handler, ARM_SOCKET_INIT);
+        socket_event_handler = event_handler_create(&socket_tasklet_event_handler, ARM_SOCKET_INIT);
     }
 
     port_counter = rand_get_random_in_range(0, RANDOM_PORT_NUMBER_COUNT - 1);
@@ -555,7 +554,7 @@ socket_error_e socket_create(socket_family_e family, socket_type_e type, uint8_t
     socket->flags = 0;
 
     tr_debug("Socket id %d allocated", socket->id);
-    socket->tasklet = eventOS_scheduler_get_active_tasklet();
+    socket->tasklet = event_scheduler_get_active_tasklet();
     socket->family = family;
     socket->u.live.fptr = passed_fptr;
     ns_list_init(&socket->u.live.queue);
@@ -707,7 +706,7 @@ socket_t *socket_lookup_ipv6(uint8_t protocol, const sockaddr_t *local_addr, con
 }
 
 /* Write address + port neatly to out, returning characters written */
-/* Maximum output length is 48, including the terminator, assuming ip6tos limited to 39 */
+/* Maximum output length is 48, including the terminator, assuming str_ipv6 limited to 39 */
 static int sprint_addr(char *out, const uint8_t addr[static 16], uint16_t port)
 {
     char *init_out = out;
@@ -715,7 +714,8 @@ static int sprint_addr(char *out, const uint8_t addr[static 16], uint16_t port)
         *out++ = '*';
     } else {
         *out++ = '[';
-        out += ip6tos(addr, out);
+        str_ipv6(addr, out);
+        out += strlen(out);
         *out++ = ']';
     }
 
@@ -729,7 +729,7 @@ static int sprint_addr(char *out, const uint8_t addr[static 16], uint16_t port)
     return (int)(out - init_out);
 }
 
-static void socket_print(const socket_t *socket, int lwidth, int rwidth, route_print_fn_t *print_fn, char sep)
+static void socket_print(const socket_t *socket, int lwidth, int rwidth, char sep)
 {
     if (!socket_is_ipv6(socket)) {
         return;
@@ -766,7 +766,7 @@ static void socket_print(const socket_t *socket, int lwidth, int rwidth, route_p
             state = "CLOSED";
         }
     }
-    print_fn("%3.*"PRId8"%c%3u%c%6"PRId32/*"%c%6"PRId32*/"%c%6"PRId32"%c%-5.5s%c%-*s%c%-*s%c%s",
+    tr_debug("%3.*"PRId8"%c%3u%c%6"PRId32/*"%c%6"PRId32*/"%c%6"PRId32"%c%-5.5s%c%-*s%c%-*s%c%s",
              socket->id >= 0 ? 1 : 0, socket->id >= 0 ? socket->id : 0, sep,
              socket->refcount, sep,
              socket->rcvq.data_bytes, sep,
@@ -778,7 +778,7 @@ static void socket_print(const socket_t *socket, int lwidth, int rwidth, route_p
              state);
 }
 
-void socket_list_print(route_print_fn_t *print_fn, char sep)
+void socket_list_print(char sep)
 {
     int lwidth = 18, rwidth = 18;
     ns_list_foreach(const socket_t, socket, &socket_list) {
@@ -797,9 +797,9 @@ void socket_list_print(route_print_fn_t *print_fn, char sep)
             rwidth = len;
         }
     }
-    print_fn("Sck%cRef%cRecv-Q%c"/*"Recv-B%c"*/"Send-Q%cProto%c%-*s%c%-*s%c(state)", sep, sep, sep, /*sep,*/ sep, sep, lwidth, "Local Address", sep, rwidth, "Remote Address", sep);
+    tr_debug("Sck%cRef%cRecv-Q%c"/*"Recv-B%c"*/"Send-Q%cProto%c%-*s%c%-*s%c(state)", sep, sep, sep, /*sep,*/ sep, sep, lwidth, "Local Address", sep, rwidth, "Remote Address", sep);
     ns_list_foreach(const socket_t, socket, &socket_list) {
-        socket_print(socket, lwidth, rwidth, print_fn, sep);
+        socket_print(socket, lwidth, rwidth, sep);
     }
 
     /* Chuck in a consistency check */
@@ -904,14 +904,14 @@ void socket_event_push(uint8_t sock_event, socket_t *socket, int8_t interface_id
         cb_event->session_ptr = session_ptr;
         cb_event->interface_id = interface_id;
         cb_event->length = length;
-        arm_event_s event = {
+        struct event_payload event = {
             .receiver = socket_event_handler,
             .sender = 0,
             .data_ptr = cb_event,
             .event_type = ARM_SOCKET_EVENT_CB,
             .priority = ARM_LIB_HIGH_PRIORITY_EVENT,
         };
-        if (eventOS_event_send(&event) != 0) {
+        if (event_send(&event) != 0) {
             socket_dereference(socket);
             free(cb_event);
         }
@@ -1478,11 +1478,7 @@ struct net_if *socket_interface_determine(const socket_t *socket_ptr, buffer_t *
 
     /* Realm-local scope or lower now chooses an interface - 6LoWPAN default */
     if (addr_ipv6_scope(buf->dst_sa.address, NULL) <= IPV6_SCOPE_REALM_LOCAL) {
-        buf->interface = protocol_stack_interface_info_get(IF_6LoWPAN);
-        if (buf->interface) {
-            return buf->interface;
-        }
-        buf->interface = protocol_stack_interface_info_get(IF_IPV6);
+        buf->interface = protocol_stack_interface_info_get();
         if (buf->interface) {
             return buf->interface;
         }

@@ -83,6 +83,11 @@ static const struct name_value dhcp_frames[] = {
     { NULL        },
 };
 
+static int dhcp_handle_request(struct dhcp_server *dhcp,
+                                struct iobuf_read *req, struct iobuf_write *reply);
+static int dhcp_handle_request_fwd(struct dhcp_server *dhcp,
+                                    struct iobuf_read *req, struct iobuf_write *reply);
+
 static int dhcp_get_option(const uint8_t *data, size_t len, uint16_t option, struct iobuf_read *option_payload)
 {
     uint16_t opt_type, opt_len;
@@ -141,12 +146,14 @@ static int dhcp_get_client_hwaddr(const uint8_t *req, size_t req_len, const uint
     ll_type = iobuf_pop_be16(&opt);
     if (duid_type != DHCPV6_DUID_TYPE_LINK_LAYER ||
         (ll_type != DHCPV6_DUID_HW_TYPE_EUI64 && ll_type != DHCPV6_DUID_HW_TYPE_IEEE802)) {
-        WARN("only stateless address association is supported");
+        TRACE(TR_DROP, "drop %-9s: unsupported client ID option", "dhcp");
         return -ENOTSUP;
     }
     *hwaddr = iobuf_pop_data_ptr(&opt, 8);
-    if (opt.err)
+    if (opt.err) {
+        TRACE(TR_DROP, "drop %-9s: malformed client ID option", "dhcp");
         return -EINVAL;
+    }
     return ll_type;
 }
 
@@ -157,8 +164,10 @@ static uint32_t dhcp_get_identity_association_id(const uint8_t *req, size_t req_
 
     dhcp_get_option(req, req_len, DHCPV6_OPT_IA_NA, &opt);
     ia_id = iobuf_pop_be32(&opt);
-    if (opt.err)
+    if (opt.err) {
+        TRACE(TR_DROP, "drop %-9s: missing IA_NA option", "dhcp");
         return UINT32_MAX;
+    }
     return ia_id;
 }
 
@@ -168,7 +177,7 @@ static int dhcp_check_rapid_commit(const uint8_t *req, size_t req_len)
 
     dhcp_get_option(req, req_len, DHCPV6_OPT_RAPID_COMMIT, &opt);
     if (opt.err) {
-        WARN("only rapid commit solicitation are supported");
+        TRACE(TR_DROP, "drop %-9s: missing rapid commit option", "dhcp");
         return -ENOTSUP;
     }
     return 0;
@@ -184,7 +193,7 @@ static int dhcp_check_status_code(const uint8_t *req, size_t req_len)
         return 0;
     status = iobuf_pop_be16(&opt);
     if (status) {
-        WARN("client reported an error %d", status);
+        TRACE(TR_DROP, "drop %-9s: status code %d", "dhcp", status);
         return -EFAULT;
     }
     return 0;
@@ -195,8 +204,10 @@ static int dhcp_check_elapsed_time(const uint8_t *req, size_t req_len)
     struct iobuf_read opt;
 
     dhcp_get_option(req, req_len, DHCPV6_OPT_ELAPSED_TIME, &opt);
-    if (opt.err)
+    if (opt.err) {
+        TRACE(TR_DROP, "drop %-9s: missing elapsed time option", "dhcp");
         return -EINVAL; // Elapsed Time option is mandatory
+    }
     return 0;
 }
 
@@ -261,75 +272,82 @@ static void dhcp_send_reply(struct dhcp_server *dhcp, struct sockaddr_in6 *dest,
           tr_ipv6(dest->sin6_addr.s6_addr));
     ret = sendto(dhcp->fd, reply->data, reply->len, 0,
                  (struct sockaddr *)dest, sizeof(struct sockaddr_in6));
-    WARN_ON(ret < 0, "sendmsg: %m");
+    WARN_ON(ret < 0, "%s: sendmsg: %m", __func__);
 }
 
-static void dhcp_send_relay_reply(struct dhcp_server *dhcp, struct sockaddr_in6 *dest,
-                                  struct iobuf_write *reply, struct iobuf_read *relay_req)
+static int dhcp_handle_request_fwd(struct dhcp_server *dhcp,
+                                    struct iobuf_read *req, struct iobuf_write *reply)
 {
-    struct iobuf_read opt_interface_id = { };
+    struct iobuf_read opt_interface_id, opt_relay;
     struct iobuf_write relay_reply = { };
     const uint8_t *linkaddr, *peeraddr;
     uint8_t hopcount;
 
-    iobuf_pop_u8(relay_req); // DHCPV6_RELAY_FORWARD
-    hopcount = iobuf_pop_u8(relay_req);
-    linkaddr = iobuf_pop_data_ptr(relay_req, 16);
-    peeraddr = iobuf_pop_data_ptr(relay_req, 16);
-    iobuf_push_u8(&relay_reply, DHCPV6_MSG_RELAY_REPLY);
-    iobuf_push_u8(&relay_reply, hopcount);
-    iobuf_push_data(&relay_reply, linkaddr, 16);
-    iobuf_push_data(&relay_reply, peeraddr, 16);
-
-    if (dhcp_get_option(iobuf_ptr(relay_req), iobuf_remaining_size(relay_req),
+    hopcount = iobuf_pop_u8(req);
+    linkaddr = iobuf_pop_data_ptr(req, 16);
+    peeraddr = iobuf_pop_data_ptr(req, 16);
+    iobuf_push_u8(reply, DHCPV6_MSG_RELAY_REPLY);
+    iobuf_push_u8(reply, hopcount);
+    iobuf_push_data(reply, linkaddr, 16);
+    iobuf_push_data(reply, peeraddr, 16);
+    if (dhcp_get_option(iobuf_ptr(req), iobuf_remaining_size(req),
                         DHCPV6_OPT_INTERFACE_ID, &opt_interface_id) > 0) {
-        iobuf_push_be16(&relay_reply, DHCPV6_OPT_INTERFACE_ID);
-        iobuf_push_be16(&relay_reply, opt_interface_id.data_size);
-        iobuf_push_data(&relay_reply, opt_interface_id.data, opt_interface_id.data_size);
+        iobuf_push_be16(reply, DHCPV6_OPT_INTERFACE_ID);
+        iobuf_push_be16(reply, opt_interface_id.data_size);
+        iobuf_push_data(reply, opt_interface_id.data, opt_interface_id.data_size);
     }
-
-    iobuf_push_be16(&relay_reply, DHCPV6_OPT_RELAY);
-    iobuf_push_be16(&relay_reply, reply->len);
-    iobuf_push_data(&relay_reply, reply->data, reply->len);
-    dhcp_send_reply(dhcp, dest, &relay_reply);
+    if (dhcp_get_option(iobuf_ptr(req), iobuf_remaining_size(req),
+                        DHCPV6_OPT_RELAY, &opt_relay) < 0) {
+        TRACE(TR_DROP, "drop %-9s: missing relay option", "dhcp");
+        return -EINVAL;
+    }
+    if (dhcp_handle_request(dhcp, &opt_relay, &relay_reply))
+        return -EINVAL;
+    iobuf_push_be16(reply, DHCPV6_OPT_RELAY);
+    iobuf_push_be16(reply, relay_reply.len);
+    iobuf_push_data(reply, relay_reply.data, relay_reply.len);
+    iobuf_free(&relay_reply);
+    return 0;
 }
 
-static void dhcp_handle_request(struct dhcp_server *dhcp, struct sockaddr_in6 *src_addr,
-                                struct iobuf_read *req, struct iobuf_read *relay_req)
+static int dhcp_handle_request(struct dhcp_server *dhcp,
+                                struct iobuf_read *req, struct iobuf_write *reply)
 {
-    struct iobuf_write reply = { };
     uint24_t transaction;
+    uint8_t msg_type;
     uint32_t iaid;
     const uint8_t *hwaddr;
     int hwaddr_type;
 
-    if (iobuf_pop_u8(req) != DHCPV6_MSG_SOLICIT) {
-        WARN("unsuported dhcp request");
-        return;
+    msg_type = iobuf_pop_u8(req);
+    if (msg_type == DHCPV6_MSG_RELAY_FWD)
+        return dhcp_handle_request_fwd(dhcp, req, reply);
+    if (msg_type != DHCPV6_MSG_SOLICIT) {
+        TRACE(TR_DROP, "drop %-9s: unsupported msg-type 0x%02x", "dhcp", msg_type);
+        return -EINVAL;
     }
+
     transaction = iobuf_pop_be24(req);
     if (dhcp_check_status_code(iobuf_ptr(req), iobuf_remaining_size(req)))
-        return;
+        return -EINVAL;
     if (dhcp_check_rapid_commit(iobuf_ptr(req), iobuf_remaining_size(req)))
-        return;
+        return -EINVAL;
     if (dhcp_check_elapsed_time(iobuf_ptr(req), iobuf_remaining_size(req)))
-        return;
+        return -EINVAL;
     iaid = dhcp_get_identity_association_id(iobuf_ptr(req), iobuf_remaining_size(req));
+    if (iaid == UINT32_MAX)
+        return -EINVAL;
     hwaddr_type = dhcp_get_client_hwaddr(iobuf_ptr(req), iobuf_remaining_size(req), &hwaddr);
     if (hwaddr_type < 0)
-        return;
+        return -EINVAL;
 
-    iobuf_push_u8(&reply, DHCPV6_MSG_REPLY);
-    iobuf_push_be24(&reply, transaction);
-    dhcp_fill_server_id(dhcp, &reply);
-    dhcp_fill_client_id(dhcp, &reply, hwaddr_type, hwaddr);
-    dhcp_fill_identity_association(dhcp, &reply, hwaddr, iaid);
-    dhcp_fill_rapid_commit(dhcp, &reply);
-    if (relay_req)
-        dhcp_send_relay_reply(dhcp, src_addr, &reply, relay_req);
-    else
-        dhcp_send_reply(dhcp, src_addr, &reply);
-    iobuf_free(&reply);
+    iobuf_push_u8(reply, DHCPV6_MSG_REPLY);
+    iobuf_push_be24(reply, transaction);
+    dhcp_fill_server_id(dhcp, reply);
+    dhcp_fill_client_id(dhcp, reply, hwaddr_type, hwaddr);
+    dhcp_fill_identity_association(dhcp, reply, hwaddr, iaid);
+    dhcp_fill_rapid_commit(dhcp, reply);
+    return 0;
 }
 
 void dhcp_recv(struct dhcp_server *dhcp)
@@ -337,26 +355,22 @@ void dhcp_recv(struct dhcp_server *dhcp)
     socklen_t src_addr_len = sizeof(struct sockaddr_in6);
     struct sockaddr_in6 src_addr;
     struct iobuf_read req = { };
-    struct iobuf_read fwd_req = { };
+    struct iobuf_write reply = { };
     uint8_t buf[1024];
 
     req.data = buf;
     req.data_size = recvfrom(dhcp->fd, buf, sizeof(buf), 0,
                              (struct sockaddr *)&src_addr, &src_addr_len);
     if (src_addr.sin6_family != AF_INET6) {
-        WARN("only IPv6 is supported");
+        TRACE(TR_DROP, "drop %-9s: not IPv6", "dhcp");
         return;
     }
     TRACE(TR_DHCP, "rx-dhcp %-9s src:%s",
           val_to_str(req.data[0], dhcp_frames, "[UNK]"),
           tr_ipv6(src_addr.sin6_addr.s6_addr));
-
-    if (req.data[0] == DHCPV6_MSG_RELAY_FWD) {
-        dhcp_get_option(req.data + 34, req.data_size - 34, DHCPV6_OPT_RELAY, &fwd_req);
-        dhcp_handle_request(dhcp, &src_addr, &fwd_req, &req);
-    } else {
-        dhcp_handle_request(dhcp, &src_addr, &req, NULL);
-    }
+    if (!dhcp_handle_request(dhcp, &req, &reply))
+        dhcp_send_reply(dhcp, &src_addr, &reply);
+    iobuf_free(&reply);
 }
 
 void dhcp_start(struct dhcp_server *dhcp, const char *tun_dev, uint8_t *hwaddr, uint8_t *prefix)
@@ -377,9 +391,12 @@ void dhcp_start(struct dhcp_server *dhcp, const char *tun_dev, uint8_t *hwaddr, 
     memcpy(dhcp->prefix, prefix, 8);
     dhcp->tun_if_id = if_nametoindex(tun_dev);
     dhcp->fd = socket(AF_INET6, SOCK_DGRAM, 0);
-    setsockopt(dhcp->fd, SOL_SOCKET, SO_BINDTODEVICE, tun_dev, IF_NAMESIZE);
+    if (dhcp->fd < 0)
+        FATAL(1, "%s: socket: %m", __func__);
+    if (setsockopt(dhcp->fd, SOL_SOCKET, SO_BINDTODEVICE, tun_dev, IF_NAMESIZE) < 0)
+        FATAL(1, "%s: setsockopt: %m", __func__);
     if (bind(dhcp->fd, (struct sockaddr *) &sockaddr, sizeof(sockaddr)) < 0)
-        FATAL(2, "Failed to start DHCP server: %m");
+        FATAL(1, "%s: bind: %m", __func__);
 }
 
 int dhcp_dpi_get_lease(const uint8_t *pkt, size_t pkt_len, const uint8_t **eui64, const uint8_t **ipv6)

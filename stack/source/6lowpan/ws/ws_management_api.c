@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +20,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 #include "stack/mac/fhss_config.h"
 #include "stack/ws_management_api.h"
 
@@ -34,18 +35,17 @@
 int ws_management_node_init(
     int8_t interface_id,
     uint8_t regulatory_domain,
-    char *network_name_ptr,
-    fhss_timer_t *fhss_timer_ptr)
+    char *network_name_ptr)
 {
     struct net_if *cur;
 
     cur = protocol_stack_interface_info_get_by_id(interface_id);
 
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur) {
         return -1;
     }
 
-    if (!network_name_ptr || !fhss_timer_ptr) {
+    if (!network_name_ptr) {
         return -2;
     }
 
@@ -71,10 +71,6 @@ int ws_management_node_init(
         return -4;
     }
 
-    if (cur && ws_info(cur)) {
-        cur->ws_info->fhss_timer_ptr = fhss_timer_ptr;
-    }
-
     return 0;
 }
 
@@ -84,9 +80,8 @@ int ws_management_network_name_set(
 {
     struct net_if *cur;
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
     if (!network_name_ptr) {
         return -2;
     }
@@ -111,9 +106,8 @@ int ws_management_network_name_get(
 {
     struct net_if *cur;
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
     if (!network_name_ptr) {
         return -2;
     }
@@ -134,9 +128,8 @@ int ws_management_network_name_validate(
 {
     struct net_if *cur;
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
     if (!network_name_ptr) {
         return -2;
     }
@@ -163,9 +156,8 @@ int ws_management_domain_configuration_set(
 {
     struct net_if *cur;
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
 
     ws_phy_cfg_t cfg;
     ws_phy_cfg_t cfg_default;
@@ -210,9 +202,8 @@ int ws_management_domain_configuration_get(
 {
     struct net_if *cur;
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
 
     ws_phy_cfg_t cfg;
     if (ws_cfg_phy_get(&cfg) < 0) {
@@ -240,9 +231,8 @@ int ws_management_domain_configuration_validate(
 {
     struct net_if *cur;
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
 
     ws_phy_cfg_t cfg;
     if (ws_cfg_phy_get(&cfg) < 0) {
@@ -271,9 +261,8 @@ int ws_management_regulatory_domain_set(
     struct net_if *cur;
 
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
 
     ws_phy_cfg_t cfg;
     if (ws_cfg_phy_get(&cfg) < 0) {
@@ -301,9 +290,8 @@ int ws_management_regulatory_domain_get(
 {
     struct net_if *cur;
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
     if (!regulatory_domain || !operating_class || !operating_mode) {
         return -2;
     }
@@ -328,9 +316,8 @@ int ws_management_regulatory_domain_validate(
 {
     struct net_if *cur;
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
 
     ws_phy_cfg_t cfg;
     if (ws_cfg_phy_get(&cfg) < 0) {
@@ -355,9 +342,8 @@ int ws_management_network_size_set(
     struct net_if *cur;
 
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
 
     ws_gen_cfg_t cfg;
     if (ws_cfg_network_size_get(&cfg) < 0) {
@@ -379,9 +365,8 @@ int ws_management_network_size_get(
 {
     struct net_if *cur;
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
     if (!network_size) {
         return -2;
     }
@@ -402,9 +387,8 @@ int ws_management_network_size_validate(
 {
     struct net_if *cur;
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
 
     ws_gen_cfg_t cfg;
     if (ws_cfg_network_size_get(&cfg) < 0) {
@@ -427,9 +411,8 @@ int ws_management_channel_mask_set(
     struct net_if *cur;
 
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
 
     ws_fhss_cfg_t cfg;
     if (ws_cfg_fhss_get(&cfg) < 0) {
@@ -462,9 +445,8 @@ int ws_management_channel_mask_get(
 {
     struct net_if *cur;
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
     if (!channel_mask) {
         return -2;
     }
@@ -485,9 +467,8 @@ int ws_management_channel_mask_validate(
 {
     struct net_if *cur;
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
 
     ws_fhss_cfg_t cfg;
     if (ws_cfg_fhss_get(&cfg) < 0) {
@@ -514,15 +495,14 @@ int ws_management_channel_plan_set(
     struct net_if *cur;
 
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (!cur || !ws_info(cur)) {
+    if (!cur)
         return -1;
-    }
-    cur->ws_info->hopping_schedule.channel_plan = 1;
-    cur->ws_info->hopping_schedule.uc_channel_function = uc_channel_function;
-    cur->ws_info->hopping_schedule.bc_channel_function = bc_channel_function;
-    cur->ws_info->hopping_schedule.ch0_freq = ch0_freq;
-    cur->ws_info->hopping_schedule.channel_spacing = channel_spacing;
-    cur->ws_info->hopping_schedule.number_of_channels = number_of_channels;
+    cur->ws_info.hopping_schedule.channel_plan = 1;
+    cur->ws_info.hopping_schedule.uc_channel_function = uc_channel_function;
+    cur->ws_info.hopping_schedule.bc_channel_function = bc_channel_function;
+    cur->ws_info.hopping_schedule.ch0_freq = ch0_freq;
+    cur->ws_info.hopping_schedule.channel_spacing = channel_spacing;
+    cur->ws_info.hopping_schedule.number_of_channels = number_of_channels;
 
     // TODO update fields to llc
     return 0;
@@ -537,9 +517,8 @@ int ws_management_fhss_timing_configure(
     struct net_if *cur;
 
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
 
     ws_fhss_cfg_t cfg;
     if (ws_cfg_fhss_get(&cfg) < 0) {
@@ -585,9 +564,8 @@ int ws_management_fhss_unicast_channel_function_configure(
     struct net_if *cur;
 
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
 
     ws_fhss_cfg_t cfg;
     if (ws_cfg_fhss_get(&cfg) < 0) {
@@ -631,9 +609,8 @@ int ws_management_fhss_unicast_channel_function_get(
 {
     struct net_if *cur;
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
     if (!channel_function || !fixed_channel || !dwell_interval) {
         return -2;
     }
@@ -658,9 +635,8 @@ int ws_management_fhss_unicast_channel_function_validate(
 {
     struct net_if *cur;
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
 
     ws_fhss_cfg_t cfg;
     if (ws_cfg_fhss_get(&cfg) < 0) {
@@ -688,9 +664,8 @@ int ws_management_fhss_broadcast_channel_function_configure(
     struct net_if *cur;
 
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
 
     ws_fhss_cfg_t cfg;
     if (ws_cfg_fhss_get(&cfg) < 0) {
@@ -741,9 +716,8 @@ int ws_management_fhss_broadcast_channel_function_get(
 {
     struct net_if *cur;
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
     if (!channel_function || !fixed_channel || !dwell_interval) {
         return -2;
     }
@@ -770,9 +744,8 @@ int ws_management_fhss_broadcast_channel_function_validate(
 {
     struct net_if *cur;
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
 
     ws_fhss_cfg_t cfg;
     if (ws_cfg_fhss_get(&cfg) < 0) {
@@ -799,7 +772,7 @@ int ws_management_fhss_lfn_configure(int8_t if_id,
     ws_fhss_cfg_t cfg_default;
     ws_fhss_cfg_t cfg;
 
-    if (!net_if || !ws_info(net_if))
+    if (!net_if)
         return -1;
     if (ws_cfg_fhss_get(&cfg) < 0)
         return -2;
@@ -822,9 +795,8 @@ int ws_management_timing_parameters_set(
     struct net_if *cur;
 
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
 
     ws_timing_cfg_t cfg;
     if (ws_cfg_timing_get(&cfg) < 0) {
@@ -876,9 +848,8 @@ int ws_management_timing_parameters_get(
 {
     struct net_if *cur;
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
     if (!disc_trickle_imin || !disc_trickle_imax || !disc_trickle_k || !pan_timeout) {
         return -2;
     }
@@ -905,9 +876,8 @@ int ws_management_timing_parameters_validate(
 {
     struct net_if *cur;
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (interface_id >= 0 && (!cur || !ws_info(cur))) {
+    if (interface_id >= 0 && !cur)
         return -1;
-    }
 
     ws_timing_cfg_t cfg;
     if (ws_cfg_timing_get(&cfg) < 0) {
@@ -930,9 +900,8 @@ int ws_stack_info_get(int8_t interface_id, ws_stack_info_t *info_ptr)
 {
     struct net_if *cur;
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (!cur || !ws_info(cur) || !info_ptr) {
+    if (!cur || !info_ptr)
         return -1;
-    }
     return ws_bootstrap_stack_info_get(cur, info_ptr);
 }
 
@@ -943,22 +912,7 @@ int ws_neighbor_info_get(
 {
     struct net_if *cur;
     cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (!cur || !ws_info(cur)) {
+    if (!cur)
         return -1;
-    }
     return ws_bootstrap_neighbor_info_get(cur, neighbor_ptr, count);
-}
-
-int ws_device_min_sens_set(
-    int8_t interface_id,
-    uint8_t device_min_sens)
-{
-    struct net_if *cur;
-    cur = protocol_stack_interface_info_get_by_id(interface_id);
-    if (!cur || !ws_info(cur)) {
-        return -1;
-    }
-    DEVICE_MIN_SENS = device_min_sens;
-    ws_info(cur)->device_min_sens = device_min_sens;
-    return 0;
 }

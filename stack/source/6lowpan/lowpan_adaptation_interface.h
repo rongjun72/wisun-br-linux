@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +30,7 @@ struct mac_neighbor_table_entry;
 enum buffer_priority;
 enum addrtype;
 
-int8_t lowpan_adaptation_interface_init(int8_t interface_id, uint16_t mac_mtu_size);
+int8_t lowpan_adaptation_interface_init(int8_t interface_id);
 
 int8_t lowpan_adaptation_interface_free(int8_t interface_id);
 
@@ -57,8 +58,6 @@ bool lowpan_adaptation_tx_active(int8_t interface_id);
 void lowpan_adaptation_neigh_remove_free_tx_tables(struct net_if *cur_interface, struct mac_neighbor_table_entry *entry_ptr);
 
 int8_t lowpan_adaptation_free_messages_from_queues_by_address(struct net_if *cur, uint8_t *address_ptr, enum addrtype adr_type);
-
-int8_t lowpan_adaptation_indirect_queue_params_set(struct net_if *cur, uint16_t indirect_big_packet_threshold, uint16_t max_indirect_big_packets_total, uint16_t max_indirect_small_packets_per_child);
 
 void lowpan_adaptation_expedite_forward_enable(struct net_if *cur);
 

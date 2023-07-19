@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018-2019, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +21,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+struct iobuf_write;
+
 #define MPX_FT_FULL_FRAME                   0
 #define MPX_FT_FULL_FRAME_SMALL_MULTILEX_ID 1
 #define MPX_FT_FIRST_OR_SUB_FRAGMENT        2
@@ -32,12 +35,12 @@ typedef struct mpx_msg {
     uint8_t     fragment_number;
     uint16_t    total_upper_layer_size;
     uint16_t    multiplex_id;
-    uint8_t     *frame_ptr;
+    const uint8_t *frame_ptr;
     uint16_t    frame_length;
 } mpx_msg_t;
 
-bool ws_llc_mpx_header_frame_parse(uint8_t *ptr, uint16_t length, mpx_msg_t *msg);
-uint8_t *ws_llc_mpx_header_write(uint8_t *ptr, const mpx_msg_t *msg);
+bool ws_llc_mpx_header_frame_parse(const uint8_t *ptr, uint16_t length, mpx_msg_t *msg);
+void ws_llc_mpx_header_write(struct iobuf_write *buf, const mpx_msg_t *msg);
 
 
 #endif

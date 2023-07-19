@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2014-2017, 2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,7 +42,7 @@
  */
 int8_t net_6lowpan_nd_parameter_set(const nd_parameters_s *p)
 {
-    if (protocol_stack_interface_info_get(IF_6LoWPAN)) {
+    if (protocol_stack_interface_info_get()) {
         return -2;
     }
 
@@ -62,28 +63,6 @@ int8_t net_6lowpan_nd_parameter_set(const nd_parameters_s *p)
 
     nd_params = *p;
 
-    return 0;
-}
-
-/**
- * \brief API for change 6LoWPAN bootstrap base tick 100ms multiplier.
- *
- * Note: This function MUST be called after net_init_core(). Do not change this
- * unless you really want 6LoWPAN bootstrap working slower than normally.
- * \param base_tick_x_100ms Tick resolution in 100ms units.
- *        Max value 10 --> 10 times slower functionality
- *
- * \return 0, Change OK
- * \return -1, Invalid value (<1 or >10)
- *
- */
-int8_t net_6lowpan_nd_timer_base_tick_set(uint8_t base_tick_x_100ms)
-{
-    if (base_tick_x_100ms < 1 || base_tick_x_100ms > 10) {
-        return -1;
-    }
-
-    nd_base_tick = base_tick_x_100ms;
     return 0;
 }
 

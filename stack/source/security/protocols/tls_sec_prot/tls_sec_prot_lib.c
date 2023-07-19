@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019-2020, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,11 +30,11 @@
 #include <mbedtls/ssl_ciphersuites.h>
 #include <mbedtls/debug.h>
 #include <mbedtls/oid.h>
+#include "common/endian.h"
 #include "common/rand.h"
 #include "common/trickle.h"
 #include "common/log_legacy.h"
-#include "stack-services/ns_list.h"
-#include "stack-services/common_functions.h"
+#include "common/ns_list.h"
 
 #include "security/protocols/sec_prot_cfg.h"
 #include "security/protocols/sec_prot_certs.h"

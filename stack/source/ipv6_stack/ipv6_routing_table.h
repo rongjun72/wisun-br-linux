@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2012, 2014-2019, 2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +25,7 @@
 #define IPV6_ROUTING_TABLE_H_
 #include <stdint.h>
 #include <stdbool.h>
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 
 #include "core/ns_address_internal.h"
 
@@ -141,15 +142,6 @@ typedef struct ipv6_neighbour_cache {
     NS_LIST_HEAD(ipv6_neighbour_t, link)    list;
 } ipv6_neighbour_cache_t;
 
-/* Macros for formatting ipv6 addresses into strings for route printing. */
-/* Initialize a string buffer for the ipv6 address */
-#define ROUTE_PRINT_ADDR_STR_BUFFER_INIT(str) char str[41] = "<null>"
-/* Format and store ipv6 'addr' into 'str', and evaluate 'str' */
-#define ROUTE_PRINT_ADDR_STR_FORMAT(str, addr) (ip6tos(addr, str), str)
-
-/* Callback type for route print */
-typedef void (route_print_fn_t)(const char *fmt, ...);
-
 void ipv6_neighbour_cache_init(ipv6_neighbour_cache_t *cache, int8_t interface_id);
 void ipv6_neighbour_cache_flush(ipv6_neighbour_cache_t *cache);
 ipv6_neighbour_t *ipv6_neighbour_update(ipv6_neighbour_cache_t *cache, const uint8_t *address, bool solicited);
@@ -174,7 +166,7 @@ void ipv6_neighbour_reachability_problem(const uint8_t ip_address[static 16], in
 void ipv6_neighbour_update_from_na(ipv6_neighbour_cache_t *cache, ipv6_neighbour_t *entry, uint8_t flags, addrtype_e ll_type, const uint8_t *ll_address);
 void ipv6_neighbour_cache_fast_timer(int ticks);
 void ipv6_neighbour_cache_slow_timer(int seconds);
-void ipv6_neighbour_cache_print(const ipv6_neighbour_cache_t *cache, route_print_fn_t *print_fn);
+void ipv6_neighbour_cache_print(const ipv6_neighbour_cache_t *cache);
 void ipv6_router_gone(ipv6_neighbour_cache_t *cache, ipv6_neighbour_t *entry);
 int8_t ipv6_neighbour_set_current_max_cache(uint16_t max_cache);
 int8_t ipv6_destination_cache_configure(uint16_t max_entries, uint16_t short_term_threshold, uint16_t long_term_threshold, uint16_t lifetime);
@@ -218,7 +210,7 @@ typedef struct ipv6_destination {
 #define ipv6_destination_pmtu(d) IPV6_MIN_LINK_MTU
 #endif
 
-void ipv6_destination_cache_print(route_print_fn_t *print_fn);
+void ipv6_destination_cache_print();
 ipv6_destination_t *ipv6_destination_lookup_or_create(const uint8_t *address, int8_t interface_id);
 ipv6_destination_t *ipv6_destination_lookup_or_create_with_route(const uint8_t *address, int8_t interface_id, ipv6_route_info_t *route_out);
 void ipv6_destination_cache_timer(int ticks);
@@ -263,7 +255,7 @@ void ipv6_route_table_remove_info(int8_t interface_id, ipv6_route_src_t source, 
 void ipv6_route_table_set_predicate_fn(ipv6_route_src_t src, ipv6_route_predicate_fn_t *fn);
 void ipv6_route_table_set_next_hop_fn(ipv6_route_src_t src, ipv6_route_next_hop_fn_t *fn);
 void ipv6_route_table_ttl_update(int seconds);
-void ipv6_route_table_print(route_print_fn_t *print_fn);
+void ipv6_route_table_print();
 bool ipv6_route_table_source_was_invalidated(ipv6_route_src_t src);
 void ipv6_route_table_source_invalidated_reset(void);
 

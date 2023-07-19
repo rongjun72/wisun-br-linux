@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Silicon Laboratories Inc. (www.silabs.com)
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  *
  * The licensor of this software is Silicon Laboratories Inc. Your use of this
  * software is governed by the terms of the Silicon Labs Master Software License
@@ -12,6 +12,7 @@
  */
 #include <stdint.h>
 #include <string.h>
+#include <stdarg.h>
 #include <unistd.h>
 #include <ctype.h>
 
@@ -24,110 +25,78 @@ bool g_enable_color_traces = true;
 
 char *str_bytes(const void *in_start, size_t in_len, const void **in_done, char *out_start, size_t out_len, int opt)
 {
-    static const char *hex_l = "0123456789abcdef";
-    static const char *hex_u = "0123456789ABCDEF";
-    const char *hex = hex_l;
+    const char *delim = "";
+    const char *ellipsis = "";
+    const char *fmt = "%s%02x";
     const uint8_t *in = in_start;
     const uint8_t *in_end = in + in_len;
     char *out = out_start;
-    char *out_end;
-
-    char *ellipsis = "\0";
-    char delim = '\0';
-    bool fit = true;
+    char *out_end = out + out_len;
+    char *ellipsis_ptr;
+    int entry_len;
 
     BUG_ON(!out);
     BUG_ON(!out_len);
-    if (opt & UPPER_HEX)
-        hex = hex_u;
+
     if (opt & DELIM_SPACE)
-        delim = ' ';
+        delim = " ";
     if (opt & DELIM_COLON)
-        delim = ':';
-    if (delim && out_len < in_len * 3)
-        fit = false;
-    if (!delim && out_len < in_len * 2 + 1)
-        fit = false;
+        delim = ":";
+    if (opt & DELIM_COMMA)
+        delim = ", ";
+    if (opt & FMT_LHEX)
+        fmt = "%s%02x";
+    if (opt & FMT_UHEX)
+        fmt = "%s%02X";
+    if (opt & FMT_DEC)
+        fmt = "%s%d";
+    if (opt & FMT_DEC_PAD)
+        fmt = "%s%3d";
+    if (opt & FMT_ASCII_PRINT)
+        fmt = "%s\\x%02x";
+    if (opt & FMT_ASCII_ALNUM)
+        fmt = "%s\\x%02x";
+    if (opt & ELLIPSIS_STAR)
+        ellipsis = "*";
+    if (opt & ELLIPSIS_DOTS)
+        ellipsis = "...";
 
-    if (!fit) {
-        if (opt & ELLIPSIS_ABRT)
-            BUG("buffer is too small");
-        if (opt & ELLIPSIS_STAR)
-            ellipsis = "*";
-        if (opt & ELLIPSIS_DOTS)
-            ellipsis = "...";
-    }
-
-    // Input buffer is null
-    if (!in) {
-        strncpy(out, "<null>", out_len - 1);
-        goto out;
-    }
-
-    // Nothing to display just return empty string
-    if (!in_len) {
-        out[0] = '\0';
-        goto out;
-    }
-
-    // We can't write at least one byte
-    if (out_len <= strlen(ellipsis) + 3) {
-        strncpy(out, ellipsis, out_len - 1);
-        goto out;
-    }
-
-    // Keep one byte for '\0'
-    out_end = out + out_len - strlen(ellipsis) - 1;
-    while (true) {
-        *out++ = hex[*in >> 4];
-        *out++ = hex[*in & 0xF];
-        in++;
-        if (in == in_end)
-            break;
-        if (delim && out_end - out < 3)
-            break;
-        if (!delim && out_end - out < 2)
-            break;
-        if (delim)
-            *out++ = delim;
-    }
-    strcpy(out, ellipsis);
-
-out:
-    out_start[out_len - 1] = '\0';
     if (in_done)
         *in_done = in;
-    return out_start;
-}
-char *str_bytes_ascii(const void *in_start, int in_len, char *out, int out_len, int opt)
-{
-    static const char *hex = "0123456789ABCDEF";
-    const char *in = in_start;
-    bool print_direct;
-    bool fit = true;
-    int i, j = 0;
 
-    for (i = 0; i < in_len; i++) {
-        print_direct = false;
-        if (isalnum(in[i]))
-            print_direct = true;
-        else if (!(opt & ONLY_ALNUM) && isprint(in[i]) && in[i] != '\\')
-            print_direct = true;
-        if (print_direct && out_len - j > 1) {
-            out[j++] = in[i];
-        } else if (!print_direct && out_len - j > 4) {
-            out[j++] = '\\';
-            out[j++] = 'x';
-            out[j++] = hex[in[i] / 16];
-            out[j++] = hex[in[i] % 16];
-        } else {
-            fit = false;
-            break;
-        }
+    if (!in) {
+        snprintf(out, out_len, "<null>");
+        return out;
     }
-    if (!fit && opt & ELLIPSIS_ABRT)
-        BUG("buffer is too small");
-    out[j++] = '\0';
+
+    if (!in_len) {
+        out[0] = '\0';
+        return out;
+    }
+
+    ellipsis_ptr = NULL;
+    while (in < in_end) {
+        if ((opt & FMT_ASCII_ALNUM && isalnum(*in)) ||
+            (opt & FMT_ASCII_PRINT && isprint(*in) && *in != '\\'))
+            entry_len = snprintf(out, out_end - out, "%s%c", in == in_start ? "" : delim, *in);
+        else
+            entry_len = snprintf(out, out_end - out, fmt, in == in_start ? "" : delim, *in);
+        if (out + entry_len + strlen(ellipsis) >= out_end && !ellipsis_ptr) {
+            if (in_done)
+                *in_done = in;
+             ellipsis_ptr = out;
+        }
+        if (out + entry_len >= out_end) {
+            if (opt & ELLIPSIS_ABRT)
+                BUG("buffer is too small");
+            snprintf(ellipsis_ptr, out_end - ellipsis_ptr, "%s", ellipsis);
+            return out;
+        }
+        out += entry_len;
+        in++;
+    }
+    if (in_done)
+        *in_done = in;
     return out;
 }
 
@@ -194,7 +163,7 @@ char *str_ipv6(const uint8_t in[static 16], char out[static STR_MAX_LEN_IPV6])
 
 char *str_ipv4_prefix(uint8_t in[], int prefix_len, char out[static STR_MAX_LEN_IPV4_NET])
 {
-    uint8_t tmp[4];
+    uint8_t tmp[4] = { };
 
     bitcpy(tmp, in, prefix_len);
     str_ipv4(tmp, out);
@@ -204,7 +173,7 @@ char *str_ipv4_prefix(uint8_t in[], int prefix_len, char out[static STR_MAX_LEN_
 
 char *str_ipv6_prefix(const uint8_t in[], int prefix_len, char out[static STR_MAX_LEN_IPV6_NET])
 {
-    uint8_t tmp[16];
+    uint8_t tmp[16] = { };
 
     bitcpy(tmp, in, prefix_len);
     str_ipv6(tmp, out);
@@ -227,11 +196,6 @@ static __thread int trace_nested_counter = 0;
 
 void __tr_enter()
 {
-    if (!g_trace_stream) {
-        g_trace_stream = stdout;
-        setlinebuf(stdout);
-        g_enable_color_traces = isatty(fileno(g_trace_stream));
-    }
     trace_nested_counter++;
 }
 
@@ -242,23 +206,41 @@ void __tr_exit()
         trace_idx = 0;
 }
 
+void __tr_vprintf(const char *color, const char *fmt, va_list ap)
+{
+    if (!g_trace_stream) {
+        g_trace_stream = stdout;
+        setlinebuf(stdout);
+        g_enable_color_traces = isatty(fileno(g_trace_stream));
+    }
+
+    if (color && strcmp(color, "0") && g_enable_color_traces) {
+        fprintf(g_trace_stream, "\x1B[%sm", color);
+        vfprintf(g_trace_stream, fmt, ap);
+        fprintf(g_trace_stream, "\x1B[0m\n");
+    } else {
+        vfprintf(g_trace_stream, fmt, ap);
+        fprintf(g_trace_stream, "\n");
+    }
+}
+
+void __tr_printf(const char *color, const char *fmt, ...)
+{
+    va_list ap;
+
+    va_start(ap, fmt);
+    __tr_vprintf(color, fmt, ap);
+    va_end(ap);
+}
+
 const char *tr_bytes(const void *in, int len, const void **in_done, int max_out, int opt)
 {
     char *out = trace_buffer + trace_idx;
 
+    BUG_ON(!trace_nested_counter, "%s must be called within a trace", __func__);
     if (trace_idx + max_out > sizeof(trace_buffer))
         return "[OVERFLOW]";
     str_bytes(in, len, in_done, out, max_out, opt);
-    trace_idx += strlen(out) + 1;
-    BUG_ON(trace_idx > sizeof(trace_buffer));
-    return out;
-}
-
-const char *tr_bytes_ascii(const void *in, int len, int opt)
-{
-    char *out = trace_buffer + trace_idx;
-
-    str_bytes_ascii(in, len, out, sizeof(trace_buffer) - trace_idx, opt);
     trace_idx += strlen(out) + 1;
     BUG_ON(trace_idx > sizeof(trace_buffer));
     return out;
@@ -268,6 +250,7 @@ const char *tr_key(const uint8_t in[], int in_len)
 {
     char *out = trace_buffer + trace_idx;
 
+    BUG_ON(!trace_nested_counter, "%s must be called within a trace", __func__);
     if (trace_idx + in_len * 3 > sizeof(trace_buffer))
         return "[OVERFLOW]";
     str_key(in, in_len, out, in_len * 3);
@@ -280,6 +263,7 @@ const char *tr_eui48(const uint8_t in[static 6])
 {
     char *out = trace_buffer + trace_idx;
 
+    BUG_ON(!trace_nested_counter, "%s must be called within a trace", __func__);
     if (trace_idx + STR_MAX_LEN_EUI48 > sizeof(trace_buffer))
         return "[OVERFLOW]";
     str_eui48(in, out);
@@ -292,6 +276,7 @@ const char *tr_eui64(const uint8_t in[static 8])
 {
     char *out = trace_buffer + trace_idx;
 
+    BUG_ON(!trace_nested_counter, "%s must be called within a trace", __func__);
     if (trace_idx + STR_MAX_LEN_EUI64 > sizeof(trace_buffer))
         return "[OVERFLOW]";
     str_eui64(in, out);
@@ -304,6 +289,7 @@ const char *tr_ipv4(uint8_t in[static 4])
 {
     char *out = trace_buffer + trace_idx;
 
+    BUG_ON(!trace_nested_counter, "%s must be called within a trace", __func__);
     if (trace_idx + STR_MAX_LEN_IPV4 > sizeof(trace_buffer))
         return "[OVERFLOW]";
     str_ipv4(in, out);
@@ -316,6 +302,7 @@ const char *tr_ipv6(const uint8_t in[static 16])
 {
     char *out = trace_buffer + trace_idx;
 
+    BUG_ON(!trace_nested_counter, "%s must be called within a trace", __func__);
     if (trace_idx + STR_MAX_LEN_IPV6 > sizeof(trace_buffer))
         return "[OVERFLOW]";
     str_ipv6(in, out);
@@ -328,6 +315,7 @@ const char *tr_ipv4_prefix(uint8_t in[], int prefix_len)
 {
     char *out = trace_buffer + trace_idx;
 
+    BUG_ON(!trace_nested_counter, "%s must be called within a trace", __func__);
     if (trace_idx + STR_MAX_LEN_IPV4_NET > sizeof(trace_buffer))
         return "[OVERFLOW]";
     str_ipv4_prefix(in, prefix_len, out);
@@ -340,6 +328,7 @@ const char *tr_ipv6_prefix(const uint8_t in[], int prefix_len)
 {
     char *out = trace_buffer + trace_idx;
 
+    BUG_ON(!trace_nested_counter, "%s must be called within a trace", __func__);
     if (trace_idx + STR_MAX_LEN_IPV6_NET > sizeof(trace_buffer))
         return "[OVERFLOW]";
     str_ipv6_prefix(in, prefix_len, out);

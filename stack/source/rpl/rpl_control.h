@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2021, Pelion and affiliates.
+ * Copyright (c) 2021-2023 Silicon Laboratories Inc. (www.silabs.com)
  * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +21,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "stack-services/ns_list.h"
+#include "common/ns_list.h"
 
 #include "ipv6_stack/ipv6_routing_table.h"
 
@@ -171,7 +172,6 @@ void rpl_control_free_domain_instances_from_interface(struct net_if *cur);
 void rpl_control_set_callback(rpl_domain_t *domain, rpl_domain_callback_t callback, rpl_prefix_callback_t prefix_learn_cb, rpl_new_parent_callback_t new_parent_add, rpl_parent_dis_callback_t parent_dis, void *cb_handle);
 
 /* Target publishing */
-void rpl_control_publish_host_address(rpl_domain_t *domain, const uint8_t addr[16], uint32_t lifetime);
 void rpl_control_unpublish_address(rpl_domain_t *domain, const uint8_t addr[16]);
 bool rpl_control_is_dodag_parent(struct net_if *interface, const uint8_t ll_addr[16]);
 bool rpl_control_is_dodag_parent_candidate(struct net_if *interface, const uint8_t ll_addr[16], uint16_t candidate_cmp_limiter);
@@ -201,7 +201,7 @@ bool rpl_control_address_register_done(struct net_if *interface, const uint8_t l
 ipv6_route_predicate_fn_t *rpl_control_get_route_predicate(rpl_domain_t *domain, uint8_t instance_id, const uint8_t src[16], const uint8_t dst[16]);
 
 /* Diagnostic APIs */
-void rpl_control_print(route_print_fn_t *print_fn);
+void rpl_control_print();
 uint16_t rpl_control_route_table_get(struct rpl_instance *instance, uint8_t *prefix, rpl_route_info_t *output_table, uint16_t output_table_len);
 
 struct rpl_instance *rpl_control_enumerate_instances(rpl_domain_t *domain, struct rpl_instance *instance);

@@ -517,48 +517,44 @@ if(COMPILE_DEVTOOLS)
         version.c
         common/crc.c
         common/bus_uart.c
-        common/hal_interrupt.c
-        common/os_scheduler.c
+        common/events_scheduler.c
         common/log.c
         common/bits.c
+        common/endian.c
         common/rand.c
+        common/iobuf.c
         common/slist.c
         common/spinel_buffer.c
-        stack-services/common_functions.c
-        stack-services/ip6string.c
-        stack-services/ns_list.c
-        stack-scheduler/source/event.c
-        app_wsmac/timer_sys_stub.c
-        app_wsmac/sl_wsmac.c
-        app_wsmac/sl_wsrcp_mac.c
-        app_wsmac/sl_rf_driver.c
-        app_wsmac/hal_fhss_timer.c
-        app_wsmac/mac/rf_driver_storage.c
-        app_wsmac/mac/ieee802154/mac_cca_threshold.c
-        app_wsmac/mac/ieee802154/mac_fhss_callbacks.c
-        app_wsmac/mac/ieee802154/mac_filter.c
-        app_wsmac/mac/ieee802154/mac_header_helper_functions.c
-        app_wsmac/mac/ieee802154/mac_indirect_data.c
-        app_wsmac/mac/ieee802154/mac_mcps_sap.c
-        app_wsmac/mac/ieee802154/mac_mlme.c
-        app_wsmac/mac/ieee802154/mac_pd_sap.c
-        app_wsmac/mac/ieee802154/mac_security_mib.c
-        app_wsmac/mac/ieee802154/mac_timer.c
-        app_wsmac/mac/ieee802154/sw_mac.c
-        app_wsmac/ccm/ccm_security.c
-        app_wsmac/ccm/mbedOS/aes_mbedtls_adapter.c
-        app_wsmac/fhss/channel_functions.c
-        app_wsmac/fhss/fhss_common.c
-        app_wsmac/fhss/fhss_configuration_interface.c
-        app_wsmac/fhss/fhss_statistics.c
-        app_wsmac/fhss/fhss_ws.c
-        app_wsmac/os_timer.c
-        # Excluded app_wsmac/fhss/fhss_test_api.c
+        tools/wsmac/timer_sys_stub.c
+        tools/wsmac/sl_wsrcp.c
+        tools/wsmac/sl_wsrcp_mac.c
+        tools/wsmac/sl_rf_driver.c
+        tools/wsmac/hal_fhss_timer.c
+        tools/wsmac/mac/rf_driver_storage.c
+        tools/wsmac/mac/ieee802154/mac_cca_threshold.c
+        tools/wsmac/mac/ieee802154/mac_fhss_callbacks.c
+        tools/wsmac/mac/ieee802154/mac_filter.c
+        tools/wsmac/mac/ieee802154/mac_header_helper_functions.c
+        tools/wsmac/mac/ieee802154/mac_indirect_data.c
+        tools/wsmac/mac/ieee802154/mac_mcps_sap.c
+        tools/wsmac/mac/ieee802154/mac_mlme.c
+        tools/wsmac/mac/ieee802154/mac_pd_sap.c
+        tools/wsmac/mac/ieee802154/mac_security_mib.c
+        tools/wsmac/mac/ieee802154/mac_timer.c
+        tools/wsmac/mac/ieee802154/sw_mac.c
+        tools/wsmac/ccm/ccm_security.c
+        tools/wsmac/ccm/mbedOS/aes_mbedtls_adapter.c
+        tools/wsmac/fhss/channel_functions.c
+        tools/wsmac/fhss/fhss_common.c
+        tools/wsmac/fhss/fhss_configuration_interface.c
+        tools/wsmac/fhss/fhss_statistics.c
+        tools/wsmac/fhss/fhss_ws.c
+        tools/wsmac/os_timer.c
+        # Excluded app_wshwsim/fhss/fhss_test_api.c
     )
     target_include_directories(wsmac PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
-        app_wsmac/
-        stack-scheduler/
+        tools/wsmac/
         stack/
     )
     # target_compile_definitions(wsmac PRIVATE FHSS_CHANNEL_DEBUG)

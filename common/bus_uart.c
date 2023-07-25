@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <termios.h>
 #include <sys/file.h>
+#include <time.h>
 
 #include "endian.h"
 #include "crc.h"
@@ -23,8 +24,13 @@
 #include "bus_uart.h"
 #include "spinel_buffer.h"
 
+uintmax_t init_sec;
 int uart_open(const char *device, int bitrate, bool hardflow)
 {
+    struct timespec init_tp;        
+    clock_gettime(CLOCK_MONOTONIC, &init_tp);  
+    init_sec = init_tp.tv_sec;
+
     static const struct {
         int val;
         int symbolic;

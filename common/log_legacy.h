@@ -19,10 +19,10 @@
  * code (use log.h instead).
  */
 
-#define tr_debug(MSG, ...) __PRINT(90, "[DBG ][%-4s]: " MSG, TRACE_GROUP, ##__VA_ARGS__)
-#define tr_info(MSG, ...)  __PRINT(39, "[INFO][%-4s]: " MSG, TRACE_GROUP, ##__VA_ARGS__)
-#define tr_warn(MSG, ...)  __PRINT(33, "[WARN][%-4s]: " MSG, TRACE_GROUP, ##__VA_ARGS__)
-#define tr_error(MSG, ...) __PRINT(31, "[ERR ][%-4s]: " MSG, TRACE_GROUP, ##__VA_ARGS__)
+#define tr_debug(MSG, ...) __PRINT_WITH_TIME(90, "[DBG ][%-4s]: " MSG, TRACE_GROUP, ##__VA_ARGS__)
+#define tr_info(MSG, ...)  __PRINT_WITH_TIME(39, "[INFO][%-4s]: " MSG, TRACE_GROUP, ##__VA_ARGS__)
+#define tr_warn(MSG, ...)  __PRINT_WITH_TIME(33, "[WARN][%-4s]: " MSG, TRACE_GROUP, ##__VA_ARGS__)
+#define tr_error(MSG, ...) __PRINT_WITH_TIME(31, "[ERR ][%-4s]: " MSG, TRACE_GROUP, ##__VA_ARGS__)
 
 #define trace_array       tr_key
 

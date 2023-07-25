@@ -70,6 +70,7 @@
 extern FILE *g_trace_stream;
 extern unsigned int g_enabled_traces;
 extern bool g_enable_color_traces;
+extern uintmax_t init_sec; 
 
 enum {
     TR_RF        = 0x0001,
@@ -263,9 +264,9 @@ void __tr_vprintf(const char *color, const char *fmt, va_list ap);
 #define __PRINT_WITH_TIME(COLOR, MSG, ...) \
     do {                                                             \
         struct timespec tp;                                          \
-        clock_gettime(CLOCK_REALTIME, &tp);                          \
-        __PRINT(COLOR, "%ju.%06ju: " MSG,                            \
-                (uintmax_t)tp.tv_sec, (uintmax_t)tp.tv_nsec / 1000,  \
+        clock_gettime(CLOCK_MONOTONIC, &tp);                          \
+        __PRINT(COLOR, "%6ju.%03ju: " MSG,                            \
+                (uintmax_t)tp.tv_sec - init_sec, ((uintmax_t)tp.tv_nsec / 1000000)%1000,  \
                 ##__VA_ARGS__);                                      \
     } while (0)
 

@@ -10,6 +10,7 @@
  *
  * [1]: https://www.silabs.com/about-us/legal/master-software-license-agreement
  */
+#include <time.h>
 #include "stack/mac/mlme.h"
 #include "stack/mac/channel_list.h"
 #include "stack/mac/fhss_ws_extension.h"
@@ -31,6 +32,7 @@
 #include "version.h"
 #include "rcp_api.h"
 
+#define ENABLE_HOST_RCP_TIME_ADJUST (1)
 
 uint8_t rcp_get_spinel_hdr()
 {
@@ -113,14 +115,23 @@ static void rcp_set_eui64(unsigned int prop, const uint8_t val[8])
     iobuf_free(&buf);
 }
 
-
+extern uintmax_t init_sec; 
 void rcp_noop()
 {
     struct wsbr_ctxt *ctxt = &g_ctxt;
     struct iobuf_write buf = { };
-
     spinel_push_u8(&buf, rcp_get_spinel_hdr());
     spinel_push_uint(&buf, SPINEL_CMD_NOOP);
+#if ENABLE_HOST_RCP_TIME_ADJUST
+    /* debug part for host-rcp time offset calculation -----start */
+    struct timespec tp;
+    clock_gettime(CLOCK_MONOTONIC, &tp);
+    uint32_t host_sec_relative = (uint32_t) ((uintmax_t)tp.tv_sec - init_sec);
+    uint32_t host_mili_sec = (uint32_t) (((uintmax_t)tp.tv_nsec / 1000000)%1000);
+    spinel_push_u32(&buf, host_sec_relative);
+    spinel_push_u32(&buf, host_mili_sec);
+    /* debug part for host-rcp time offset calculation -----end */
+#endif //ENABLE_HOST_RCP_TIME_ADJUST
     rcp_tx(ctxt, &buf);
     iobuf_free(&buf);
 }
@@ -505,6 +516,7 @@ void rcp_set_frame_counter(int slot, uint32_t val)
     spinel_push_hdr_set_prop(&buf, SPINEL_PROP_WS_FRAME_COUNTER);
     spinel_push_uint(&buf, slot);
     spinel_push_u32(&buf, val);
+
     rcp_tx(ctxt, &buf);
     iobuf_free(&buf);
 }
@@ -516,6 +528,16 @@ void rcp_get_frame_counter(int slot)
 
     spinel_push_hdr_get_prop(&buf, SPINEL_PROP_WS_FRAME_COUNTER);
     spinel_push_uint(&buf, slot);
+#if ENABLE_HOST_RCP_TIME_ADJUST    
+    /* debug part for host-rcp time offset calculation -----start */
+    struct timespec tp;
+    clock_gettime(CLOCK_MONOTONIC, &tp);
+    uint32_t host_sec_relative = (uint32_t) ((uintmax_t)tp.tv_sec - init_sec);
+    uint32_t host_mili_sec = (uint32_t) (((uintmax_t)tp.tv_nsec / 1000000)%1000);
+    spinel_push_u32(&buf, host_sec_relative);
+    spinel_push_u32(&buf, host_mili_sec);
+    /* debug part for host-rcp time offset calculation -----end */
+#endif //ENABLE_HOST_RCP_TIME_ADJUST
     rcp_tx(ctxt, &buf);
     iobuf_free(&buf);
 }

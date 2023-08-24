@@ -201,10 +201,13 @@ void ws_bootstrap_6lbr_mngt_ind(struct net_if *cur, const struct mcps_data_ind *
 
 void ws_bootstrap_6lbr_asynch_confirm(struct net_if *interface, uint8_t asynch_message)
 {
-    if (asynch_message == WS_FT_PA)
+    if (asynch_message == WS_FT_PA) {
         interface->pan_advert_running = false;
-    else if (asynch_message == WS_FT_PC)
+        tr_debug("-----PAN advertize confirm");
+    } else if (asynch_message == WS_FT_PC) {
         interface->pan_config_running = false;
+        tr_debug("-----PAN config confirm");
+    }
     ws_stats_update(interface, STATS_WS_ASYNCH_TX, 1);
     if (interface->bootstrap_mode == ARM_NWK_BOOTSTRAP_MODE_6LoWPAN_BORDER_ROUTER) {
         if (asynch_message == WS_FT_PC && interface->ws_info.pending_key_index_info.state == PENDING_KEY_INDEX_ACTIVATE) {
@@ -315,7 +318,7 @@ void ws_bootstrap_6lbr_event_handler(struct net_if *cur, struct event_payload *e
 {
     ws_bootstrap_event_type_e event_type;
     event_type = (ws_bootstrap_event_type_e)event->event_type;
-
+    tr_info("------------ws_bootstrap_6lbr_event_handler--------------");
     switch (event_type) {
         case WS_INIT_EVENT:
             tr_debug("Tasklet init");

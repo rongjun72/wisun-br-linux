@@ -149,10 +149,10 @@ static void ws_neighbor_calculate_ufsi_drift(ws_neighbor_class_entry_t *ws_neigh
 
         int32_t ufsi_drift_ms = (int32_t)(time_since_last_ufsi_us / 1000 - ufsi_diff_ms);
         // Only trace if there is significant error
-        if (ufsi_drift_ms < -5 || ufsi_drift_ms > 5) {
+        //if (ufsi_drift_ms < -5 || ufsi_drift_ms > 5) {
             tr_debug("UFSI updated: %s, drift: %"PRIi32"ms in %"PRIu32" seconds", tr_eui64(address), ufsi_drift_ms, time_since_last_ufsi_us / 1000000);
-        }
-    }
+        //}
+    } 
 }
 
 void ws_neighbor_class_ut_update(ws_neighbor_class_entry_t *neighbor, uint24_t ufsi,

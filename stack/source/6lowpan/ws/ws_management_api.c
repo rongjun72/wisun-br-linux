@@ -582,6 +582,7 @@ int ws_management_fhss_unicast_channel_function_configure(
     } else {
         cfg.fhss_uc_dwell_interval = dwell_interval;
     }
+    tr_info("----UC dewell time set: %dms", cfg.fhss_uc_dwell_interval); 
     if (channel_function < 0xff) {
         cfg.fhss_uc_channel_function = channel_function;
     } else {

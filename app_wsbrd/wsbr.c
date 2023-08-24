@@ -59,6 +59,8 @@
 #include "dbus.h"
 #include "tun.h"
 
+#define TRACE_GROUP "wspa"
+
 static void wsbr_handle_reset(struct wsbr_ctxt *ctxt);
 static void wsbr_handle_rx_err(uint8_t src[8], uint8_t status);
 
@@ -229,10 +231,12 @@ static void wsbr_configure_ws(struct wsbr_ctxt *ctxt)
         if (ctxt->config.ws_gtk_force[i]) {
             gtk_force = true;
             gtks[i] = ctxt->config.ws_gtk[i];
+            tr_info("----forced GTK %s", trace_array(gtks[i], 16));
         }
     }
     if (gtk_force) {
         ret = ws_test_gtk_set(ctxt->rcp_if_id, gtks);
+        ret = ws_test_next_gtk_set(ctxt->rcp_if_id, gtks);
         WARN_ON(ret);
     }
 
@@ -244,6 +248,7 @@ static void wsbr_configure_ws(struct wsbr_ctxt *ctxt)
     }
     if (lgtk_force) {
         ret = ws_test_lgtk_set(ctxt->rcp_if_id, lgtks);
+        ret = ws_test_next_lgtk_set(ctxt->rcp_if_id, gtks);
         WARN_ON(ret);
     }
 
@@ -288,7 +293,9 @@ static void wsbr_network_init(struct wsbr_ctxt *ctxt)
                                                           NET_6LOWPAN_BORDER_ROUTER,
                                                           NET_6LOWPAN_WS);
     WARN_ON(ret, "arm_nwk_interface_configure_6lowpan_bootstrap_set: %d", ret);
+    tr_info("-----------------start-----wsbr_configure_ws-----------------------");
     wsbr_configure_ws(ctxt);
+    tr_info("-----------------finish-----wsbr_configure_ws-----------------------");
     tun_addr_get_global_unicast(ctxt->config.tun_dev, ipv6);
     if (!memcmp(ipv6, ADDR_UNSPECIFIED, 16))
         FATAL(1, "no gua found on %s", ctxt->config.tun_dev);
@@ -529,6 +536,7 @@ int wsbr_main(int argc, char *argv[])
     }
     ctxt->os_ctxt->trig_fd = ctxt->os_ctxt->data_fd;
 
+    tr_info("---------------------NOOP----");
     rcp_noop();
     rcp_reset();
     wsbr_rcp_init(ctxt);

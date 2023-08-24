@@ -490,6 +490,7 @@ sudo wsnode -F examples/wsnode.conf -u /dev/pts/8 -T 15.4-mngt,15.4,eap
 
  * burn a clean RaspIOS(desktop) on a TF card (>32G), using RaspberryPi imager 
  * insert TF card into Pi4B start finshing remaining set up
+ * for no-desktop RasPiIOS, need to create a empty file "ssh" in /boot/
  * open a terminal on RaspPiIOS, Generating a new SSH key:
 ```bash
 ssh-keygen -t ed25519 -C "rong72@yeah.net"
@@ -499,7 +500,7 @@ cat .ssh/id_ed25519.pub
  * update/upgrade and install essencial tools on RaspPiIOS as below:
 ```bash
 sudo apt update -y; sudo apt upgrade -y
-sudo apt install git net-tools ssh traceroute g++ lm-sensors tcpdump -y
+sudo apt install git net-tools ssh traceroute g++ lm-sensors psensor tcpdump -y
 sudo apt install libnl-3-dev libnl-route-3-dev libcap-dev libpcap-dev -y
 sudo apt install libsystemd-dev libdbus-1-dev cargo cmake ninja-build pkg-config lrzsz -y
 ``` 
@@ -534,3 +535,13 @@ cmake -G Ninja .
 ninja
 sudo ninja install
 ```
+
+
+
+ssh-keygen -f "/home/rongjun/.ssh/known_hosts" -R "192.168.31.217"
+
+
+
+
+
+

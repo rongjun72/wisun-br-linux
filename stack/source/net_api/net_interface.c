@@ -576,6 +576,7 @@ int8_t arm_nwk_interface_configure_6lowpan_bootstrap_set(int8_t interface_id, ne
 {
     int8_t ret_val;
     (void)bootstrap_mode;
+    tr_info("---------------arm_nwk_interface_configure_6lowpan_bootstrap_set----------------");
     ret_val = arm_6lowpan_bootstrap_set_for_selected_interface(interface_id);
 
     if (ret_val == 0) {

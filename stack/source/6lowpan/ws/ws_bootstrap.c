@@ -239,6 +239,8 @@ static int ws_bootstrap_tasklet_init(struct net_if *cur)
     if (cur->bootStrapId < 0)
         cur->bootStrapId = event_handler_create(&ws_bootstrap_event_handler, WS_INIT_EVENT);
 
+    tr_info("-------ws_bootstrap_tasklet_init-------");
+
     if (cur->bootStrapId < 0) {
         tr_error("tasklet init failed");
         return -1;
@@ -1093,6 +1095,8 @@ int ws_bootstrap_init(int8_t interface_id, net_6lowpan_mode_e bootstrap_mode)
     ws_neighbor_class_t neigh_info;
     uint32_t neighbors_table_size;
     int ret_val = 0;
+
+    tr_info("--------------------ws_bootstrap_init----------------------");
 
     if (!cur)
         return -1;
@@ -2204,6 +2208,7 @@ static void ws_bootstrap_pan_config(struct net_if *cur)
 static void ws_bootstrap_event_handler(struct event_payload *event)
 {
     struct net_if *cur;
+    tr_info("------------ws_bootstrap_event_handler--------------");
     cur = protocol_stack_interface_info_get_by_bootstrap_id(event->receiver);
     if (!cur) {
         return;

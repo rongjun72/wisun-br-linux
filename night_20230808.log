@@ -1,0 +1,3214 @@
+Silicon Labs Wi-SUN border router v1.5.3-23-ga79271ce-dirty
+Connected to RCP "CMT rcp develop" (2.2.2), API 0.6.0
+     1.098: [INFO][wspt]: (L)GTK timers revocation lifetime: 86400, new activation time: 3600, time to update: 82800
+     1.098: [INFO][wspt]: (L)GTK timers revocation lifetime: 259200, new activation time: 43200, time to update: 216000
+     1.098: [DBG ][BBRw]: Read BSI 34388 from NVM
+     1.098: [DBG ][BBRw]: Read PAN ID 65535 from NVM
+     1.098: [INFO][addr]: Address added to IF 1: fe80::643a:c93:c95e:2e38
+     1.098: [DBG ][addr]: LL64 Register OK!
+     1.098: [INFO][rout]: Added route:
+     1.098: [DBG ][rout]:                  fe80:/64 if:1 src:'Static' id:0 lifetime:infinite
+     1.098: [DBG ][rout]:      On-link (met 128)
+     1.098: [INFO][rout]: Added route:
+     1.098: [DBG ][rout]:                   ff00:/8 if:1 src:'Static' id:0 lifetime:infinite
+     1.098: [DBG ][rout]:      On-link (met 192)
+     1.098: [INFO][rout]: Added route:
+     1.098: [DBG ][rout]:  fd12:6868:6868::643a:c93:c95e:2e38/128 if:1 src:'Loopback' id:0 lifetime:infinite
+     1.098: [DBG ][rout]:      On-link (met 128)
+     1.098: [INFO][addr]: Address added to IF 1: fd12:6868:6868::643a:c93:c95e:2e38
+Wi-SUN Border Router is ready
+     1.098: [DBG ][wsbs]: global unicast address of interface ws0 is fd12:6868:6868::643a:c93:c95e:2e38
+     1.098: [DBG ][wsbs]: Tasklet init
+     1.098: [INFO][wsbs]: Discovery start
+     1.098: [INFO][wsbs]: Wi-SUN packet congestion minTh 450, maxTh 900, drop probability 10 weight 32, Packet/Seconds 15
+     1.098: [INFO][wspc]: Read frame counter: index 0 value 1000000
+     1.098: [WARN][wspc]: NVM EUI-64 mismatch, current: 66:3a:0c:93:c9:5e:2e:38 stored: 26:9c:c3:b6:8c:bf:e5:cf
+     1.098: [DBG ][BBRw]: Border router version number update
+     1.098: [DBG ][BBRw]: Border router LFN version number update
+     1.098: [DBG ][BBRw]: Border router version number update
+  domain: NA
+  class: 0x3
+  mode: 0x5
+  phy operating modes: disabled
+  RCP configuration index: not supported
+  channel 0 frequency: 902.6MHz
+  channel spacing: 600kHz
+  channel count: 42
+  channel masks:
+               advertised         effective         
+     unicast   --                 00:00:00:00:00:fc 
+     broadcast --                 00:00:00:00:00:fc 
+     async     --                 00:00:00:00:00:fc 
+     1.099: [INFO][wspa]: GTK install new index: 0, lifetime: 2592000 system time: 0
+     1.099: [INFO][wspa]: LGTK install new index: 0, lifetime: 7776000 system time: 0
+     1.099: [INFO][wspc]: GTK hash set f9:65:92:76:73:9a:8d:f0 00:00:00:00:00:00:00:00 00:00:00:00:00:00:00:00 00:00:00:00:00:00:00:00
+     1.099: [INFO][wspc]: NW key set: 0, hash: f9:65:92:76:73:9a:8d:f0
+     1.099: [INFO][wspc]: LGTK hash set a1:87:6e:3c:92:e2:40:6a 00:00:00:00:00:00:00:00 00:00:00:00:00:00:00:00 00:00:00:00:00:00:00:00
+     1.099: [INFO][wspc]: NW key set: 4, hash: a1:87:6e:3c:92:e2:40:6a
+     1.099: [DBG ][wspc]: Pending to store new frame counter: index 0 value 0
+     1.099: [DBG ][wspc]: Stored frame counters, active key set: index 0 value 0
+     1.099: [INFO][wspc]: NW send key index set: 0
+     1.099: [DBG ][wspc]: Pending to store new frame counter: index 0 value 0
+     1.099: [DBG ][wspc]: Stored frame counters, active key set: index 0 value 0
+     1.099: [INFO][wspc]: NW send key index set: 4
+     1.099: [INFO][wsbs]: Operation start
+     1.099: [DBG ][wsbs]: RPL Activate
+     1.099: [INFO][wsbs]: Routing ready
+Successfully registered to system DBus
+     1.199: [INFO][wsbs]: WS SM:Bootstrap Done
+     2.100: [INFO][BBRw]: BBR Static DODAGID fd12:6868:6868::643a:c93:c95e:2e38
+     2.100: [INFO][BBRw]: RPL root start
+     2.100: [INFO][BBRw]: start using backup prefix fd12:6868:6868:/64
+     2.100: [INFO][BBRw]: RPL global prefix activate fd12:6868:6868:/64
+     2.100: [INFO][rout]: Added route:
+     2.100: [DBG ][rout]:        fd12:6868:6868:/64 if:1 src:'Thread BBR' id:0 lifetime:infinite
+     2.100: [DBG ][rout]:      On-link (met 128)
+     3.098: [DBG ][RPLd]: New Target fd12:6868:6868::643a:c93:c95e:2e38
+    20.799: tx-icmp rpl dio   dst:ff02::1a
+    21.459: rx-15.4 adv-sol   src:42:9b:7a:01:e6:1c:8b:ad panid:8ae (23dBm)
+    26.898: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+    27.685: [DBG ][wsbs]: -----PAN config confirm
+warning: missing timers: 1
+    32.452: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+    33.127: [DBG ][wsbs]: -----PAN advertize confirm
+    52.667: [DBG ][wllc]: ----update neighbor ut form: ws_llc_eapol_ffn_ind
+    52.667: [INFO][wsbs]: Active supplicant limit, active: 0 max: 23 summed averageQ: 0 adapt averageQ: 0 LLC averageQ: 0 LLC EAPOL averageQ: 0 drop: F
+    52.667: [DBG ][wspa]: PAE: to active, eui-64: 42:9b:7a:01:e6:1c:8b:ad
+    52.667: [DBG ][ksep]: Initial-key init
+    52.667: rx-eap  tls-init  src:42:9b:7a:01:e6:1c:8b:ad
+    52.667: [DBG ][ksep]: PMK not live PTK not live NR 3 GTKL 0 LGTKL ff
+    52.667: [INFO][wspa]: PAE: start EAP-TLS, eui-64: 42:9b:7a:01:e6:1c:8b:ad
+    52.667: [DBG ][eapa]: EAP-TLS init
+    52.667: [DBG ][tlsp]: TLS: init
+    52.667: [DBG ][eapa]: EAP-TLS start, eui-64: 42:9b:7a:01:e6:1c:8b:ad
+    52.667: tx-eap  tls1 req  src:42:9b:7a:01:e6:1c:8b:ad
+    52.728: [DBG ][wllc]: ----update neighbor ut form: ws_llc_eapol_ffn_ind
+    52.728: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+    52.728: rx-eap  tls1 rply src:42:9b:7a:01:e6:1c:8b:ad
+    52.728: tx-eap  tls2 req  src:42:9b:7a:01:e6:1c:8b:ad
+    52.748: [DBG ][ksep]: Initial-key finished, eui-64: 42:9b:7a:01:e6:1c:8b:ad
+    52.787: [DBG ][wllc]: ----update neighbor ut form: ws_llc_eapol_ffn_ind
+    52.787: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 0 seconds
+    52.787: rx-eap  tls2 rply src:42:9b:7a:01:e6:1c:8b:ad
+    52.787: [DBG ][tlsp]: TLS: start, eui-64: 42:9b:7a:01:e6:1c:8b:ad
+    52.793: tx-eap  tls3 req  src:42:9b:7a:01:e6:1c:8b:ad
+    52.875: [DBG ][wllc]: ----update neighbor ut form: ws_llc_eapol_ffn_ind
+    52.875: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+    52.875: rx-eap  tls3 rply src:42:9b:7a:01:e6:1c:8b:ad
+    52.875: tx-eap  tls4 req  src:42:9b:7a:01:e6:1c:8b:ad
+    55.400: [DBG ][wllc]: ----update neighbor ut form: ws_llc_eapol_ffn_ind
+    55.400: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 2 seconds
+    55.400: rx-eap  tls4 rply src:42:9b:7a:01:e6:1c:8b:ad
+    55.401: tx-eap  tls5 req  src:42:9b:7a:01:e6:1c:8b:ad
+    55.681: [DBG ][wllc]: ----update neighbor ut form: ws_llc_eapol_ffn_ind
+    55.681: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+    55.681: rx-eap  tls5 rply src:42:9b:7a:01:e6:1c:8b:ad
+    55.692: [DBG ][tlsp]: TLS: finish, eui-64: 42:9b:7a:01:e6:1c:8b:ad
+    55.692: [INFO][eapa]: EAP-TLS: handshake success
+    55.692: tx-eap  tls6 req  src:42:9b:7a:01:e6:1c:8b:ad
+    55.736: [DBG ][wllc]: ----update neighbor ut form: ws_llc_eapol_ffn_ind
+    55.736: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+    55.736: rx-eap  tls6 rply src:42:9b:7a:01:e6:1c:8b:ad
+    55.736: tx-eap  tls6 succ src:42:9b:7a:01:e6:1c:8b:ad
+    55.736: [DBG ][eapa]: EAP-TLS finish, eui-64: 42:9b:7a:01:e6:1c:8b:ad
+    55.736: [INFO][wspa]: PAE: start 4WH, eui-64: 42:9b:7a:01:e6:1c:8b:ad
+    55.736: [INFO][wspa]: PAE: update (L)GTK index: 0, eui-64: 42:9b:7a:01:e6:1c:8b:ad
+    55.736: [DBG ][afwh]: 4WH: init
+    55.736: [DBG ][afwh]: 4WH: start, eui-64: 42:9b:7a:01:e6:1c:8b:ad
+    55.736: [DBG ][secl]: PMKID 5c:0c:5a:c0:7b:81:8b:3e:6d:2c:42:82:3b:f9:1c:9b EUI-64 66:3a:0c:93:c9:5e:2e:38 42:9b:7a:01:e6:1c:8b:ad
+    55.736: tx-eap  4wh-1     src:42:9b:7a:01:e6:1c:8b:ad
+    55.833: [DBG ][wllc]: ----update neighbor ut form: ws_llc_eapol_ffn_ind
+    55.833: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 0 seconds
+    55.833: rx-eap  4wh-2     src:42:9b:7a:01:e6:1c:8b:ad
+    55.833: tx-eap  4wh-3     src:42:9b:7a:01:e6:1c:8b:ad
+    55.975: [DBG ][wllc]: ----update neighbor ut form: ws_llc_eapol_ffn_ind
+    55.975: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 0 seconds
+    55.975: rx-eap  4wh-4     src:42:9b:7a:01:e6:1c:8b:ad
+    55.975: [DBG ][afwh]: 4WH: finish, eui-64: 42:9b:7a:01:e6:1c:8b:ad
+    55.975: [INFO][wspa]: PAE: authenticated, eui-64: 42:9b:7a:01:e6:1c:8b:ad
+    55.975: [INFO][wllc]: LLC purge EAPOL temporary entry: 42:9b:7a:01:e6:1c:8b:ad
+warning: missing timers: 2
+    60.749: [DBG ][tlsp]: TLS: finished, eui-64: 42:9b:7a:01:e6:1c:8b:ad free F
+    60.749: [DBG ][eapa]: EAP-TLS finished, eui-64: 42:9b:7a:01:e6:1c:8b:ad
+    61.048: [DBG ][afwh]: 4WH: finished, eui-64: 42:9b:7a:01:e6:1c:8b:ad
+    61.350: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+    62.015: [DBG ][wsbs]: -----PAN advertize confirm
+warning: missing timers: 1
+warning: missing timers: 1
+    70.581: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+    71.370: [DBG ][wsbs]: -----PAN config confirm
+    72.739: rx-icmp rpl dis   src:fe80::409b:7a01:e61c:8bad
+warning: missing timers: 1
+warning: missing timers: 1
+    76.249: [DBG ][wspl]: PAE: to inactive, eui-64: 42:9b:7a:01:e6:1c:8b:ad
+    76.249: [INFO][wspa]: Supplicant deleted
+    76.249: [INFO][wsbs]: Active supplicant limit, active: 0 max: 23 summed averageQ: 0 adapt averageQ: 0 LLC averageQ: 0 LLC EAPOL averageQ: 0 drop: F
+warning: missing timers: 3
+    93.601: tx-icmp rpl dio   dst:ff02::1a
+    97.168: [DBG ][wsbs]: neighbor[0] = 42:9b:7a:01:e6:1c:8b:ad, lifetime=5 (new)
+    97.168: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+    97.168: rx-icmp ns        src:fe80::409b:7a01:e61c:8bad
+    97.201: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+    97.863: [DBG ][wsbs]: -----PAN advertize confirm
+   101.542: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   101.542: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+   101.542: rx-icmp ns        src:fe80::409b:7a01:e61c:8bad
+   101.598: [DBG ][wsbs]: neighbor[0] = 42:9b:7a:01:e6:1c:8b:ad, removed
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+   120.916: [DBG ][wsbs]: neighbor[1] = 42:9b:7a:01:e6:1c:8b:ad, lifetime=5 (new)
+   120.916: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   120.916: rx-icmp ns        src:fe80::409b:7a01:e61c:8bad
+   125.861: [DBG ][wsbs]: neighbor[1] = 42:9b:7a:01:e6:1c:8b:ad, removed
+warning: missing timers: 1
+warning: missing timers: 1
+   136.269: [DBG ][wsbs]: neighbor[2] = 42:9b:7a:01:e6:1c:8b:ad, lifetime=5 (new)
+   136.269: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   136.327: [DBG ][wllc]: remove temporary MAC neighbor by TX confirm (42:9b:7a:01:e6:1c:8b:ad)
+   136.327: [DBG ][wsbs]: neighbor[2] = 42:9b:7a:01:e6:1c:8b:ad, removed
+   137.347: [DBG ][wsbs]: neighbor[3] = 42:9b:7a:01:e6:1c:8b:ad, lifetime=5 (new)
+   137.347: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   137.347: rx-icmp ns w/ aro src:fd12:6868:6868::409b:7a01:e61c:8bad
+   137.347: [INFO][wscm]: Added new neighbor 42:9b:7a:01:e6:1c:8b:ad : index:3
+   137.347: [INFO][wscm]: Child registration allowed 0/102, max:117
+   137.347: [INFO][rout]: Added route:
+   137.347: [DBG ][rout]:  fd12:6868:6868::409b:7a01:e61c:8bad/128 if:1 src:'ARO' id:0 lifetime:2218
+   137.347: [DBG ][rout]:      next-hop fd12:6868:6868::409b:7a01:e61c:8bad (met 32)
+   137.347: [DBG ][icmp]: Omit NA ARO success
+   145.455: tx-icmp rpl dio   dst:ff02::1a
+   150.748: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+   151.557: [DBG ][wsbs]: -----PAN config confirm
+   152.570: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   152.570: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 15 seconds
+   152.570: rx-icmp rpl dao   src:fd12:6868:6868::409b:7a01:e61c:8bad
+   152.570: [INFO][rout]: Added route:
+   152.570: [DBG ][rout]:  fd12:6868:6868::409b:7a01:e61c:8bad/128 if:1 src:'RPL DAO SR' id:0 lifetime:7200
+   152.570: [DBG ][rout]:      next-hop : (met 128)
+   152.570: tx-icmp rpl ack   dst:fd12:6868:6868::409b:7a01:e61c:8bad
+   152.610: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   152.610: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 0 seconds
+warning: missing timers: 1
+warning: missing timers: 1
+   168.014: rx-15.4 cfg       src:42:9b:7a:01:e6:1c:8b:ad panid:8ae (23dBm)
+   168.014: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 15 seconds
+warning: missing timers: 2
+   173.391: rx-15.4 adv       src:42:9b:7a:01:e6:1c:8b:ad panid:8ae (26dBm)
+   174.849: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   174.849: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 6 seconds
+   174.849: rx-icmp rpl dio   src:fe80::409b:7a01:e61c:8bad
+   180.352: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+   181.164: [DBG ][wsbs]: -----PAN config confirm
+warning: missing timers: 1
+   204.402: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+   205.203: [DBG ][wsbs]: -----PAN config confirm
+   211.734: rx-15.4 adv       src:42:9b:7a:01:e6:1c:8b:ad panid:8ae (24dBm)
+warning: missing timers: 1
+warning: missing timers: 1
+   241.304: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   241.304: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 66 seconds
+   241.304: rx-icmp rpl dio   src:fe80::409b:7a01:e61c:8bad
+   252.400: tx-icmp rpl dio   dst:ff02::1a
+   264.798: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+   265.611: [DBG ][wsbs]: -----PAN config confirm
+   274.665: rx-15.4 adv       src:42:9b:7a:01:e6:1c:8b:ad panid:8ae (23dBm)
+   274.970: rx-15.4 adv       src:42:9b:7a:01:e6:1c:8b:ad panid:8ae (24dBm)
+   292.005: rx-15.4 adv       src:de:25:88:c7:15:6e:9a:09 panid:94ff (-102dBm)
+   292.018: rx-15.4 unknown   src:de:25:88:c7:15:6e:9a:09 panid:94ff (-103dBm)
+   292.153: rx-15.4 adv       src:de:25:88:c7:15:6e:9a:09 panid:94ff (-103dBm)
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+   324.535: rx-15.4 adv       src:de:25:88:c7:15:6e:9a:09 panid:94ff (-104dBm)
+   327.748: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+   328.566: [DBG ][wsbs]: -----PAN config confirm
+warning: missing timers: 1
+   352.481: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   352.481: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 67ms in 111 seconds
+   352.481: rx-icmp rpl dio   src:fe80::409b:7a01:e61c:8bad
+   357.507: rx-15.4 adv       src:42:9b:7a:01:e6:1c:8b:ad panid:8ae (24dBm)
+   369.541: rx-15.4 adv       src:de:25:88:c7:15:6e:9a:29 panid:94fd (-105dBm)
+   374.399: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+   375.208: [DBG ][wsbs]: -----PAN config confirm
+warning: missing timers: 1
+   401.349: tx-icmp rpl dio   dst:ff02::1a
+   410.349: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+   411.030: [DBG ][wsbs]: -----PAN advertize confirm
+   417.306: rx-15.4 cfg       src:42:9b:7a:01:e6:1c:8b:ad panid:8ae (24dBm)
+   417.306: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 64 seconds
+   423.731: rx-15.4 adv       src:42:9b:7a:01:e6:1c:8b:ad panid:8ae (25dBm)
+   424.297: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   424.297: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 6 seconds
+   424.393: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   424.393: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   427.148: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+   427.969: [DBG ][wsbs]: -----PAN config confirm
+   429.307: [DBG ][rplc]: Triggering parent selection due to ETX better on neigh index 3, etx 256
+   429.308: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   429.308: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 4 seconds
+   429.326: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   429.326: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   434.335: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   434.335: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+   434.412: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   434.412: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   439.356: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   439.356: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   439.405: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   439.405: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   444.448: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   444.448: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 5 seconds
+   444.466: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   444.467: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   449.562: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   449.562: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+   449.611: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   449.611: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+warning: missing timers: 1
+   452.504: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+   453.307: [DBG ][wsbs]: -----PAN config confirm
+   454.363: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   454.363: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   454.664: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   454.664: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 0 seconds
+   459.374: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   459.374: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+   459.405: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   459.405: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   464.394: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   464.394: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   464.407: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   464.407: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   469.395: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   469.395: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+   469.411: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   469.411: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   470.853: rx-15.4 adv       src:42:9b:7a:01:e6:1c:8b:ad panid:8ae (23dBm)
+   474.396: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   474.396: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 4 seconds
+   474.454: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   474.454: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   479.400: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   479.400: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   479.505: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   479.505: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+   484.397: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   484.397: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+   484.504: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   484.504: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   489.413: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   489.413: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   489.432: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   489.432: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   494.473: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   494.473: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+   494.492: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   494.492: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   499.572: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   499.572: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 5 seconds
+   499.591: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   499.591: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+warning: missing timers: 1
+   504.694: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   504.694: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+   504.695: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   504.695: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   509.438: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   509.438: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   509.900: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   509.900: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   511.648: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+   512.453: [DBG ][wsbs]: -----PAN config confirm
+warning: missing timers: 1
+   514.449: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   514.449: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   514.468: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   514.468: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   519.437: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   519.437: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   519.508: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   519.508: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   524.454: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   524.454: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+   524.475: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   524.475: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   529.458: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   529.458: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 4 seconds
+   529.477: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   529.477: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+warning: missing timers: 1
+   534.355: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+   535.034: [DBG ][wsbs]: -----PAN advertize confirm
+   535.304: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   535.304: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+   535.322: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   535.322: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   539.466: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   539.466: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 4 seconds
+   539.559: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   539.559: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 0 seconds
+warning: missing timers: 1
+   544.474: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   544.474: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+   544.505: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   544.505: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   549.589: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   549.589: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+   549.608: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   549.608: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   554.689: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   554.689: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 5 seconds
+   554.709: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   554.709: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   555.198: tx-icmp rpl dio   dst:ff02::1a
+   559.796: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   559.796: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 5 seconds
+   559.817: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   559.817: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   564.534: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   564.534: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   564.553: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   564.553: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   567.748: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   567.748: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 3 seconds
+   567.748: rx-icmp rpl dio   src:fe80::409b:7a01:e61c:8bad
+   567.810: rx-15.4 adv       src:de:25:88:c7:15:6e:9a:09 panid:94ff (-104dBm)
+   569.538: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   569.538: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 1 seconds
+   569.637: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   569.637: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+warning: missing timers: 1
+   574.591: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   574.591: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   574.651: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   574.651: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   579.551: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   579.551: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   579.631: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   579.631: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   582.149: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+   582.965: [DBG ][wsbs]: -----PAN config confirm
+   584.576: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   584.576: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+   584.595: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   584.595: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   589.348: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+   590.035: [DBG ][wsbs]: -----PAN advertize confirm
+   590.068: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   590.068: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+   590.117: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   590.117: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   594.587: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   594.587: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   594.689: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   594.690: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 0 seconds
+   599.605: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   599.605: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+   599.624: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   599.624: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   604.712: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   604.712: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 5 seconds
+   604.731: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   604.731: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   609.811: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   609.811: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 5 seconds
+   609.830: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   609.830: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   614.612: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   614.612: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   615.040: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   615.040: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   615.048: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+   615.856: [DBG ][wsbs]: -----PAN config confirm
+   619.634: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   619.634: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+   620.141: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   620.141: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   624.644: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   624.644: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   624.662: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   624.662: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 2ms in 0 seconds
+warning: missing timers: 1
+   629.680: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   629.680: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 5 seconds
+   629.719: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   629.719: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   634.661: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   634.661: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   634.762: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   634.762: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   639.666: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   639.666: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 65ms in 4 seconds
+   639.694: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   639.694: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 0 seconds
+warning: missing timers: 2
+   644.679: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   644.679: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+   644.697: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   644.697: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+warning: missing timers: 2
+   649.706: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   649.706: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+   649.794: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   649.794: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   654.703: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   654.703: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+   654.747: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   654.747: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 0 seconds
+   658.305: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+   658.973: [DBG ][wsbs]: -----PAN advertize confirm
+   659.767: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   659.767: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 5 seconds
+   659.781: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   659.781: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+warning: missing timers: 2
+   664.867: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   664.867: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+   664.889: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   664.889: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   668.699: tx-icmp rpl dio   dst:ff02::1a
+   669.969: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   669.969: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 5 seconds
+   669.988: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   669.988: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+warning: missing timers: 2
+   674.707: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   674.707: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   674.728: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   674.728: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+warning: missing timers: 1
+   679.715: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   679.715: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   679.761: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   679.761: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   684.723: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   684.723: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   684.810: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   684.810: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 0 seconds
+   689.723: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   689.723: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   689.820: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   689.820: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   692.649: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+   693.450: [DBG ][wsbs]: -----PAN config confirm
+   694.742: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   694.742: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 64ms in 4 seconds
+   694.762: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   694.762: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+warning: missing timers: 1
+   699.748: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   699.748: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 4 seconds
+   699.807: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   699.807: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   701.098: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+   701.777: [DBG ][wsbs]: -----PAN advertize confirm
+   704.748: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   704.748: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   704.853: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   704.853: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   709.756: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   709.756: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+   709.850: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   709.850: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 0 seconds
+   714.819: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   714.819: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   714.837: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   714.837: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   717.737: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   717.737: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 2 seconds
+   717.737: rx-icmp rpl dio   src:fe80::409b:7a01:e61c:8bad
+   719.920: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   719.920: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 2 seconds
+   719.939: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   719.939: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+warning: missing timers: 1
+   725.027: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   725.027: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 5 seconds
+   725.046: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   725.046: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 2ms in 0 seconds
+   729.786: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   729.786: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 4 seconds
+   730.195: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   730.195: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 0 seconds
+   734.797: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   734.797: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+   734.889: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   734.889: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   737.648: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+   738.470: [DBG ][wsbs]: -----PAN config confirm
+   739.814: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   739.814: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   739.830: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   739.830: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   744.807: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   744.807: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 4 seconds
+   744.817: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   744.817: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 2ms in 0 seconds
+   749.802: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   749.802: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 4 seconds
+   749.854: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   749.854: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 0 seconds
+   754.807: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   754.807: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   754.857: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   754.857: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   759.820: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   759.820: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   759.909: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   759.909: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 0 seconds
+   764.838: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   764.838: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   764.856: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   764.856: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   769.941: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   769.941: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+   769.959: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   769.959: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   775.040: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   775.040: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 5 seconds
+   775.076: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   775.076: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   779.833: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   779.833: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   779.852: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   779.852: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+warning: missing timers: 1
+   783.099: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+   783.768: [DBG ][wsbs]: -----PAN advertize confirm
+warning: missing timers: 1
+   784.831: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   784.831: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 4 seconds
+   784.847: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   784.847: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   788.649: tx-icmp rpl dio   dst:ff02::1a
+   789.845: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   789.845: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 5 seconds
+   789.939: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   789.939: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   794.842: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   794.842: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   794.948: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   794.948: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   799.851: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   799.851: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   799.886: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   799.886: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   800.448: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+warning: missing timers: 1
+   801.253: [DBG ][wsbs]: -----PAN config confirm
+warning: missing timers: 1
+warning: missing timers: 1
+   804.872: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   804.872: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   804.924: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   804.924: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   809.873: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   809.873: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+   809.917: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   809.917: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   814.886: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   814.886: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 4 seconds
+   814.924: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   814.924: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   819.954: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   819.954: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+   819.972: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   819.972: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+warning: missing timers: 1
+   825.054: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   825.054: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 5 seconds
+   825.125: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   825.125: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   827.043: rx-15.4 adv       src:42:9b:7a:01:e6:1c:8b:ad panid:8ae (23dBm)
+   830.163: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   830.163: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+   830.185: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   830.185: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   834.902: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   834.902: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 4 seconds
+   834.921: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   834.921: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 2ms in 0 seconds
+   839.910: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   839.910: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 4 seconds
+   839.974: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   839.974: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   844.913: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   844.913: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   844.968: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   844.968: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+warning: missing timers: 1
+   849.931: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   849.931: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   849.950: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   849.950: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   854.963: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   854.963: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+   855.067: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   855.067: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+warning: missing timers: 1
+   859.925: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   859.925: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   859.946: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   859.946: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+warning: missing timers: 1
+   861.565: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   861.565: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 1 seconds
+   861.565: rx-icmp rpl dio   src:fe80::409b:7a01:e61c:8bad
+   864.939: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   864.939: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 3 seconds
+   864.986: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   864.986: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   869.977: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   869.977: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+   869.995: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   869.995: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   872.699: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+   873.512: [DBG ][wsbs]: -----PAN config confirm
+   875.084: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   875.084: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+   875.103: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   875.103: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   880.180: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   880.180: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+   880.199: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   880.199: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+   884.965: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   884.965: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   884.984: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   884.984: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   889.978: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   889.978: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   889.990: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   889.990: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+warning: missing timers: 2
+   894.975: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   894.975: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   895.021: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   895.021: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+warning: missing timers: 1
+   899.991: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   899.992: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   900.043: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   900.043: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   904.453: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+   905.125: [DBG ][wsbs]: -----PAN advertize confirm
+   905.160: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   905.160: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+   905.199: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   905.199: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   910.002: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   910.002: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+   910.020: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   910.020: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+warning: missing timers: 1
+   915.009: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   915.009: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 4 seconds
+   915.059: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   915.059: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   919.998: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   919.998: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   920.020: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   920.020: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   920.599: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+   921.404: [DBG ][wsbs]: -----PAN config confirm
+warning: missing timers: 1
+   925.163: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   925.163: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+   925.207: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   925.207: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   930.268: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   930.268: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 5 seconds
+   930.313: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   930.313: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   935.304: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   935.304: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   935.322: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   935.322: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+warning: missing timers: 1
+   940.042: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   940.042: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 4 seconds
+   940.058: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   940.058: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   945.042: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   945.042: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   945.088: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   945.088: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   950.051: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   950.051: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+   950.097: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   950.097: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 0 seconds
+   952.798: tx-icmp rpl dio   dst:ff02::1a
+   955.057: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   955.057: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+   955.157: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   955.157: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   960.061: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   960.061: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   960.095: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   960.095: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+   961.472: rx-15.4 adv       src:42:9b:7a:01:e6:1c:8b:ad panid:8ae (23dBm)
+   961.645: rx-15.4 adv       src:42:9b:7a:01:e6:1c:8b:ad panid:8ae (24dBm)
+   965.066: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   965.066: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+   965.087: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   965.087: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   965.675: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   965.675: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 0 seconds
+   965.675: rx-icmp rpl dio   src:fe80::409b:7a01:e61c:8bad
+   970.070: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   970.070: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+   970.088: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   970.088: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   974.598: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+   975.424: [DBG ][wsbs]: -----PAN config confirm
+   975.457: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   975.457: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 5 seconds
+   975.518: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   975.518: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   980.220: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   980.220: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 4 seconds
+   980.240: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   980.240: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 2ms in 0 seconds
+   985.318: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   985.318: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 5 seconds
+   985.336: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   985.336: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   990.115: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   990.115: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+   990.132: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   990.132: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+   995.119: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+   995.119: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 4 seconds
+   995.161: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+   995.161: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+  1000.118: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1000.118: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+  1000.212: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1000.212: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1005.130: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1005.130: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+  1005.221: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1005.221: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1010.132: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1010.132: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+  1010.158: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1010.158: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1015.140: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1015.140: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 4 seconds
+  1015.158: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1015.158: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1020.140: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1020.140: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+  1020.158: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1020.158: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1024.498: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+  1025.182: [DBG ][wsbs]: -----PAN advertize confirm
+  1025.217: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1025.218: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+  1025.262: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1025.262: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1028.499: rx-15.4 adv       src:42:9b:7a:01:e6:1c:8b:ad panid:8ae (23dBm)
+  1028.728: rx-15.4 adv       src:42:9b:7a:01:e6:1c:8b:ad panid:8ae (24dBm)
+  1030.230: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1030.230: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+  1030.249: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1030.249: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1035.334: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1035.334: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 5 seconds
+  1035.355: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1035.355: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1037.208: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+  1038.017: [DBG ][wsbs]: -----PAN config confirm
+  1040.444: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1040.444: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+  1040.462: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1040.462: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1045.179: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1045.179: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+  1045.197: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1045.197: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1050.185: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1050.185: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+  1050.245: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1050.245: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1055.188: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1055.188: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+  1055.235: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1055.235: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+  1060.202: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1060.202: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+  1060.275: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1060.275: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1065.194: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1065.194: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+  1065.270: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1065.270: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1070.209: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1070.209: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+  1070.227: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1070.227: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 0 seconds
+  1072.198: tx-icmp rpl dio   dst:ff02::1a
+  1075.199: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1075.199: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+  1075.217: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1075.217: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+warning: missing timers: 1
+  1078.051: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+  1078.744: [DBG ][wsbs]: -----PAN advertize confirm
+  1080.246: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1080.246: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+  1080.267: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1080.267: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+warning: missing timers: 1
+  1085.346: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1085.346: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 5 seconds
+  1085.373: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1085.373: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+warning: missing timers: 1
+  1090.450: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1090.450: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+  1090.538: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1090.538: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+  1095.233: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1095.233: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+  1095.271: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1095.272: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+warning: missing timers: 1
+warning: missing timers: 1
+  1100.239: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1100.239: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+  1100.258: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1100.258: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1101.560: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+  1102.388: [DBG ][wsbs]: -----PAN config confirm
+  1105.235: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1105.235: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+  1105.256: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1105.256: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1110.266: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1110.266: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 5 seconds
+  1110.302: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1110.302: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1115.269: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1115.269: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+  1115.341: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1115.341: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1120.269: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1120.269: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+  1120.288: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1120.288: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+  1122.945: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1122.945: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 2 seconds
+  1122.945: rx-icmp rpl dio   src:fe80::409b:7a01:e61c:8bad
+  1125.284: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1125.284: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 2 seconds
+  1125.343: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1125.343: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1129.648: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+  1130.325: [DBG ][wsbs]: -----PAN advertize confirm
+  1130.359: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1130.359: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 5 seconds
+  1130.451: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1130.451: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1135.363: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1135.363: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+  1135.386: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1135.386: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+  1140.472: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1140.472: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -2ms in 5 seconds
+  1140.490: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1140.490: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1145.279: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1145.279: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+  1145.599: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1145.599: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 0 seconds
+  1150.290: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1150.290: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+  1150.375: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1150.375: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1155.297: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1155.297: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+  1155.329: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1155.329: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1158.948: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+  1159.768: [DBG ][wsbs]: -----PAN config confirm
+  1160.311: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1160.311: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+  1160.330: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1160.330: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+warning: missing timers: 1
+  1165.307: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1165.307: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+  1165.319: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1165.319: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1170.318: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1170.318: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 5 seconds
+  1170.421: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1170.421: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1175.320: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1175.320: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+  1175.364: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1175.364: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1180.335: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1180.335: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+  1180.354: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1180.354: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1185.390: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1185.390: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+  1185.400: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1185.400: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1190.487: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1190.487: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 5 seconds
+  1190.506: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1190.506: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1190.956: rx-15.4 adv       src:42:9b:7a:01:e6:1c:8b:ad panid:8ae (23dBm)
+  1191.217: rx-15.4 adv       src:42:9b:7a:01:e6:1c:8b:ad panid:8ae (24dBm)
+  1195.593: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1195.593: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 5 seconds
+  1195.613: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1195.613: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1200.368: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1200.368: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+  1200.725: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1200.725: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1205.377: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1205.377: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+  1205.395: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1205.395: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1210.383: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1210.383: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+  1210.445: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1210.445: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1213.598: tx-icmp rpl dio   dst:ff02::1a
+  1215.382: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1215.382: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+  1215.429: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1215.429: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1219.898: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+  1220.720: [DBG ][wsbs]: -----PAN config confirm
+  1220.755: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1220.755: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+  1220.809: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1220.809: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+  1225.410: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1225.410: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+  1225.429: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1225.429: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1230.413: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1230.413: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+  1230.432: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1230.432: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1235.411: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1235.411: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+  1235.429: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1235.429: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1240.840: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1240.840: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 5 seconds
+  1240.859: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1240.859: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1245.610: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1245.610: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+  1245.631: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1245.631: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1250.427: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1250.427: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+  1250.836: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1250.836: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+warning: missing timers: 4
+  1255.436: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1255.436: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+  1255.479: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1255.479: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 0 seconds
+  1256.898: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+  1257.579: [DBG ][wsbs]: -----PAN advertize confirm
+  1260.445: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1260.445: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+  1260.461: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1260.461: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1265.463: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1265.463: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+  1265.502: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1265.502: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+  1270.462: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1270.462: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+  1270.554: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1270.554: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 0 seconds
+  1275.475: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1275.475: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 4 seconds
+  1275.504: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1275.504: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+warning: missing timers: 1
+  1279.594: rx-15.4 adv       src:d2:b3:d2:90:e5:c2:df:b0 panid:94ff (-104dBm)
+  1280.474: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1280.474: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: -1ms in 4 seconds
+  1280.493: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1280.493: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1283.248: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+  1284.071: [DBG ][wsbs]: -----PAN config confirm
+  1285.496: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1285.496: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 5 seconds
+  1285.536: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1285.536: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 1ms in 0 seconds
+warning: missing timers: 1
+  1296.517: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_ffn_ind
+  1296.517: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 10 seconds
+  1296.517: rx-icmp rpl dio   src:fe80::409b:7a01:e61c:8bad
+warning: missing timers: 1
+  1312.648: tx-icmp rpl dio   dst:ff02::1a
+  1321.849: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+  1322.538: [DBG ][wsbs]: -----PAN advertize confirm
+  1322.591: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1322.591: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 2ms in 26 seconds
+  1322.640: [DBG ][wllc]: ----update neighbor ut form: ws_llc_data_confirm
+  1322.640: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 0ms in 0 seconds
+  1343.194: rx-15.4 cfg       src:42:9b:7a:01:e6:1c:8b:ad panid:8ae (23dBm)
+  1343.194: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 3ms in 20 seconds
+  1356.248: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+  1374.648: [DBG ][wllc]: -----last PAN config is running, return -1
+  1374.648: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+  1382.648: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+  1413.748: rx-15.4 adv       src:42:9b:7a:01:e6:1c:8b:ad panid:8ae (23dBm)
+  1418.013: rx-15.4 cfg       src:42:9b:7a:01:e6:1c:8b:ad panid:8ae (23dBm)
+  1418.013: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 9ms in 74 seconds
+  1422.848: tx-icmp rpl dio   dst:ff02::1a
+  1430.048: [DBG ][wllc]: -----last PAN config is running, return -1
+  1430.048: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+  1460.848: [DBG ][wllc]: -----last PAN config is running, return -1
+  1460.848: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+  1469.229: rx-15.4 adv       src:42:9b:7a:01:e6:1c:8b:ad panid:8ae (23dBm)
+  1477.625: rx-15.4 cfg       src:42:9b:7a:01:e6:1c:8b:ad panid:8ae (23dBm)
+  1477.625: [DBG ][wsne]: UFSI updated: 42:9b:7a:01:e6:1c:8b:ad, drift: 8ms in 59 seconds
+  1485.048: [DBG ][wllc]: -----last PAN config is running, return -1
+  1485.048: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+  1503.048: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  1503.048: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+  1520.148: [DBG ][wllc]: -----last PAN config is running, return -1
+  1520.148: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+  1544.248: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  1544.248: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+  1559.648: [DBG ][wllc]: -----last PAN config is running, return -1
+  1559.648: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+  1615.149: tx-icmp rpl dio   dst:ff02::1a
+  1616.648: [DBG ][wllc]: -----last PAN config is running, return -1
+  1616.648: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+  1625.649: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  1625.649: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+  1682.748: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  1682.748: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+  1698.448: [DBG ][wllc]: -----last PAN config is running, return -1
+  1698.448: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+  1707.548: tx-icmp rpl dio   dst:ff02::1a
+  1733.448: [DBG ][wllc]: -----last PAN config is running, return -1
+  1733.448: [DBG ][wsbs]: -----PAN config confirm
+  1742.548: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  1742.548: [DBG ][wsbs]: -----PAN advertize confirm
+  1793.348: [DBG ][wsbs]: -----PAN advertize confirm
+  1815.548: [DBG ][wsbs]: -----PAN config confirm
+  1840.048: tx-icmp rpl dio   dst:ff02::1a
+  1846.248: [DBG ][wsbs]: -----PAN advertize confirm
+  1876.648: [DBG ][wsbs]: -----PAN config confirm
+  1921.149: [DBG ][wsbs]: -----PAN advertize confirm
+  1942.048: [DBG ][wsbs]: -----PAN config confirm
+  1953.948: tx-icmp rpl dio   dst:ff02::1a
+  1978.448: [DBG ][wsbs]: -----PAN config confirm
+  1980.448: [DBG ][wsbs]: -----PAN advertize confirm
+  2028.548: [DBG ][wsbs]: -----PAN advertize confirm
+  2033.548: [DBG ][wsbs]: -----PAN config confirm
+  2077.348: tx-icmp rpl dio   dst:ff02::1a
+  2084.549: [DBG ][wsbs]: -----PAN advertize confirm
+  2119.148: [DBG ][wsbs]: -----PAN config confirm
+  2144.048: [DBG ][wsbs]: -----PAN advertize confirm
+  2169.948: [DBG ][wsbs]: -----PAN config confirm
+  2214.048: tx-icmp rpl dio   dst:ff02::1a
+  2223.148: [DBG ][wsbs]: -----PAN config confirm
+  2228.648: [DBG ][wsbs]: -----PAN advertize confirm
+  2276.349: [DBG ][wsbs]: -----PAN advertize confirm
+  2296.248: [DBG ][wsbs]: -----PAN config confirm
+  2321.448: [DBG ][wsbs]: -----PAN advertize confirm
+  2338.148: [DBG ][wsbs]: -----PAN config confirm
+  2358.348: [DBG ][rout]: Route expired
+  2358.348: [INFO][rout]: Deleted route:
+  2358.348: [DBG ][rout]:  fd12:6868:6868::409b:7a01:e61c:8bad/128 if:1 src:'ARO' id:0 lifetime:1
+  2358.348: [DBG ][rout]:      next-hop fd12:6868:6868::409b:7a01:e61c:8bad (met 32)
+  2360.348: [DBG ][rout]: Lost contact with neighbour: fd12:6868:6868::409b:7a01:e61c:8bad
+  2392.549: [DBG ][wsbs]: -----PAN advertize confirm
+  2393.548: tx-icmp rpl dio   dst:ff02::1a
+  2421.348: [DBG ][wsbs]: -----PAN config confirm
+  2460.848: [DBG ][wsbs]: -----PAN advertize confirm
+  2469.649: [DBG ][wsbs]: -----PAN config confirm
+  2480.648: tx-icmp rpl dio   dst:ff02::1a
+  2521.648: [DBG ][wsbs]: -----PAN advertize confirm
+  2529.148: [DBG ][wsbs]: -----PAN config confirm
+  2581.249: [DBG ][wsbs]: -----PAN advertize confirm
+  2590.848: [DBG ][wsbs]: -----PAN config confirm
+  2633.348: [DBG ][wsbs]: -----PAN advertize confirm
+  2634.848: [DBG ][wsbs]: -----PAN config confirm
+  2650.848: tx-icmp rpl dio   dst:ff02::1a
+  2708.348: [DBG ][wsbs]: -----PAN advertize confirm
+  2722.348: [DBG ][wsbs]: -----PAN config confirm
+  2751.748: [DBG ][wsbs]: -----PAN advertize confirm
+  2755.548: [DBG ][wsbs]: -----PAN config confirm
+  2757.448: tx-icmp rpl dio   dst:ff02::1a
+  2807.648: [DBG ][wsbs]: -----PAN advertize confirm
+  2830.248: [DBG ][wsbs]: -----PAN config confirm
+  2866.248: [DBG ][wsbs]: -----PAN advertize confirm
+  2879.848: [DBG ][wsbs]: -----PAN config confirm
+  2914.748: tx-icmp rpl dio   dst:ff02::1a
+  2922.848: [DBG ][wsbs]: -----PAN advertize confirm
+  2948.048: [DBG ][wsbs]: -----PAN config confirm
+  2981.948: [DBG ][wsbs]: -----PAN advertize confirm
+  3014.048: [DBG ][wsbs]: -----PAN config confirm
+  3024.449: tx-icmp rpl dio   dst:ff02::1a
+  3065.348: [DBG ][wsbs]: -----PAN advertize confirm
+  3078.548: [DBG ][wsbs]: -----PAN config confirm
+  3127.449: [DBG ][wsbs]: -----PAN advertize confirm
+  3137.449: [DBG ][wsbs]: -----PAN config confirm
+  3146.448: tx-icmp rpl dio   dst:ff02::1a
+  3180.248: [DBG ][wsbs]: -----PAN advertize confirm
+  3201.548: [DBG ][wsbs]: -----PAN config confirm
+  3231.548: [DBG ][wsbs]: -----PAN advertize confirm
+  3260.848: [DBG ][wsbs]: -----PAN config confirm
+  3290.448: [DBG ][wsbs]: -----PAN advertize confirm
+  3309.948: tx-icmp rpl dio   dst:ff02::1a
+  3317.348: [DBG ][wsbs]: -----PAN config confirm
+  3350.249: [DBG ][wsbs]: -----PAN advertize confirm
+  3372.148: [DBG ][wsbs]: -----PAN config confirm
+  3406.148: tx-icmp rpl dio   dst:ff02::1a
+  3416.249: [DBG ][wsbs]: -----PAN config confirm
+  3421.948: [DBG ][wsbs]: -----PAN advertize confirm
+  3469.048: [DBG ][wsbs]: -----PAN advertize confirm
+  3499.548: [DBG ][wsbs]: -----PAN config confirm
+  3522.348: [DBG ][6lAd]: Purge from indirect handle 103
+  3522.348: [DBG ][wsbs]: neighbor[3] = 42:9b:7a:01:e6:1c:8b:ad, removed
+  3522.348: [DBG ][rplc]: Triggering parent selection due to ETX worse on neigh index 3, etx 65535
+  3539.548: [DBG ][wsbs]: -----PAN advertize confirm
+  3539.649: [DBG ][wsbs]: -----PAN config confirm
+  3577.248: tx-icmp rpl dio   dst:ff02::1a
+  3602.548: [DBG ][wsbs]: -----PAN advertize confirm
+  3605.348: [INFO][wspa]: Active GTK lifetime 99, frame counter 99 percent, counter 1376
+  3605.348: [INFO][wspa]: Frame counter change 0, max 19261
+  3620.448: [DBG ][wsbs]: -----PAN config confirm
+  3633.449: tx-icmp rpl dio   dst:ff02::1a
+  3652.748: [DBG ][wsbs]: -----PAN advertize confirm
+  3671.949: [DBG ][wsbs]: -----PAN config confirm
+  3676.348: tx-icmp rpl dio   dst:ff02::1a
+  3705.648: [DBG ][wsbs]: -----PAN advertize confirm
+  3737.548: [DBG ][wsbs]: -----PAN config confirm
+  3762.749: [DBG ][wsbs]: -----PAN advertize confirm
+  3792.548: [DBG ][wsbs]: -----PAN config confirm
+  3823.548: [DBG ][wsbs]: -----PAN advertize confirm
+  3831.748: tx-icmp rpl dio   dst:ff02::1a
+  3831.748: [INFO][6lAd]: Adaptation layer TX queue size 20 Active MAC tx request 0
+  3861.748: [DBG ][wsbs]: -----PAN config confirm
+  3906.149: [DBG ][wsbs]: -----PAN advertize confirm
+  3914.048: [DBG ][wsbs]: -----PAN config confirm
+  3931.849: tx-icmp rpl dio   dst:ff02::1a
+  3966.248: [DBG ][wsbs]: -----PAN advertize confirm
+  3978.548: [DBG ][wsbs]: -----PAN config confirm
+  4013.648: [DBG ][wsbs]: -----PAN advertize confirm
+  4034.948: [DBG ][wsbs]: -----PAN config confirm
+  4056.748: tx-icmp rpl dio   dst:ff02::1a
+  4070.648: [DBG ][wsbs]: -----PAN advertize confirm
+  4079.048: [DBG ][wsbs]: -----PAN config confirm
+  4140.349: [DBG ][wsbs]: -----PAN config confirm
+  4147.548: [DBG ][wsbs]: -----PAN advertize confirm
+  4168.848: tx-icmp rpl dio   dst:ff02::1a
+  4201.448: [DBG ][wsbs]: -----PAN config confirm
+  4210.548: [DBG ][wsbs]: -----PAN advertize confirm
+  4250.448: [DBG ][wsbs]: -----PAN advertize confirm
+  4254.448: [DBG ][wsbs]: -----PAN config confirm
+  4310.448: tx-icmp rpl dio   dst:ff02::1a
+  4311.048: [DBG ][wsbs]: -----PAN advertize confirm
+  4317.548: [DBG ][wsbs]: -----PAN config confirm
+  4362.649: [DBG ][wsbs]: -----PAN advertize confirm
+  4384.448: [DBG ][wsbs]: -----PAN config confirm
+  4440.148: [DBG ][wsbs]: -----PAN advertize confirm
+  4458.248: [DBG ][wsbs]: -----PAN config confirm
+  4484.848: tx-icmp rpl dio   dst:ff02::1a
+  4488.448: [DBG ][wsbs]: -----PAN advertize confirm
+  4506.048: [DBG ][wsbs]: -----PAN config confirm
+  4557.348: [DBG ][wsbs]: -----PAN config confirm
+  4559.648: [DBG ][wsbs]: -----PAN advertize confirm
+  4602.449: tx-icmp rpl dio   dst:ff02::1a
+  4615.448: [DBG ][wsbs]: -----PAN advertize confirm
+  4635.549: [DBG ][wsbs]: -----PAN config confirm
+  4663.548: [DBG ][wsbs]: -----PAN advertize confirm
+  4679.348: [DBG ][wsbs]: -----PAN config confirm
+  4737.048: [DBG ][wsbs]: -----PAN config confirm
+  4745.749: tx-icmp rpl dio   dst:ff02::1a
+  4746.849: [DBG ][wsbs]: -----PAN advertize confirm
+  4795.048: [DBG ][wsbs]: -----PAN config confirm
+  4810.348: [DBG ][wsbs]: -----PAN advertize confirm
+  4845.348: [DBG ][wsbs]: -----PAN advertize confirm
+  4847.748: tx-icmp rpl dio   dst:ff02::1a
+  4880.048: [DBG ][wsbs]: -----PAN config confirm
+  4908.948: [DBG ][wsbs]: -----PAN advertize confirm
+  4922.548: [DBG ][wsbs]: -----PAN config confirm
+  4974.948: [DBG ][wsbs]: -----PAN advertize confirm
+  4996.748: tx-icmp rpl dio   dst:ff02::1a
+  5000.948: [DBG ][wsbs]: -----PAN config confirm
+  5033.249: [DBG ][wsbs]: -----PAN config confirm
+  5044.648: [DBG ][wsbs]: -----PAN advertize confirm
+  5082.048: [DBG ][wsbs]: -----PAN advertize confirm
+  5113.449: tx-icmp rpl dio   dst:ff02::1a
+  5120.148: [DBG ][wsbs]: -----PAN config confirm
+  5155.848: [DBG ][wsbs]: -----PAN config confirm
+  5163.548: [DBG ][wsbs]: -----PAN advertize confirm
+  5224.048: [DBG ][wsbs]: -----PAN advertize confirm
+  5224.249: [DBG ][wsbs]: -----PAN config confirm
+  5261.148: tx-icmp rpl dio   dst:ff02::1a
+  5267.548: [DBG ][wsbs]: -----PAN advertize confirm
+  5279.748: [DBG ][wsbs]: -----PAN config confirm
+  5335.948: [DBG ][wsbs]: -----PAN advertize confirm
+  5357.348: [DBG ][wsbs]: -----PAN config confirm
+  5380.648: [DBG ][wsbs]: -----PAN advertize confirm
+  5393.648: tx-icmp rpl dio   dst:ff02::1a
+  5412.648: [DBG ][wsbs]: -----PAN config confirm
+  5449.648: [DBG ][wsbs]: -----PAN advertize confirm
+  5467.148: [DBG ][wsbs]: -----PAN config confirm
+  5491.948: tx-icmp rpl dio   dst:ff02::1a
+  5524.948: [DBG ][wsbs]: -----PAN config confirm
+  5526.449: [DBG ][wsbs]: -----PAN advertize confirm
+  5577.048: [DBG ][wsbs]: -----PAN advertize confirm
+  5579.448: [DBG ][wsbs]: -----PAN config confirm
+  5629.948: tx-icmp rpl dio   dst:ff02::1a
+  5635.648: [DBG ][wsbs]: -----PAN advertize confirm
+  5647.848: [DBG ][wsbs]: -----PAN config confirm
+  5689.248: [DBG ][wsbs]: -----PAN advertize confirm
+  5717.048: [DBG ][wsbs]: -----PAN config confirm
+  5745.948: [DBG ][wsbs]: -----PAN advertize confirm
+  5760.348: [DBG ][wsbs]: -----PAN config confirm
+  5773.648: tx-icmp rpl dio   dst:ff02::1a
+  5807.448: [DBG ][wsbs]: -----PAN advertize confirm
+  5826.648: [DBG ][wsbs]: -----PAN config confirm
+  5875.748: [DBG ][wsbs]: -----PAN advertize confirm
+  5878.148: [DBG ][wsbs]: -----PAN config confirm
+  5915.849: tx-icmp rpl dio   dst:ff02::1a
+  5938.248: [DBG ][wsbs]: -----PAN advertize confirm
+  5948.248: [DBG ][wsbs]: -----PAN config confirm
+  5999.548: [DBG ][wsbs]: -----PAN config confirm
+  6005.248: [DBG ][wsbs]: -----PAN advertize confirm
+  6028.748: tx-icmp rpl dio   dst:ff02::1a
+  6051.648: [DBG ][wsbs]: -----PAN advertize confirm
+  6070.748: [DBG ][wsbs]: -----PAN config confirm
+  6101.548: [DBG ][wsbs]: -----PAN advertize confirm
+  6121.148: [DBG ][wsbs]: -----PAN config confirm
+  6169.448: [DBG ][wsbs]: -----PAN advertize confirm
+  6174.048: tx-icmp rpl dio   dst:ff02::1a
+  6185.548: [DBG ][wsbs]: -----PAN config confirm
+  6235.849: [DBG ][wsbs]: -----PAN advertize confirm
+  6259.448: [DBG ][wsbs]: -----PAN config confirm
+  6280.748: tx-icmp rpl dio   dst:ff02::1a
+  6298.948: [DBG ][wsbs]: -----PAN advertize confirm
+  6303.048: [DBG ][wsbs]: -----PAN config confirm
+  6360.349: [DBG ][wsbs]: -----PAN advertize confirm
+  6379.748: [DBG ][wsbs]: -----PAN config confirm
+  6425.248: tx-icmp rpl dio   dst:ff02::1a
+  6425.248: [INFO][6lAd]: Adaptation layer TX queue size 40 Active MAC tx request 0
+  6427.748: [DBG ][wsbs]: -----PAN advertize confirm
+  6434.948: [DBG ][wsbs]: -----PAN config confirm
+  6465.148: [DBG ][wsbs]: -----PAN advertize confirm
+  6476.148: [DBG ][wsbs]: -----PAN config confirm
+  6524.848: tx-icmp rpl dio   dst:ff02::1a
+  6529.549: [DBG ][wsbs]: -----PAN advertize confirm
+  6553.449: [DBG ][wsbs]: -----PAN config confirm
+  6605.749: [DBG ][wsbs]: -----PAN advertize confirm
+  6607.948: [DBG ][wsbs]: -----PAN config confirm
+  6657.549: tx-icmp rpl dio   dst:ff02::1a
+  6662.448: [DBG ][wsbs]: -----PAN advertize confirm
+  6675.348: [DBG ][wsbs]: -----PAN config confirm
+  6728.848: [DBG ][wsbs]: -----PAN config confirm
+  6730.248: [DBG ][wsbs]: -----PAN advertize confirm
+  6774.648: [DBG ][wsbs]: -----PAN config confirm
+  6782.448: [DBG ][wsbs]: -----PAN advertize confirm
+  6810.548: tx-icmp rpl dio   dst:ff02::1a
+  6839.048: [DBG ][wsbs]: -----PAN config confirm
+  6847.948: [DBG ][wsbs]: -----PAN advertize confirm
+  6884.348: [DBG ][wsbs]: -----PAN advertize confirm
+  6921.048: [DBG ][wsbs]: -----PAN config confirm
+  6962.249: [DBG ][wsbs]: -----PAN advertize confirm
+  6963.548: tx-icmp rpl dio   dst:ff02::1a
+  6978.548: [DBG ][wsbs]: -----PAN config confirm
+  7004.248: [DBG ][wsbs]: -----PAN advertize confirm
+  7016.348: [DBG ][wsbs]: -----PAN config confirm
+  7073.548: tx-icmp rpl dio   dst:ff02::1a
+  7074.548: [DBG ][wsbs]: -----PAN advertize confirm
+  7089.148: [DBG ][wsbs]: -----PAN config confirm
+  7133.749: [DBG ][wsbs]: -----PAN config confirm
+  7148.148: [DBG ][wsbs]: -----PAN advertize confirm
+  7191.549: tx-icmp rpl dio   dst:ff02::1a
+  7194.848: [DBG ][wsbs]: -----PAN advertize confirm
+  7202.448: [DBG ][wsbs]: -----PAN config confirm
+  7205.348: [INFO][wspa]: Active GTK lifetime 99, frame counter 99 percent, counter 1376
+  7205.348: [INFO][wspa]: Frame counter change 0, max 19261
+  7236.048: tx-icmp rpl dio   dst:ff02::1a
+  7254.648: [DBG ][wsbs]: -----PAN config confirm
+  7258.548: [DBG ][wsbs]: -----PAN advertize confirm
+  7302.848: tx-icmp rpl dio   dst:ff02::1a
+  7324.448: [DBG ][wsbs]: -----PAN advertize confirm
+  7325.148: [DBG ][wsbs]: -----PAN config confirm
+  7355.349: [INFO][rout]: Deleted route:
+  7355.349: [DBG ][rout]:  fd12:6868:6868::409b:7a01:e61c:8bad/128 if:1 src:'RPL DAO SR' id:0 lifetime:1
+  7355.349: [DBG ][rout]:      next-hop : (met 128)
+  7387.448: [DBG ][wsbs]: -----PAN advertize confirm
+  7389.948: tx-icmp rpl dio   dst:ff02::1a
+  7394.048: [DBG ][wsbs]: -----PAN config confirm
+  7423.648: [DBG ][wsbs]: -----PAN advertize confirm
+  7433.148: [DBG ][wsbs]: -----PAN config confirm
+  7501.948: [DBG ][wsbs]: -----PAN config confirm
+  7507.348: [DBG ][wsbs]: -----PAN advertize confirm
+  7544.049: [DBG ][wsbs]: -----PAN advertize confirm
+  7564.748: tx-icmp rpl dio   dst:ff02::1a
+  7579.148: [DBG ][wsbs]: -----PAN config confirm
+  7618.848: [DBG ][wsbs]: -----PAN config confirm
+  7626.848: [DBG ][wsbs]: -----PAN advertize confirm
+  7666.849: tx-icmp rpl dio   dst:ff02::1a
+  7671.449: [DBG ][wsbs]: -----PAN advertize confirm
+  7690.048: [DBG ][wsbs]: -----PAN config confirm
+  7721.748: [DBG ][wsbs]: -----PAN advertize confirm
+  7735.449: [DBG ][wsbs]: -----PAN config confirm
+  7795.148: tx-icmp rpl dio   dst:ff02::1a
+  7809.149: [DBG ][wsbs]: -----PAN config confirm
+  7809.648: [DBG ][wsbs]: -----PAN advertize confirm
+  7863.448: [DBG ][wsbs]: -----PAN config confirm
+  7866.849: [DBG ][wsbs]: -----PAN advertize confirm
+  7904.148: [DBG ][wsbs]: -----PAN advertize confirm
+  7930.748: [DBG ][wsbs]: -----PAN config confirm
+  7941.648: tx-icmp rpl dio   dst:ff02::1a
+  7974.348: [DBG ][wsbs]: -----PAN advertize confirm
+  7995.148: [DBG ][wsbs]: -----PAN config confirm
+  8039.948: [DBG ][wsbs]: -----PAN advertize confirm
+  8049.648: [DBG ][wsbs]: -----PAN config confirm
+  8085.248: tx-icmp rpl dio   dst:ff02::1a
+  8098.848: [DBG ][wsbs]: -----PAN advertize confirm
+  8121.348: [DBG ][wsbs]: -----PAN config confirm
+  8146.748: [DBG ][wsbs]: -----PAN advertize confirm
+  8161.348: [DBG ][wsbs]: -----PAN config confirm
+  8172.249: tx-icmp rpl dio   dst:ff02::1a
+  8214.948: [DBG ][wsbs]: -----PAN advertize confirm
+  8215.848: [DBG ][wsbs]: -----PAN config confirm
+  8266.448: [DBG ][wsbs]: -----PAN advertize confirm
+  8285.648: [DBG ][wsbs]: -----PAN config confirm
+  8296.148: tx-icmp rpl dio   dst:ff02::1a
+  8340.048: [DBG ][wsbs]: -----PAN advertize confirm
+  8346.348: [DBG ][wsbs]: -----PAN config confirm
+  8393.848: [DBG ][wsbs]: -----PAN config confirm
+  8401.248: [DBG ][wsbs]: -----PAN advertize confirm
+  8444.148: [DBG ][wsbs]: -----PAN advertize confirm
+  8471.649: tx-icmp rpl dio   dst:ff02::1a
+  8471.849: [DBG ][wsbs]: -----PAN config confirm
+  8522.848: [DBG ][wsbs]: -----PAN advertize confirm
+  8530.548: [DBG ][wsbs]: -----PAN config confirm
+  8552.949: tx-icmp rpl dio   dst:ff02::1a
+  8588.248: [DBG ][wsbs]: -----PAN advertize confirm
+  8595.148: [DBG ][wsbs]: -----PAN config confirm
+  8622.448: [DBG ][wsbs]: -----PAN advertize confirm
+  8635.848: [DBG ][wsbs]: -----PAN config confirm
+  8681.648: [DBG ][wsbs]: -----PAN advertize confirm
+  8718.248: [DBG ][wsbs]: -----PAN config confirm
+  8742.548: tx-icmp rpl dio   dst:ff02::1a
+  8757.848: [DBG ][wsbs]: -----PAN advertize confirm
+  8763.448: [DBG ][wsbs]: -----PAN config confirm
+  8811.448: [DBG ][wsbs]: -----PAN advertize confirm
+  8842.049: [DBG ][wsbs]: -----PAN config confirm
+  8852.448: tx-icmp rpl dio   dst:ff02::1a
+  8852.448: [INFO][6lAd]: Adaptation layer TX queue size 60 Active MAC tx request 0
+  8861.549: [DBG ][wsbs]: -----PAN advertize confirm
+  8893.049: [DBG ][wsbs]: -----PAN config confirm
+  8922.048: [DBG ][wsbs]: -----PAN advertize confirm
+  8960.649: [DBG ][wsbs]: -----PAN config confirm
+  8992.148: tx-icmp rpl dio   dst:ff02::1a
+  8997.449: [DBG ][wsbs]: -----PAN advertize confirm
+  8999.048: [DBG ][wsbs]: -----PAN config confirm
+  9064.648: [DBG ][wsbs]: -----PAN advertize confirm
+  9069.348: [DBG ][wsbs]: -----PAN config confirm
+  9104.649: [DBG ][wsbs]: -----PAN advertize confirm
+  9120.748: [DBG ][wsbs]: -----PAN config confirm
+  9123.049: tx-icmp rpl dio   dst:ff02::1a
+  9171.048: [DBG ][wsbs]: -----PAN advertize confirm
+  9190.549: [DBG ][wsbs]: -----PAN config confirm
+  9237.548: [DBG ][wsbs]: -----PAN advertize confirm
+  9243.649: [DBG ][wsbs]: -----PAN config confirm
+  9245.548: tx-icmp rpl dio   dst:ff02::1a
+  9306.248: [DBG ][wsbs]: -----PAN advertize confirm
+  9320.348: [DBG ][wsbs]: -----PAN config confirm
+  9351.548: [DBG ][wsbs]: -----PAN advertize confirm
+  9376.348: tx-icmp rpl dio   dst:ff02::1a
+  9379.548: [DBG ][wsbs]: -----PAN config confirm
+  9405.148: [DBG ][wsbs]: -----PAN advertize confirm
+  9428.848: [DBG ][wsbs]: -----PAN config confirm
+  9464.148: [DBG ][wsbs]: -----PAN advertize confirm
+  9482.248: tx-icmp rpl dio   dst:ff02::1a
+  9490.048: [DBG ][wsbs]: -----PAN config confirm
+  9522.148: [DBG ][wsbs]: -----PAN advertize confirm
+  9545.248: [DBG ][wsbs]: -----PAN config confirm
+  9581.449: [DBG ][wsbs]: -----PAN advertize confirm
+  9598.748: [DBG ][wsbs]: -----PAN config confirm
+  9617.148: tx-icmp rpl dio   dst:ff02::1a
+  9642.748: [DBG ][wsbs]: -----PAN advertize confirm
+  9669.048: [DBG ][wsbs]: -----PAN config confirm
+  9723.949: [DBG ][wsbs]: -----PAN advertize confirm
+  9730.348: [DBG ][wsbs]: -----PAN config confirm
+  9730.448: tx-icmp rpl dio   dst:ff02::1a
+  9778.052: [DBG ][wsbs]: -----PAN config confirm
+  9789.748: [DBG ][wsbs]: -----PAN advertize confirm
+  9841.748: [DBG ][wsbs]: -----PAN advertize confirm
+  9848.048: [DBG ][wsbs]: -----PAN config confirm
+  9880.148: tx-icmp rpl dio   dst:ff02::1a
+  9883.448: [DBG ][wsbs]: -----PAN advertize confirm
+  9906.648: [DBG ][wsbs]: -----PAN config confirm
+  9956.948: [DBG ][wsbs]: -----PAN config confirm
+  9961.648: [DBG ][wsbs]: -----PAN advertize confirm
+  9995.748: tx-icmp rpl dio   dst:ff02::1a
+ 10013.248: [DBG ][wsbs]: -----PAN config confirm
+ 10015.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 10071.749: [DBG ][wsbs]: -----PAN advertize confirm
+ 10094.648: [DBG ][wsbs]: -----PAN config confirm
+ 10130.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 10149.148: tx-icmp rpl dio   dst:ff02::1a
+ 10155.348: [DBG ][wsbs]: -----PAN config confirm
+ 10191.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 10201.348: [DBG ][wsbs]: -----PAN config confirm
+ 10248.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 10281.048: [DBG ][wsbs]: -----PAN config confirm
+ 10301.049: tx-icmp rpl dio   dst:ff02::1a
+ 10314.348: [DBG ][wsbs]: -----PAN config confirm
+ 10323.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 10365.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 10384.748: tx-icmp rpl dio   dst:ff02::1a
+ 10394.948: [DBG ][wsbs]: -----PAN config confirm
+ 10424.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 10460.648: [DBG ][wsbs]: -----PAN config confirm
+ 10501.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 10517.948: [DBG ][wsbs]: -----PAN config confirm
+ 10553.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 10559.748: tx-icmp rpl dio   dst:ff02::1a
+ 10572.648: [DBG ][wsbs]: -----PAN config confirm
+ 10623.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 10638.648: [DBG ][wsbs]: -----PAN config confirm
+ 10659.348: tx-icmp rpl dio   dst:ff02::1a
+ 10677.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 10687.448: [DBG ][wsbs]: -----PAN config confirm
+ 10745.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 10745.949: [DBG ][wsbs]: -----PAN config confirm
+ 10799.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 10805.348: [INFO][wspa]: Active GTK lifetime 99, frame counter 99 percent, counter 1376
+ 10805.348: [INFO][wspa]: Frame counter change 0, max 19261
+ 10813.649: [DBG ][wsbs]: -----PAN config confirm
+ 10827.648: tx-icmp rpl dio   dst:ff02::1a
+ 10862.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 10875.049: [DBG ][wsbs]: -----PAN config confirm
+ 10892.748: tx-icmp rpl dio   dst:ff02::1a
+ 10911.149: [DBG ][wsbs]: -----PAN advertize confirm
+ 10916.248: [DBG ][wsbs]: -----PAN config confirm
+ 10984.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 10995.248: [DBG ][wsbs]: -----PAN config confirm
+ 11025.448: tx-icmp rpl dio   dst:ff02::1a
+ 11045.648: [DBG ][wsbs]: -----PAN config confirm
+ 11046.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 11104.349: tx-icmp rpl dio   dst:ff02::1a
+ 11104.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 11105.548: [DBG ][wsbs]: -----PAN config confirm
+ 11148.049: [DBG ][wsbs]: -----PAN advertize confirm
+ 11160.648: [DBG ][wsbs]: -----PAN config confirm
+ 11219.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 11221.848: [DBG ][wsbs]: -----PAN config confirm
+ 11255.648: tx-icmp rpl dio   dst:ff02::1a
+ 11265.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 11280.348: [DBG ][wsbs]: -----PAN config confirm
+ 11340.249: [DBG ][wsbs]: -----PAN advertize confirm
+ 11359.248: [DBG ][wsbs]: -----PAN config confirm
+ 11404.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 11409.648: tx-icmp rpl dio   dst:ff02::1a
+ 11409.648: [INFO][6lAd]: Adaptation layer TX queue size 80 Active MAC tx request 0
+ 11411.848: [DBG ][wsbs]: -----PAN config confirm
+ 11457.848: [DBG ][wsbs]: -----PAN config confirm
+ 11459.649: [DBG ][wsbs]: -----PAN advertize confirm
+ 11500.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 11535.248: [DBG ][wsbs]: -----PAN config confirm
+ 11545.948: tx-icmp rpl dio   dst:ff02::1a
+ 11565.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 11597.448: [DBG ][wsbs]: -----PAN config confirm
+ 11642.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 11642.149: tx-icmp rpl dio   dst:ff02::1a
+ 11651.548: [DBG ][wsbs]: -----PAN config confirm
+ 11701.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 11713.548: [DBG ][wsbs]: -----PAN config confirm
+ 11770.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 11775.249: [DBG ][wsbs]: -----PAN config confirm
+ 11789.149: tx-icmp rpl dio   dst:ff02::1a
+ 11818.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 11842.048: [DBG ][wsbs]: -----PAN config confirm
+ 11871.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 11887.948: [DBG ][wsbs]: -----PAN config confirm
+ 11891.648: tx-icmp rpl dio   dst:ff02::1a
+ 11933.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 11962.248: [DBG ][wsbs]: -----PAN config confirm
+ 11983.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 12014.349: [DBG ][wsbs]: -----PAN config confirm
+ 12047.149: [DBG ][wsbs]: -----PAN advertize confirm
+ 12054.848: tx-icmp rpl dio   dst:ff02::1a
+ 12074.349: [DBG ][wsbs]: -----PAN config confirm
+ 12100.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 12128.248: [DBG ][wsbs]: -----PAN config confirm
+ 12162.449: [DBG ][wsbs]: -----PAN advertize confirm
+ 12171.448: tx-icmp rpl dio   dst:ff02::1a
+ 12202.449: [DBG ][wsbs]: -----PAN config confirm
+ 12228.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 12257.048: [DBG ][wsbs]: -----PAN config confirm
+ 12294.049: [DBG ][wsbs]: -----PAN advertize confirm
+ 12312.548: [DBG ][wsbs]: -----PAN config confirm
+ 12315.048: tx-icmp rpl dio   dst:ff02::1a
+ 12363.349: [DBG ][wsbs]: -----PAN advertize confirm
+ 12370.248: [DBG ][wsbs]: -----PAN config confirm
+ 12407.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 12433.848: [DBG ][wsbs]: -----PAN config confirm
+ 12465.448: tx-icmp rpl dio   dst:ff02::1a
+ 12472.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 12490.248: [DBG ][wsbs]: -----PAN config confirm
+ 12520.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 12540.648: [DBG ][wsbs]: -----PAN config confirm
+ 12585.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 12601.748: tx-icmp rpl dio   dst:ff02::1a
+ 12615.548: [DBG ][wsbs]: -----PAN config confirm
+ 12662.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 12681.348: [DBG ][wsbs]: -----PAN config confirm
+ 12714.948: tx-icmp rpl dio   dst:ff02::1a
+ 12718.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 12727.249: [DBG ][wsbs]: -----PAN config confirm
+ 12779.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 12794.048: [DBG ][wsbs]: -----PAN config confirm
+ 12835.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 12842.648: [DBG ][wsbs]: -----PAN config confirm
+ 12856.448: tx-icmp rpl dio   dst:ff02::1a
+ 12894.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 12918.848: [DBG ][wsbs]: -----PAN config confirm
+ 12952.548: tx-icmp rpl dio   dst:ff02::1a
+ 12954.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 12964.348: [DBG ][wsbs]: -----PAN config confirm
+ 13007.549: [DBG ][wsbs]: -----PAN advertize confirm
+ 13027.649: [DBG ][wsbs]: -----PAN config confirm
+ 13083.349: [DBG ][wsbs]: -----PAN advertize confirm
+ 13088.048: [DBG ][wsbs]: -----PAN config confirm
+ 13097.048: tx-icmp rpl dio   dst:ff02::1a
+ 13123.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 13147.248: [DBG ][wsbs]: -----PAN config confirm
+ 13194.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 13197.148: [DBG ][wsbs]: -----PAN config confirm
+ 13220.548: tx-icmp rpl dio   dst:ff02::1a
+ 13260.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 13268.448: [DBG ][wsbs]: -----PAN config confirm
+ 13305.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 13334.048: [DBG ][wsbs]: -----PAN config confirm
+ 13377.249: [DBG ][wsbs]: -----PAN config confirm
+ 13378.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 13383.148: tx-icmp rpl dio   dst:ff02::1a
+ 13424.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 13453.448: [DBG ][wsbs]: -----PAN config confirm
+ 13461.948: tx-icmp rpl dio   dst:ff02::1a
+ 13505.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 13510.948: [DBG ][wsbs]: -----PAN config confirm
+ 13563.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 13571.948: [DBG ][wsbs]: -----PAN config confirm
+ 13625.348: tx-icmp rpl dio   dst:ff02::1a
+ 13630.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 13641.049: [DBG ][wsbs]: -----PAN config confirm
+ 13673.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 13687.549: [DBG ][wsbs]: -----PAN config confirm
+ 13740.648: tx-icmp rpl dio   dst:ff02::1a
+ 13749.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 13760.948: [DBG ][wsbs]: -----PAN config confirm
+ 13801.049: [DBG ][wsbs]: -----PAN config confirm
+ 13810.349: [DBG ][wsbs]: -----PAN advertize confirm
+ 13864.148: [DBG ][wsbs]: -----PAN config confirm
+ 13870.049: [DBG ][wsbs]: -----PAN advertize confirm
+ 13890.948: tx-icmp rpl dio   dst:ff02::1a
+ 13927.849: [DBG ][wsbs]: -----PAN advertize confirm
+ 13929.048: [DBG ][wsbs]: -----PAN config confirm
+ 13967.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 13975.548: [DBG ][wsbs]: -----PAN config confirm
+ 14021.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 14039.448: tx-icmp rpl dio   dst:ff02::1a
+ 14039.448: [INFO][6lAd]: Adaptation layer TX queue size 100 Active MAC tx request 0
+ 14060.148: [DBG ][wsbs]: -----PAN config confirm
+ 14096.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 14102.248: [DBG ][wsbs]: -----PAN config confirm
+ 14146.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 14159.849: [DBG ][wsbs]: -----PAN config confirm
+ 14166.548: tx-icmp rpl dio   dst:ff02::1a
+ 14202.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 14214.048: [DBG ][wsbs]: -----PAN config confirm
+ 14260.649: [DBG ][wsbs]: -----PAN advertize confirm
+ 14283.049: [DBG ][wsbs]: -----PAN config confirm
+ 14300.548: tx-icmp rpl dio   dst:ff02::1a
+ 14337.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 14342.448: [DBG ][wsbs]: -----PAN config confirm
+ 14399.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 14405.348: [INFO][wspa]: Active GTK lifetime 99, frame counter 99 percent, counter 1376
+ 14405.348: [INFO][wspa]: Frame counter change 0, max 19261
+ 14417.548: [DBG ][wsbs]: -----PAN config confirm
+ 14430.648: tx-icmp rpl dio   dst:ff02::1a
+ 14448.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 14458.148: [DBG ][wsbs]: -----PAN config confirm
+ 14490.948: tx-icmp rpl dio   dst:ff02::1a
+ 14515.148: [DBG ][wsbs]: -----PAN config confirm
+ 14530.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 14585.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 14586.948: tx-icmp rpl dio   dst:ff02::1a
+ 14590.848: [DBG ][wsbs]: -----PAN config confirm
+ 14632.948: [DBG ][wsbs]: -----PAN config confirm
+ 14637.449: [DBG ][wsbs]: -----PAN advertize confirm
+ 14688.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 14709.248: [DBG ][wsbs]: -----PAN config confirm
+ 14749.748: tx-icmp rpl dio   dst:ff02::1a
+ 14751.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 14779.448: [DBG ][wsbs]: -----PAN config confirm
+ 14828.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 14834.148: [DBG ][wsbs]: -----PAN config confirm
+ 14846.148: tx-icmp rpl dio   dst:ff02::1a
+ 14876.648: [DBG ][wsbs]: -----PAN config confirm
+ 14877.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 14944.248: [DBG ][wsbs]: -----PAN config confirm
+ 14944.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 15003.549: [DBG ][wsbs]: -----PAN config confirm
+ 15010.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 15022.448: tx-icmp rpl dio   dst:ff02::1a
+ 15052.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 15057.448: [DBG ][wsbs]: -----PAN config confirm
+ 15110.649: [DBG ][wsbs]: -----PAN advertize confirm
+ 15126.149: tx-icmp rpl dio   dst:ff02::1a
+ 15141.448: [DBG ][wsbs]: -----PAN config confirm
+ 15179.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 15192.348: [DBG ][wsbs]: -----PAN config confirm
+ 15233.549: [DBG ][wsbs]: -----PAN advertize confirm
+ 15241.848: tx-icmp rpl dio   dst:ff02::1a
+ 15250.848: [DBG ][wsbs]: -----PAN config confirm
+ 15309.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 15319.448: [DBG ][wsbs]: -----PAN config confirm
+ 15365.248: [DBG ][wsbs]: -----PAN config confirm
+ 15365.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 15393.149: tx-icmp rpl dio   dst:ff02::1a
+ 15414.749: [DBG ][wsbs]: -----PAN advertize confirm
+ 15440.348: [DBG ][wsbs]: -----PAN config confirm
+ 15486.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 15487.148: [DBG ][wsbs]: -----PAN config confirm
+ 15537.149: tx-icmp rpl dio   dst:ff02::1a
+ 15549.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 15559.048: [DBG ][wsbs]: -----PAN config confirm
+ 15592.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 15613.048: [DBG ][wsbs]: -----PAN config confirm
+ 15638.648: tx-icmp rpl dio   dst:ff02::1a
+ 15654.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 15667.349: [DBG ][wsbs]: -----PAN config confirm
+ 15710.749: [DBG ][wsbs]: -----PAN advertize confirm
+ 15740.548: [DBG ][wsbs]: -----PAN config confirm
+ 15784.549: tx-icmp rpl dio   dst:ff02::1a
+ 15787.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 15800.848: [DBG ][wsbs]: -----PAN config confirm
+ 15822.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 15832.648: [DBG ][wsbs]: -----PAN config confirm
+ 15906.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 15913.548: [DBG ][wsbs]: -----PAN config confirm
+ 15943.948: tx-icmp rpl dio   dst:ff02::1a
+ 15957.049: [DBG ][wsbs]: -----PAN config confirm
+ 15965.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 16001.149: [DBG ][wsbs]: -----PAN advertize confirm
+ 16022.348: [DBG ][wsbs]: -----PAN config confirm
+ 16049.348: tx-icmp rpl dio   dst:ff02::1a
+ 16075.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 16097.848: [DBG ][wsbs]: -----PAN config confirm
+ 16139.549: [DBG ][wsbs]: -----PAN config confirm
+ 16141.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 16147.848: tx-icmp rpl dio   dst:ff02::1a
+ 16199.649: [DBG ][wsbs]: -----PAN advertize confirm
+ 16212.548: [DBG ][wsbs]: -----PAN config confirm
+ 16263.748: [DBG ][wsbs]: -----PAN config confirm
+ 16264.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 16316.448: [DBG ][wsbs]: -----PAN config confirm
+ 16316.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 16322.749: tx-icmp rpl dio   dst:ff02::1a
+ 16367.849: [DBG ][wsbs]: -----PAN advertize confirm
+ 16386.248: [DBG ][wsbs]: -----PAN config confirm
+ 16422.648: tx-icmp rpl dio   dst:ff02::1a
+ 16449.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 16461.748: [DBG ][wsbs]: -----PAN config confirm
+ 16483.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 16500.448: [DBG ][wsbs]: -----PAN config confirm
+ 16551.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 16562.648: [DBG ][wsbs]: -----PAN config confirm
+ 16585.149: tx-icmp rpl dio   dst:ff02::1a
+ 16585.149: [INFO][6lAd]: Adaptation layer TX queue size 120 Active MAC tx request 0
+ 16615.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 16618.048: [DBG ][wsbs]: -----PAN config confirm
+ 16660.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 16688.348: [DBG ][wsbs]: -----PAN config confirm
+ 16709.649: tx-icmp rpl dio   dst:ff02::1a
+ 16738.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 16748.648: [DBG ][wsbs]: -----PAN config confirm
+ 16787.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 16793.148: [DBG ][wsbs]: -----PAN config confirm
+ 16823.648: tx-icmp rpl dio   dst:ff02::1a
+ 16861.248: [DBG ][wsbs]: -----PAN config confirm
+ 16867.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 16917.348: [DBG ][wsbs]: -----PAN config confirm
+ 16921.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 16981.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 16991.248: tx-icmp rpl dio   dst:ff02::1a
+ 17001.048: [DBG ][wsbs]: -----PAN config confirm
+ 17037.748: [DBG ][wsbs]: -----PAN config confirm
+ 17038.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 17084.449: tx-icmp rpl dio   dst:ff02::1a
+ 17103.948: [DBG ][wsbs]: -----PAN config confirm
+ 17106.649: [DBG ][wsbs]: -----PAN advertize confirm
+ 17144.049: [DBG ][wsbs]: -----PAN advertize confirm
+ 17153.748: [DBG ][wsbs]: -----PAN config confirm
+ 17205.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 17213.648: [DBG ][wsbs]: -----PAN config confirm
+ 17238.349: tx-icmp rpl dio   dst:ff02::1a
+ 17282.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 17294.748: [DBG ][wsbs]: -----PAN config confirm
+ 17329.049: tx-icmp rpl dio   dst:ff02::1a
+ 17330.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 17334.848: [DBG ][wsbs]: -----PAN config confirm
+ 17398.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 17407.048: [DBG ][wsbs]: -----PAN config confirm
+ 17441.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 17455.048: [DBG ][wsbs]: -----PAN config confirm
+ 17481.048: tx-icmp rpl dio   dst:ff02::1a
+ 17518.648: [DBG ][wsbs]: -----PAN config confirm
+ 17526.549: [DBG ][wsbs]: -----PAN advertize confirm
+ 17586.948: [DBG ][wsbs]: -----PAN config confirm
+ 17589.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 17618.548: tx-icmp rpl dio   dst:ff02::1a
+ 17624.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 17651.548: [DBG ][wsbs]: -----PAN config confirm
+ 17686.949: [DBG ][wsbs]: -----PAN advertize confirm
+ 17696.248: [DBG ][wsbs]: -----PAN config confirm
+ 17766.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 17769.148: tx-icmp rpl dio   dst:ff02::1a
+ 17779.848: [DBG ][wsbs]: -----PAN config confirm
+ 17815.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 17835.448: [DBG ][wsbs]: -----PAN config confirm
+ 17867.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 17894.849: [DBG ][wsbs]: -----PAN config confirm
+ 17906.749: tx-icmp rpl dio   dst:ff02::1a
+ 17936.748: [DBG ][wsbs]: -----PAN config confirm
+ 17946.349: [DBG ][wsbs]: -----PAN advertize confirm
+ 17991.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 18004.748: tx-icmp rpl dio   dst:ff02::1a
+ 18005.348: [INFO][wspa]: Active GTK lifetime 99, frame counter 99 percent, counter 1376
+ 18005.348: [INFO][wspa]: Frame counter change 0, max 19261
+ 18008.948: [DBG ][wsbs]: -----PAN config confirm
+ 18029.348: tx-icmp rpl dio   dst:ff02::1a
+ 18058.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 18074.748: [DBG ][wsbs]: -----PAN config confirm
+ 18083.849: tx-icmp rpl dio   dst:ff02::1a
+ 18118.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 18123.148: [DBG ][wsbs]: -----PAN config confirm
+ 18182.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 18192.148: [DBG ][wsbs]: -----PAN config confirm
+ 18221.448: tx-icmp rpl dio   dst:ff02::1a
+ 18238.548: [DBG ][wsbs]: -----PAN config confirm
+ 18245.749: [DBG ][wsbs]: -----PAN advertize confirm
+ 18292.648: [DBG ][wsbs]: -----PAN config confirm
+ 18295.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 18354.948: tx-icmp rpl dio   dst:ff02::1a
+ 18362.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 18366.058: [DBG ][wsbs]: -----PAN config confirm
+ 18410.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 18432.448: [DBG ][wsbs]: -----PAN config confirm
+ 18480.648: tx-icmp rpl dio   dst:ff02::1a
+ 18490.349: [DBG ][wsbs]: -----PAN advertize confirm
+ 18501.748: [DBG ][wsbs]: -----PAN config confirm
+ 18544.349: [DBG ][wsbs]: -----PAN advertize confirm
+ 18562.048: [DBG ][wsbs]: -----PAN config confirm
+ 18592.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 18597.048: [DBG ][wsbs]: -----PAN config confirm
+ 18605.648: tx-icmp rpl dio   dst:ff02::1a
+ 18650.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 18671.048: [DBG ][wsbs]: -----PAN config confirm
+ 18728.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 18731.548: tx-icmp rpl dio   dst:ff02::1a
+ 18737.249: [DBG ][wsbs]: -----PAN config confirm
+ 18778.249: [DBG ][wsbs]: -----PAN advertize confirm
+ 18787.548: [DBG ][wsbs]: -----PAN config confirm
+ 18824.748: tx-icmp rpl dio   dst:ff02::1a
+ 18837.648: [DBG ][wsbs]: -----PAN config confirm
+ 18841.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 18898.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 18919.149: [DBG ][wsbs]: -----PAN config confirm
+ 18950.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 18965.748: [DBG ][wsbs]: -----PAN config confirm
+ 19003.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 19011.648: tx-icmp rpl dio   dst:ff02::1a
+ 19011.648: [INFO][6lAd]: Adaptation layer TX queue size 140 Active MAC tx request 0
+ 19028.448: [DBG ][wsbs]: -----PAN config confirm
+ 19066.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 19078.048: [DBG ][wsbs]: -----PAN config confirm
+ 19102.448: tx-icmp rpl dio   dst:ff02::1a
+ 19135.248: [DBG ][wsbs]: -----PAN config confirm
+ 19147.449: [DBG ][wsbs]: -----PAN advertize confirm
+ 19200.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 19211.149: [DBG ][wsbs]: -----PAN config confirm
+ 19251.648: tx-icmp rpl dio   dst:ff02::1a
+ 19257.349: [DBG ][wsbs]: -----PAN config confirm
+ 19262.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 19325.348: [DBG ][wsbs]: -----PAN config confirm
+ 19328.349: [DBG ][wsbs]: -----PAN advertize confirm
+ 19359.048: tx-icmp rpl dio   dst:ff02::1a
+ 19369.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 19397.448: [DBG ][wsbs]: -----PAN config confirm
+ 19434.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 19440.849: [DBG ][wsbs]: -----PAN config confirm
+ 19485.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 19488.848: tx-icmp rpl dio   dst:ff02::1a
+ 19506.648: [DBG ][wsbs]: -----PAN config confirm
+ 19556.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 19561.748: [DBG ][wsbs]: -----PAN config confirm
+ 19605.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 19626.648: tx-icmp rpl dio   dst:ff02::1a
+ 19628.549: [DBG ][wsbs]: -----PAN config confirm
+ 19661.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 19675.249: [DBG ][wsbs]: -----PAN config confirm
+ 19722.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 19743.849: [DBG ][wsbs]: -----PAN config confirm
+ 19754.748: tx-icmp rpl dio   dst:ff02::1a
+ 19795.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 19799.548: [DBG ][wsbs]: -----PAN config confirm
+ 19862.448: [DBG ][wsbs]: -----PAN config confirm
+ 19868.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 19895.049: tx-icmp rpl dio   dst:ff02::1a
+ 19913.448: [DBG ][wsbs]: -----PAN config confirm
+ 19922.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 19967.049: [DBG ][wsbs]: -----PAN advertize confirm
+ 19978.149: [DBG ][wsbs]: -----PAN config confirm
+ 20008.348: tx-icmp rpl dio   dst:ff02::1a
+ 20041.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 20044.848: [DBG ][wsbs]: -----PAN config confirm
+ 20103.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 20118.048: [DBG ][wsbs]: -----PAN config confirm
+ 20161.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 20163.848: [DBG ][wsbs]: -----PAN config confirm
+ 20165.648: tx-icmp rpl dio   dst:ff02::1a
+ 20205.349: [DBG ][wsbs]: -----PAN advertize confirm
+ 20216.748: [DBG ][wsbs]: -----PAN config confirm
+ 20281.149: [DBG ][wsbs]: -----PAN config confirm
+ 20281.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 20309.548: tx-icmp rpl dio   dst:ff02::1a
+ 20324.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 20360.048: [DBG ][wsbs]: -----PAN config confirm
+ 20399.048: [DBG ][wsbs]: -----PAN config confirm
+ 20405.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 20413.948: tx-icmp rpl dio   dst:ff02::1a
+ 20450.749: [DBG ][wsbs]: -----PAN advertize confirm
+ 20464.948: [DBG ][wsbs]: -----PAN config confirm
+ 20521.449: [DBG ][wsbs]: -----PAN advertize confirm
+ 20523.548: [DBG ][wsbs]: -----PAN config confirm
+ 20548.448: tx-icmp rpl dio   dst:ff02::1a
+ 20574.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 20583.348: [DBG ][wsbs]: -----PAN config confirm
+ 20620.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 20637.348: [DBG ][wsbs]: -----PAN config confirm
+ 20676.548: tx-icmp rpl dio   dst:ff02::1a
+ 20687.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 20717.048: [DBG ][wsbs]: -----PAN config confirm
+ 20753.348: [DBG ][wsbs]: -----PAN config confirm
+ 20754.649: [DBG ][wsbs]: -----PAN advertize confirm
+ 20816.248: [DBG ][wsbs]: -----PAN config confirm
+ 20819.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 20834.349: tx-icmp rpl dio   dst:ff02::1a
+ 20872.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 20881.149: [DBG ][wsbs]: -----PAN config confirm
+ 20921.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 20933.948: [DBG ][wsbs]: -----PAN config confirm
+ 20987.448: tx-icmp rpl dio   dst:ff02::1a
+ 20995.049: [DBG ][wsbs]: -----PAN config confirm
+ 20996.949: [DBG ][wsbs]: -----PAN advertize confirm
+ 21052.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 21056.348: tx-icmp rpl dio   dst:ff02::1a
+ 21079.048: [DBG ][wsbs]: -----PAN config confirm
+ 21124.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 21131.049: [DBG ][wsbs]: -----PAN config confirm
+ 21182.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 21187.249: [DBG ][wsbs]: -----PAN config confirm
+ 21227.248: tx-icmp rpl dio   dst:ff02::1a
+ 21228.949: [DBG ][wsbs]: -----PAN advertize confirm
+ 21248.548: [DBG ][wsbs]: -----PAN config confirm
+ 21293.848: [DBG ][wsbs]: -----PAN config confirm
+ 21295.849: [DBG ][wsbs]: -----PAN advertize confirm
+ 21364.148: [DBG ][wsbs]: -----PAN config confirm
+ 21370.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 21381.048: tx-icmp rpl dio   dst:ff02::1a
+ 21405.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 21435.048: [DBG ][wsbs]: -----PAN config confirm
+ 21463.448: tx-icmp rpl dio   dst:ff02::1a
+ 21469.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 21483.949: [DBG ][wsbs]: -----PAN config confirm
+ 21532.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 21557.848: [DBG ][wsbs]: -----PAN config confirm
+ 21586.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 21604.048: [DBG ][wsbs]: -----PAN config confirm
+ 21605.348: [INFO][wspa]: Active GTK lifetime 99, frame counter 99 percent, counter 1376
+ 21605.348: [INFO][wspa]: Frame counter change 0, max 19261
+ 21624.848: tx-icmp rpl dio   dst:ff02::1a
+ 21624.848: [INFO][6lAd]: Adaptation layer TX queue size 160 Active MAC tx request 0
+ 21643.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 21654.248: [DBG ][wsbs]: -----PAN config confirm
+ 21683.649: tx-icmp rpl dio   dst:ff02::1a
+ 21713.049: [DBG ][wsbs]: -----PAN advertize confirm
+ 21732.149: [DBG ][wsbs]: -----PAN config confirm
+ 21774.448: [DBG ][wsbs]: -----PAN config confirm
+ 21779.749: [DBG ][wsbs]: -----PAN advertize confirm
+ 21831.548: tx-icmp rpl dio   dst:ff02::1a
+ 21848.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 21854.248: [DBG ][wsbs]: -----PAN config confirm
+ 21894.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 21895.648: [DBG ][wsbs]: -----PAN config confirm
+ 21905.648: tx-icmp rpl dio   dst:ff02::1a
+ 21953.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 21960.948: [DBG ][wsbs]: -----PAN config confirm
+ 22008.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 22032.948: [DBG ][wsbs]: -----PAN config confirm
+ 22060.548: tx-icmp rpl dio   dst:ff02::1a
+ 22078.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 22094.848: [DBG ][wsbs]: -----PAN config confirm
+ 22123.849: [DBG ][wsbs]: -----PAN advertize confirm
+ 22135.948: [DBG ][wsbs]: -----PAN config confirm
+ 22199.248: [DBG ][wsbs]: -----PAN config confirm
+ 22210.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 22217.548: tx-icmp rpl dio   dst:ff02::1a
+ 22252.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 22267.848: [DBG ][wsbs]: -----PAN config confirm
+ 22313.448: [DBG ][wsbs]: -----PAN config confirm
+ 22327.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 22338.648: tx-icmp rpl dio   dst:ff02::1a
+ 22364.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 22384.848: [DBG ][wsbs]: -----PAN config confirm
+ 22429.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 22450.248: tx-icmp rpl dio   dst:ff02::1a
+ 22453.048: [DBG ][wsbs]: -----PAN config confirm
+ 22500.749: [DBG ][wsbs]: -----PAN advertize confirm
+ 22502.848: [DBG ][wsbs]: -----PAN config confirm
+ 22545.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 22579.048: [DBG ][wsbs]: -----PAN config confirm
+ 22613.048: [DBG ][wsbs]: -----PAN config confirm
+ 22614.049: [DBG ][wsbs]: -----PAN advertize confirm
+ 22617.749: tx-icmp rpl dio   dst:ff02::1a
+ 22663.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 22688.248: [DBG ][wsbs]: -----PAN config confirm
+ 22730.748: tx-icmp rpl dio   dst:ff02::1a
+ 22736.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 22748.748: [DBG ][wsbs]: -----PAN config confirm
+ 22797.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 22820.848: [DBG ][wsbs]: -----PAN config confirm
+ 22860.048: [DBG ][wsbs]: -----PAN config confirm
+ 22865.948: tx-icmp rpl dio   dst:ff02::1a
+ 22869.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 22917.849: [DBG ][wsbs]: -----PAN advertize confirm
+ 22939.148: [DBG ][wsbs]: -----PAN config confirm
+ 22950.348: tx-icmp rpl dio   dst:ff02::1a
+ 22967.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 22980.048: [DBG ][wsbs]: -----PAN config confirm
+ 23041.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 23044.448: [DBG ][wsbs]: -----PAN config confirm
+ 23094.449: [DBG ][wsbs]: -----PAN config confirm
+ 23110.449: [DBG ][wsbs]: -----PAN advertize confirm
+ 23113.948: tx-icmp rpl dio   dst:ff02::1a
+ 23157.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 23159.148: [DBG ][wsbs]: -----PAN config confirm
+ 23207.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 23224.848: tx-icmp rpl dio   dst:ff02::1a
+ 23237.748: [DBG ][wsbs]: -----PAN config confirm
+ 23269.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 23274.548: [DBG ][wsbs]: -----PAN config confirm
+ 23323.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 23356.748: [DBG ][wsbs]: -----PAN config confirm
+ 23381.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 23398.548: tx-icmp rpl dio   dst:ff02::1a
+ 23403.248: [DBG ][wsbs]: -----PAN config confirm
+ 23442.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 23467.648: [DBG ][wsbs]: -----PAN config confirm
+ 23519.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 23531.348: tx-icmp rpl dio   dst:ff02::1a
+ 23535.348: [DBG ][wsbs]: -----PAN config confirm
+ 23564.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 23585.349: [DBG ][wsbs]: -----PAN config confirm
+ 23631.248: tx-icmp rpl dio   dst:ff02::1a
+ 23632.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 23645.748: [DBG ][wsbs]: -----PAN config confirm
+ 23690.549: [DBG ][wsbs]: -----PAN advertize confirm
+ 23721.148: [DBG ][wsbs]: -----PAN config confirm
+ 23739.348: tx-icmp rpl dio   dst:ff02::1a
+ 23767.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 23777.148: [DBG ][wsbs]: -----PAN config confirm
+ 23805.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 23831.448: [DBG ][wsbs]: -----PAN config confirm
+ 23884.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 23896.048: [DBG ][wsbs]: -----PAN config confirm
+ 23902.248: tx-icmp rpl dio   dst:ff02::1a
+ 23921.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 23946.448: [DBG ][wsbs]: -----PAN config confirm
+ 24004.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 24005.148: [DBG ][wsbs]: -----PAN config confirm
+ 24026.648: tx-icmp rpl dio   dst:ff02::1a
+ 24053.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 24071.448: [DBG ][wsbs]: -----PAN config confirm
+ 24126.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 24127.148: [DBG ][wsbs]: -----PAN config confirm
+ 24142.149: tx-icmp rpl dio   dst:ff02::1a
+ 24142.149: [INFO][6lAd]: Adaptation layer TX queue size 180 Active MAC tx request 0
+ 24165.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 24188.348: [DBG ][wsbs]: -----PAN config confirm
+ 24239.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 24258.548: [DBG ][wsbs]: -----PAN config confirm
+ 24283.649: [DBG ][wsbs]: -----PAN advertize confirm
+ 24288.649: tx-icmp rpl dio   dst:ff02::1a
+ 24315.548: [DBG ][wsbs]: -----PAN config confirm
+ 24363.848: [DBG ][wsbs]: -----PAN config confirm
+ 24370.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 24418.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 24432.548: [DBG ][wsbs]: -----PAN config confirm
+ 24437.948: tx-icmp rpl dio   dst:ff02::1a
+ 24472.948: [DBG ][wsbs]: -----PAN config confirm
+ 24485.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 24533.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 24560.448: [DBG ][wsbs]: -----PAN config confirm
+ 24573.748: tx-icmp rpl dio   dst:ff02::1a
+ 24592.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 24604.348: [DBG ][wsbs]: -----PAN config confirm
+ 24657.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 24671.048: [DBG ][wsbs]: -----PAN config confirm
+ 24709.248: tx-icmp rpl dio   dst:ff02::1a
+ 24716.348: [DBG ][wsbs]: -----PAN config confirm
+ 24726.349: [DBG ][wsbs]: -----PAN advertize confirm
+ 24773.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 24788.048: [DBG ][wsbs]: -----PAN config confirm
+ 24845.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 24845.448: tx-icmp rpl dio   dst:ff02::1a
+ 24858.548: [DBG ][wsbs]: -----PAN config confirm
+ 24882.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 24907.848: [DBG ][wsbs]: -----PAN config confirm
+ 24946.948: [DBG ][wsbs]: -----PAN advertize confirm
+warning: missing timers: 1
+ 24951.298: tx-icmp rpl dio   dst:ff02::1a
+ 24981.098: [DBG ][wsbs]: -----PAN config confirm
+ 25005.098: [DBG ][wsbs]: -----PAN advertize confirm
+ 25037.799: [DBG ][wsbs]: -----PAN config confirm
+ 25063.698: tx-icmp rpl dio   dst:ff02::1a
+ 25070.798: [DBG ][wsbs]: -----PAN advertize confirm
+ 25097.898: [DBG ][wsbs]: -----PAN config confirm
+ 25134.798: [DBG ][wsbs]: -----PAN advertize confirm
+ 25149.298: [DBG ][wsbs]: -----PAN config confirm
+ 25186.398: tx-icmp rpl dio   dst:ff02::1a
+ 25186.498: [DBG ][wsbs]: -----PAN advertize confirm
+ 25196.798: [DBG ][wsbs]: -----PAN config confirm
+ 25205.398: [INFO][wspa]: Active GTK lifetime 99, frame counter 99 percent, counter 1376
+ 25205.398: [INFO][wspa]: Frame counter change 0, max 19261
+ 25226.998: tx-icmp rpl dio   dst:ff02::1a
+ 25253.598: [DBG ][wsbs]: -----PAN config confirm
+ 25254.299: [DBG ][wsbs]: -----PAN advertize confirm
+ 25300.998: tx-icmp rpl dio   dst:ff02::1a
+ 25304.298: [DBG ][wsbs]: -----PAN advertize confirm
+ 25326.398: [DBG ][wsbs]: -----PAN config confirm
+ 25373.498: tx-icmp rpl dio   dst:ff02::1a
+ 25375.698: [DBG ][wsbs]: -----PAN advertize confirm
+ 25389.899: [DBG ][wsbs]: -----PAN config confirm
+ 25434.798: [DBG ][wsbs]: -----PAN advertize confirm
+ 25436.098: [DBG ][wsbs]: -----PAN config confirm
+ 25486.498: [DBG ][wsbs]: -----PAN advertize confirm
+ 25504.898: [DBG ][wsbs]: -----PAN config confirm
+ 25545.398: [DBG ][wsbs]: -----PAN advertize confirm
+ 25548.498: tx-icmp rpl dio   dst:ff02::1a
+ 25579.598: [DBG ][wsbs]: -----PAN config confirm
+ 25607.898: [DBG ][wsbs]: -----PAN advertize confirm
+ 25621.998: [DBG ][wsbs]: -----PAN config confirm
+ 25661.498: tx-icmp rpl dio   dst:ff02::1a
+ 25679.398: [DBG ][wsbs]: -----PAN advertize confirm
+ 25681.198: [DBG ][wsbs]: -----PAN config confirm
+ 25736.599: [DBG ][wsbs]: -----PAN config confirm
+ 25742.798: [DBG ][wsbs]: -----PAN advertize confirm
+ 25795.799: [DBG ][wsbs]: -----PAN advertize confirm
+ 25801.498: [DBG ][wsbs]: -----PAN config confirm
+ 25804.298: tx-icmp rpl dio   dst:ff02::1a
+ 25859.798: [DBG ][wsbs]: -----PAN config confirm
+ 25866.498: [DBG ][wsbs]: -----PAN advertize confirm
+ 25894.098: tx-icmp rpl dio   dst:ff02::1a
+ 25919.199: [DBG ][wsbs]: -----PAN advertize confirm
+ 25926.198: [DBG ][wsbs]: -----PAN config confirm
+ 25965.398: [DBG ][wsbs]: -----PAN advertize confirm
+ 25976.698: [DBG ][wsbs]: -----PAN config confirm
+ 26024.898: tx-icmp rpl dio   dst:ff02::1a
+ 26027.298: [DBG ][wsbs]: -----PAN advertize confirm
+ 26038.998: [DBG ][wsbs]: -----PAN config confirm
+ 26109.098: [DBG ][wsbs]: -----PAN config confirm
+ 26109.699: [DBG ][wsbs]: -----PAN advertize confirm
+ 26147.698: [DBG ][wsbs]: -----PAN advertize confirm
+ 26159.198: [DBG ][wsbs]: -----PAN config confirm
+ 26173.498: tx-icmp rpl dio   dst:ff02::1a
+ 26216.498: [DBG ][wsbs]: -----PAN config confirm
+ 26226.398: [DBG ][wsbs]: -----PAN advertize confirm
+ 26284.599: [DBG ][wsbs]: -----PAN config confirm
+ 26286.098: [DBG ][wsbs]: -----PAN advertize confirm
+ 26325.598: tx-icmp rpl dio   dst:ff02::1a
+ 26328.698: [DBG ][wsbs]: -----PAN advertize confirm
+ 26338.498: [DBG ][wsbs]: -----PAN config confirm
+ 26386.499: [DBG ][wsbs]: -----PAN advertize confirm
+ 26418.898: [DBG ][wsbs]: -----PAN config confirm
+ 26430.999: tx-icmp rpl dio   dst:ff02::1a
+ 26443.599: [DBG ][wsbs]: -----PAN advertize confirm
+ 26479.598: [DBG ][wsbs]: -----PAN config confirm
+ 26501.199: [DBG ][wsbs]: -----PAN advertize confirm
+ 26537.798: [DBG ][wsbs]: -----PAN config confirm
+ 26575.599: [DBG ][wsbs]: -----PAN config confirm
+ 26577.799: [DBG ][wsbs]: -----PAN advertize confirm
+ 26596.699: tx-icmp rpl dio   dst:ff02::1a
+ 26596.699: [INFO][6lAd]: Adaptation layer TX queue size 200 Active MAC tx request 0
+ 26634.898: [DBG ][wsbs]: -----PAN advertize confirm
+ 26660.698: [DBG ][wsbs]: -----PAN config confirm
+ 26695.798: [DBG ][wsbs]: -----PAN advertize confirm
+ 26711.598: [DBG ][wsbs]: -----PAN config confirm
+ 26740.798: tx-icmp rpl dio   dst:ff02::1a
+ 26756.998: [DBG ][wsbs]: -----PAN advertize confirm
+ 26759.898: [DBG ][wsbs]: -----PAN config confirm
+ 26806.398: [DBG ][wsbs]: -----PAN advertize confirm
+ 26813.299: tx-icmp rpl dio   dst:ff02::1a
+ 26842.198: [DBG ][wsbs]: -----PAN config confirm
+warning: missing timers: 1
+ 26869.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 26888.948: [DBG ][wsbs]: -----PAN config confirm
+ 26938.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 26949.948: [DBG ][wsbs]: -----PAN config confirm
+ 26979.848: tx-icmp rpl dio   dst:ff02::1a
+ 26987.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 27000.748: [DBG ][wsbs]: -----PAN config confirm
+ 27050.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 27081.549: [DBG ][wsbs]: -----PAN config confirm
+ 27093.548: tx-icmp rpl dio   dst:ff02::1a
+ 27119.048: [DBG ][wsbs]: -----PAN config confirm
+ 27128.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 27174.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 27181.948: [DBG ][wsbs]: -----PAN config confirm
+ 27223.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 27244.148: tx-icmp rpl dio   dst:ff02::1a
+ 27246.149: [DBG ][wsbs]: -----PAN config confirm
+ 27308.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 27311.548: [DBG ][wsbs]: -----PAN config confirm
+ 27361.949: [DBG ][wsbs]: -----PAN advertize confirm
+ 27364.148: tx-icmp rpl dio   dst:ff02::1a
+ 27367.348: [DBG ][wsbs]: -----PAN config confirm
+ 27410.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 27413.148: [DBG ][wsbs]: -----PAN config confirm
+ 27476.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 27493.648: [DBG ][wsbs]: -----PAN config confirm
+ 27495.548: tx-icmp rpl dio   dst:ff02::1a
+ 27537.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 27541.548: [DBG ][wsbs]: -----PAN config confirm
+ 27597.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 27601.548: [DBG ][wsbs]: -----PAN config confirm
+ 27632.848: tx-icmp rpl dio   dst:ff02::1a
+ 27665.948: [DBG ][wsbs]: -----PAN config confirm
+ 27666.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 27721.149: [DBG ][wsbs]: -----PAN advertize confirm
+ 27732.048: [DBG ][wsbs]: -----PAN config confirm
+ 27774.448: [DBG ][wsbs]: -----PAN config confirm
+ 27779.849: tx-icmp rpl dio   dst:ff02::1a
+ 27780.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 27832.848: [DBG ][wsbs]: -----PAN config confirm
+ 27837.949: [DBG ][wsbs]: -----PAN advertize confirm
+ 27887.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 27907.249: tx-icmp rpl dio   dst:ff02::1a
+ 27907.648: [DBG ][wsbs]: -----PAN config confirm
+ 27947.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 27969.648: [DBG ][wsbs]: -----PAN config confirm
+ 28003.748: tx-icmp rpl dio   dst:ff02::1a
+ 28016.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 28036.548: [DBG ][wsbs]: -----PAN config confirm
+ 28062.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 28089.349: [DBG ][wsbs]: -----PAN config confirm
+ 28126.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 28148.848: tx-icmp rpl dio   dst:ff02::1a
+ 28161.149: [DBG ][wsbs]: -----PAN config confirm
+ 28188.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 28218.348: [DBG ][wsbs]: -----PAN config confirm
+ 28247.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 28276.848: [DBG ][wsbs]: -----PAN config confirm
+ 28318.049: tx-icmp rpl dio   dst:ff02::1a
+ 28323.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 28340.048: [DBG ][wsbs]: -----PAN config confirm
+ 28372.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 28384.448: [DBG ][wsbs]: -----PAN config confirm
+ 28412.748: tx-icmp rpl dio   dst:ff02::1a
+ 28424.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 28444.349: [DBG ][wsbs]: -----PAN config confirm
+ 28498.849: [DBG ][wsbs]: -----PAN config confirm
+ 28500.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 28540.848: tx-icmp rpl dio   dst:ff02::1a
+ 28569.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 28578.749: [DBG ][wsbs]: -----PAN config confirm
+ 28613.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 28634.849: [DBG ][wsbs]: -----PAN config confirm
+ 28671.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 28693.248: tx-icmp rpl dio   dst:ff02::1a
+ 28700.948: [DBG ][wsbs]: -----PAN config confirm
+ 28746.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 28752.948: [DBG ][wsbs]: -----PAN config confirm
+ 28799.849: [DBG ][wsbs]: -----PAN config confirm
+ 28802.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 28805.448: [INFO][wspa]: Active GTK lifetime 98, frame counter 99 percent, counter 1376
+ 28805.448: [INFO][wspa]: Frame counter change 0, max 19261
+ 28835.348: tx-icmp rpl dio   dst:ff02::1a
+ 28853.049: [DBG ][wsbs]: -----PAN advertize confirm
+ 28869.548: [DBG ][wsbs]: -----PAN config confirm
+ 28872.649: tx-icmp rpl dio   dst:ff02::1a
+ 28905.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 28928.149: [DBG ][wsbs]: -----PAN config confirm
+ 28977.749: [DBG ][wsbs]: -----PAN advertize confirm
+ 28977.749: [DBG ][wsbs]: -----PAN config confirm
+ 28989.348: tx-icmp rpl dio   dst:ff02::1a
+ 29023.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 29043.049: [DBG ][wsbs]: -----PAN config confirm
+ 29093.148: [DBG ][wsbs]: -----PAN config confirm
+ 29100.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 29110.249: tx-icmp rpl dio   dst:ff02::1a
+ 29110.249: [INFO][6lAd]: Adaptation layer TX queue size 220 Active MAC tx request 0
+ 29152.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 29164.248: [DBG ][wsbs]: -----PAN config confirm
+ 29212.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 29240.048: [DBG ][wsbs]: -----PAN config confirm
+ 29262.848: tx-icmp rpl dio   dst:ff02::1a
+ 29267.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 29277.748: [DBG ][wsbs]: -----PAN config confirm
+ 29330.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 29347.248: [DBG ][wsbs]: -----PAN config confirm
+ 29392.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 29409.148: tx-icmp rpl dio   dst:ff02::1a
+ 29412.248: [DBG ][wsbs]: -----PAN config confirm
+ 29453.548: [DBG ][wsbs]: -----PAN config confirm
+ 29458.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 29497.949: tx-icmp rpl dio   dst:ff02::1a
+ 29525.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 29537.249: [DBG ][wsbs]: -----PAN config confirm
+ 29579.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 29582.848: [DBG ][wsbs]: -----PAN config confirm
+ 29635.249: tx-icmp rpl dio   dst:ff02::1a
+ 29637.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 29657.448: [DBG ][wsbs]: -----PAN config confirm
+ 29702.148: [DBG ][wsbs]: -----PAN config confirm
+ 29709.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 29758.049: [DBG ][wsbs]: -----PAN advertize confirm
+ 29761.549: [DBG ][wsbs]: -----PAN config confirm
+ 29817.448: tx-icmp rpl dio   dst:ff02::1a
+ 29823.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 29840.248: [DBG ][wsbs]: -----PAN config confirm
+ 29873.048: [DBG ][wsbs]: -----PAN config confirm
+ 29886.349: [DBG ][wsbs]: -----PAN advertize confirm
+ 29910.548: tx-icmp rpl dio   dst:ff02::1a
+ 29946.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 29954.949: [DBG ][wsbs]: -----PAN config confirm
+ 29996.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 29997.848: [DBG ][wsbs]: -----PAN config confirm
+ 30055.248: [DBG ][wsbs]: -----PAN config confirm
+ 30061.449: [DBG ][wsbs]: -----PAN advertize confirm
+ 30067.648: tx-icmp rpl dio   dst:ff02::1a
+ 30120.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 30137.348: [DBG ][wsbs]: -----PAN config confirm
+ 30178.448: [DBG ][wsbs]: -----PAN config confirm
+ 30189.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 30194.148: tx-icmp rpl dio   dst:ff02::1a
+ 30233.149: [DBG ][wsbs]: -----PAN config confirm
+ 30242.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 30299.049: [DBG ][wsbs]: -----PAN config confirm
+ 30310.049: [DBG ][wsbs]: -----PAN advertize confirm
+ 30333.048: tx-icmp rpl dio   dst:ff02::1a
+ 30360.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 30377.349: [DBG ][wsbs]: -----PAN config confirm
+ 30413.348: [DBG ][wsbs]: -----PAN config confirm
+ 30417.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 30429.048: tx-icmp rpl dio   dst:ff02::1a
+ 30462.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 30476.848: [DBG ][wsbs]: -----PAN config confirm
+ 30521.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 30561.948: [DBG ][wsbs]: -----PAN config confirm
+ 30584.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 30596.748: tx-icmp rpl dio   dst:ff02::1a
+ 30603.048: [DBG ][wsbs]: -----PAN config confirm
+ 30646.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 30667.248: [DBG ][wsbs]: -----PAN config confirm
+ 30713.148: [DBG ][wsbs]: -----PAN config confirm
+ 30717.848: tx-icmp rpl dio   dst:ff02::1a
+ 30726.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 30776.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 30783.248: [DBG ][wsbs]: -----PAN config confirm
+ 30815.048: tx-icmp rpl dio   dst:ff02::1a
+ 30828.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 30837.348: [DBG ][wsbs]: -----PAN config confirm
+ 30901.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 30917.148: [DBG ][wsbs]: -----PAN config confirm
+ 30946.948: tx-icmp rpl dio   dst:ff02::1a
+ 30954.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 30978.048: [DBG ][wsbs]: -----PAN config confirm
+ 31005.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 31038.449: [DBG ][wsbs]: -----PAN config confirm
+ 31072.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 31074.248: [DBG ][wsbs]: -----PAN config confirm
+ 31120.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 31130.648: tx-icmp rpl dio   dst:ff02::1a
+ 31144.748: [DBG ][wsbs]: -----PAN config confirm
+ 31197.848: [DBG ][wsbs]: -----PAN config confirm
+ 31199.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 31229.548: tx-icmp rpl dio   dst:ff02::1a
+ 31241.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 31273.449: [DBG ][wsbs]: -----PAN config confirm
+ 31316.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 31337.848: [DBG ][wsbs]: -----PAN config confirm
+ 31371.649: [DBG ][wsbs]: -----PAN advertize confirm
+ 31381.848: tx-icmp rpl dio   dst:ff02::1a
+ 31400.348: [DBG ][wsbs]: -----PAN config confirm
+ 31426.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 31458.648: [DBG ][wsbs]: -----PAN config confirm
+ 31489.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 31491.048: tx-icmp rpl dio   dst:ff02::1a
+ 31496.249: [DBG ][wsbs]: -----PAN config confirm
+ 31558.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 31565.248: [DBG ][wsbs]: -----PAN config confirm
+ 31603.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 31612.048: tx-icmp rpl dio   dst:ff02::1a
+ 31640.548: [DBG ][wsbs]: -----PAN config confirm
+ 31664.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 31675.348: [DBG ][wsbs]: -----PAN config confirm
+ 31743.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 31756.448: [DBG ][wsbs]: -----PAN config confirm
+ 31781.148: tx-icmp rpl dio   dst:ff02::1a
+ 31781.148: [INFO][6lAd]: Adaptation layer TX queue size 240 Active MAC tx request 0
+ 31799.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 31818.048: [DBG ][wsbs]: -----PAN config confirm
+ 31857.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 31871.648: tx-icmp rpl dio   dst:ff02::1a
+ 31872.448: [DBG ][wsbs]: -----PAN config confirm
+ 31925.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 31935.048: [DBG ][wsbs]: -----PAN config confirm
+ 31964.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 31996.548: [DBG ][wsbs]: -----PAN config confirm
+ 32024.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 32033.048: tx-icmp rpl dio   dst:ff02::1a
+ 32036.948: [DBG ][wsbs]: -----PAN config confirm
+ 32100.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 32101.648: [DBG ][wsbs]: -----PAN config confirm
+ 32154.349: [DBG ][wsbs]: -----PAN config confirm
+ 32160.049: [DBG ][wsbs]: -----PAN advertize confirm
+ 32164.448: tx-icmp rpl dio   dst:ff02::1a
+ 32206.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 32217.949: [DBG ][wsbs]: -----PAN config confirm
+ 32281.149: tx-icmp rpl dio   dst:ff02::1a
+ 32287.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 32289.648: [DBG ][wsbs]: -----PAN config confirm
+ 32327.249: [DBG ][wsbs]: -----PAN advertize confirm
+ 32347.248: [DBG ][wsbs]: -----PAN config confirm
+ 32380.849: tx-icmp rpl dio   dst:ff02::1a
+ 32405.448: [INFO][wspa]: Active GTK lifetime 98, frame counter 99 percent, counter 1376
+ 32405.448: [INFO][wspa]: Frame counter change 0, max 19261
+ 32406.148: [DBG ][wsbs]: -----PAN config confirm
+ 32407.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 32437.148: tx-icmp rpl dio   dst:ff02::1a
+ 32450.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 32464.949: [DBG ][wsbs]: -----PAN config confirm
+ 32484.248: tx-icmp rpl dio   dst:ff02::1a
+ 32517.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 32529.548: [DBG ][wsbs]: -----PAN config confirm
+ 32583.048: [DBG ][wsbs]: -----PAN config confirm
+ 32590.549: [DBG ][wsbs]: -----PAN advertize confirm
+ 32592.248: tx-icmp rpl dio   dst:ff02::1a
+ 32633.848: [DBG ][wsbs]: -----PAN config confirm
+ 32642.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 32687.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 32709.648: [DBG ][wsbs]: -----PAN config confirm
+ 32743.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 32754.448: tx-icmp rpl dio   dst:ff02::1a
+ 32757.648: [DBG ][wsbs]: -----PAN config confirm
+ 32804.949: [DBG ][wsbs]: -----PAN advertize confirm
+ 32840.649: [DBG ][wsbs]: -----PAN config confirm
+ 32863.849: tx-icmp rpl dio   dst:ff02::1a
+ 32870.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 32896.748: [DBG ][wsbs]: -----PAN config confirm
+ 32930.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 32947.448: [DBG ][wsbs]: -----PAN config confirm
+ 32969.448: tx-icmp rpl dio   dst:ff02::1a
+ 32994.648: [DBG ][wsbs]: -----PAN config confirm
+ 33006.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 33065.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 33069.448: [DBG ][wsbs]: -----PAN config confirm
+ 33118.748: tx-icmp rpl dio   dst:ff02::1a
+ 33122.449: [DBG ][wsbs]: -----PAN config confirm
+ 33126.349: [DBG ][wsbs]: -----PAN advertize confirm
+ 33175.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 33195.448: [DBG ][wsbs]: -----PAN config confirm
+ 33237.149: [DBG ][wsbs]: -----PAN config confirm
+ 33239.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 33274.848: tx-icmp rpl dio   dst:ff02::1a
+ 33301.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 33309.348: [DBG ][wsbs]: -----PAN config confirm
+ 33355.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 33367.749: tx-icmp rpl dio   dst:ff02::1a
+ 33371.248: [DBG ][wsbs]: -----PAN config confirm
+ 33414.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 33432.748: [DBG ][wsbs]: -----PAN config confirm
+ 33463.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 33475.948: [DBG ][wsbs]: -----PAN config confirm
+ 33520.048: tx-icmp rpl dio   dst:ff02::1a
+ 33522.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 33541.748: [DBG ][wsbs]: -----PAN config confirm
+ 33589.249: [DBG ][wsbs]: -----PAN advertize confirm
+ 33615.948: [DBG ][wsbs]: -----PAN config confirm
+ 33659.248: [DBG ][wsbs]: -----PAN config confirm
+ 33664.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 33673.448: tx-icmp rpl dio   dst:ff02::1a
+ 33715.549: [DBG ][wsbs]: -----PAN config confirm
+ 33721.449: [DBG ][wsbs]: -----PAN advertize confirm
+ 33767.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 33776.548: [DBG ][wsbs]: -----PAN config confirm
+ 33805.248: tx-icmp rpl dio   dst:ff02::1a
+ 33843.549: [DBG ][wsbs]: -----PAN advertize confirm
+ 33851.848: [DBG ][wsbs]: -----PAN config confirm
+ 33885.448: tx-icmp rpl dio   dst:ff02::1a
+ 33889.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 33901.449: [DBG ][wsbs]: -----PAN config confirm
+ 33953.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 33970.348: [DBG ][wsbs]: -----PAN config confirm
+ 34014.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 34031.749: [DBG ][wsbs]: -----PAN config confirm
+ 34075.348: tx-icmp rpl dio   dst:ff02::1a
+ 34076.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 34091.748: [DBG ][wsbs]: -----PAN config confirm
+ 34134.848: [DBG ][wsbs]: -----PAN config confirm
+ 34142.749: tx-icmp rpl dio   dst:ff02::1a
+ 34142.749: [INFO][6lAd]: Adaptation layer TX queue size 260 Active MAC tx request 0
+ 34144.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 34209.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 34218.348: [DBG ][wsbs]: -----PAN config confirm
+ 34261.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 34262.248: [DBG ][wsbs]: -----PAN config confirm
+ 34291.048: tx-icmp rpl dio   dst:ff02::1a
+ 34307.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 34323.548: [DBG ][wsbs]: -----PAN config confirm
+ 34382.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 34383.149: [DBG ][wsbs]: -----PAN config confirm
+ 34429.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 34436.148: tx-icmp rpl dio   dst:ff02::1a
+ 34437.549: [DBG ][wsbs]: -----PAN config confirm
+ 34483.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 34503.348: [DBG ][wsbs]: -----PAN config confirm
+ 34548.648: tx-icmp rpl dio   dst:ff02::1a
+ 34556.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 34581.948: [DBG ][wsbs]: -----PAN config confirm
+ 34616.848: [DBG ][wsbs]: -----PAN config confirm
+ 34620.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 34672.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 34680.848: [DBG ][wsbs]: -----PAN config confirm
+ 34696.948: tx-icmp rpl dio   dst:ff02::1a
+ 34738.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 34741.148: [DBG ][wsbs]: -----PAN config confirm
+ 34789.649: [DBG ][wsbs]: -----PAN advertize confirm
+ 34799.248: [DBG ][wsbs]: -----PAN config confirm
+ 34807.148: tx-icmp rpl dio   dst:ff02::1a
+ 34853.048: [DBG ][wsbs]: -----PAN config confirm
+ 34861.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 34912.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 34938.648: [DBG ][wsbs]: -----PAN config confirm
+ 34939.148: tx-icmp rpl dio   dst:ff02::1a
+ 34965.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 34974.448: [DBG ][wsbs]: -----PAN config confirm
+ 35040.049: [DBG ][wsbs]: -----PAN advertize confirm
+ 35061.348: [DBG ][wsbs]: -----PAN config confirm
+ 35106.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 35120.149: [DBG ][wsbs]: -----PAN config confirm
+ 35120.748: tx-icmp rpl dio   dst:ff02::1a
+ 35144.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 35163.348: [DBG ][wsbs]: -----PAN config confirm
+ 35203.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 35213.848: tx-icmp rpl dio   dst:ff02::1a
+ 35240.749: [DBG ][wsbs]: -----PAN config confirm
+ 35277.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 35292.649: [DBG ][wsbs]: -----PAN config confirm
+ 35334.149: [DBG ][wsbs]: -----PAN advertize confirm
+ 35352.049: [DBG ][wsbs]: -----PAN config confirm
+ 35380.848: tx-icmp rpl dio   dst:ff02::1a
+ 35386.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 35407.348: [DBG ][wsbs]: -----PAN config confirm
+ 35460.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 35468.149: [DBG ][wsbs]: -----PAN config confirm
+ 35500.149: tx-icmp rpl dio   dst:ff02::1a
+ 35512.748: [DBG ][wsbs]: -----PAN config confirm
+ 35514.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 35576.149: [DBG ][wsbs]: -----PAN advertize confirm
+ 35586.248: [DBG ][wsbs]: -----PAN config confirm
+ 35619.648: tx-icmp rpl dio   dst:ff02::1a
+ 35642.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 35645.948: [DBG ][wsbs]: -----PAN config confirm
+ 35699.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 35717.748: [DBG ][wsbs]: -----PAN config confirm
+ 35754.448: tx-icmp rpl dio   dst:ff02::1a
+ 35755.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 35757.448: [DBG ][wsbs]: -----PAN config confirm
+ 35811.149: [DBG ][wsbs]: -----PAN advertize confirm
+ 35835.648: [DBG ][wsbs]: -----PAN config confirm
+ 35869.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 35877.348: [DBG ][wsbs]: -----PAN config confirm
+ 35899.748: tx-icmp rpl dio   dst:ff02::1a
+ 35920.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 35946.348: [DBG ][wsbs]: -----PAN config confirm
+ 36000.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 36005.448: [INFO][wspa]: Active GTK lifetime 98, frame counter 99 percent, counter 1376
+ 36005.448: [INFO][wspa]: Frame counter change 0, max 19261
+ 36021.449: [DBG ][wsbs]: -----PAN config confirm
+ 36037.548: tx-icmp rpl dio   dst:ff02::1a
+ 36061.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 36064.148: [DBG ][wsbs]: -----PAN config confirm
+ 36096.248: tx-icmp rpl dio   dst:ff02::1a
+ 36110.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 36125.148: [DBG ][wsbs]: -----PAN config confirm
+ 36190.149: [DBG ][wsbs]: -----PAN advertize confirm
+ 36193.649: [DBG ][wsbs]: -----PAN config confirm
+ 36221.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 36233.548: tx-icmp rpl dio   dst:ff02::1a
+ 36262.348: [DBG ][wsbs]: -----PAN config confirm
+ 36293.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 36302.048: [DBG ][wsbs]: -----PAN config confirm
+ 36349.048: tx-icmp rpl dio   dst:ff02::1a
+ 36354.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 36356.848: [DBG ][wsbs]: -----PAN config confirm
+ 36412.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 36420.648: [DBG ][wsbs]: -----PAN config confirm
+ 36465.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 36473.249: tx-icmp rpl dio   dst:ff02::1a
+ 36499.248: [DBG ][wsbs]: -----PAN config confirm
+ 36540.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 36542.448: [DBG ][wsbs]: -----PAN config confirm
+ 36593.248: [DBG ][wsbs]: -----PAN config confirm
+ 36605.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 36623.348: tx-icmp rpl dio   dst:ff02::1a
+ 36647.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 36657.749: [DBG ][wsbs]: -----PAN config confirm
+ 36721.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 36740.348: [DBG ][wsbs]: -----PAN config confirm
+ 36745.748: tx-icmp rpl dio   dst:ff02::1a
+ 36745.748: [INFO][6lAd]: Adaptation layer TX queue size 280 Active MAC tx request 0
+ 36761.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 36778.748: [DBG ][wsbs]: -----PAN config confirm
+ 36839.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 36840.148: [DBG ][wsbs]: -----PAN config confirm
+ 36879.448: tx-icmp rpl dio   dst:ff02::1a
+ 36905.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 36908.248: [DBG ][wsbs]: -----PAN config confirm
+ 36964.048: [DBG ][wsbs]: -----PAN config confirm
+ 36967.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 37011.549: tx-icmp rpl dio   dst:ff02::1a
+ 37018.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 37028.648: [DBG ][wsbs]: -----PAN config confirm
+ 37080.049: [DBG ][wsbs]: -----PAN config confirm
+ 37082.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 37087.348: tx-icmp rpl dio   dst:ff02::1a
+ 37137.448: [DBG ][wsbs]: -----PAN config confirm
+ 37147.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 37194.048: [DBG ][wsbs]: -----PAN config confirm
+ 37206.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 37225.148: tx-icmp rpl dio   dst:ff02::1a
+ 37244.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 37255.948: [DBG ][wsbs]: -----PAN config confirm
+ 37316.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 37318.648: [DBG ][wsbs]: -----PAN config confirm
+ 37375.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 37392.649: [DBG ][wsbs]: -----PAN config confirm
+ 37407.148: tx-icmp rpl dio   dst:ff02::1a
+ 37439.849: [DBG ][wsbs]: -----PAN advertize confirm
+ 37455.448: [DBG ][wsbs]: -----PAN config confirm
+ 37496.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 37496.548: [DBG ][wsbs]: -----PAN config confirm
+ 37541.748: tx-icmp rpl dio   dst:ff02::1a
+ 37562.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 37577.048: [DBG ][wsbs]: -----PAN config confirm
+ 37616.348: [DBG ][wsbs]: -----PAN config confirm
+ 37618.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 37627.248: tx-icmp rpl dio   dst:ff02::1a
+ 37663.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 37679.048: [DBG ][wsbs]: -----PAN config confirm
+ 37749.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 37762.348: [DBG ][wsbs]: -----PAN config confirm
+ 37792.848: tx-icmp rpl dio   dst:ff02::1a
+ 37796.349: [DBG ][wsbs]: -----PAN advertize confirm
+ 37818.648: [DBG ][wsbs]: -----PAN config confirm
+ 37863.548: [DBG ][wsbs]: -----PAN config confirm
+ 37865.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 37903.848: tx-icmp rpl dio   dst:ff02::1a
+ 37914.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 37930.948: [DBG ][wsbs]: -----PAN config confirm
+ 37962.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 37978.148: [DBG ][wsbs]: -----PAN config confirm
+ 38030.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 38047.849: tx-icmp rpl dio   dst:ff02::1a
+ 38059.948: [DBG ][wsbs]: -----PAN config confirm
+ 38095.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 38109.749: [DBG ][wsbs]: -----PAN config confirm
+ 38154.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 38173.648: [DBG ][wsbs]: -----PAN config confirm
+ 38174.748: tx-icmp rpl dio   dst:ff02::1a
+ 38216.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 38237.448: [DBG ][wsbs]: -----PAN config confirm
+ 38278.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 38280.448: tx-icmp rpl dio   dst:ff02::1a
+ 38296.048: [DBG ][wsbs]: -----PAN config confirm
+ 38330.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 38339.449: [DBG ][wsbs]: -----PAN config confirm
+ 38388.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 38418.548: [DBG ][wsbs]: -----PAN config confirm
+ 38432.448: tx-icmp rpl dio   dst:ff02::1a
+ 38459.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 38473.348: [DBG ][wsbs]: -----PAN config confirm
+ 38505.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 38512.648: [DBG ][wsbs]: -----PAN config confirm
+ 38547.548: tx-icmp rpl dio   dst:ff02::1a
+ 38568.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 38585.148: [DBG ][wsbs]: -----PAN config confirm
+ 38642.948: [DBG ][wsbs]: -----PAN config confirm
+ 38644.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 38681.948: tx-icmp rpl dio   dst:ff02::1a
+ 38699.448: [DBG ][wsbs]: -----PAN config confirm
+ 38700.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 38755.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 38779.548: [DBG ][wsbs]: -----PAN config confirm
+ 38809.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 38818.848: tx-icmp rpl dio   dst:ff02::1a
+ 38825.848: [DBG ][wsbs]: -----PAN config confirm
+ 38862.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 38896.748: [DBG ][wsbs]: -----PAN config confirm
+ 38933.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 38934.148: [DBG ][wsbs]: -----PAN config confirm
+ 38937.848: tx-icmp rpl dio   dst:ff02::1a
+ 38983.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 38999.348: [DBG ][wsbs]: -----PAN config confirm
+ 39056.548: [DBG ][wsbs]: -----PAN config confirm
+ 39059.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 39110.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 39112.548: tx-icmp rpl dio   dst:ff02::1a
+ 39113.848: [DBG ][wsbs]: -----PAN config confirm
+ 39180.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 39188.248: [DBG ][wsbs]: -----PAN config confirm
+ 39225.448: tx-icmp rpl dio   dst:ff02::1a
+ 39235.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 39236.948: [DBG ][wsbs]: -----PAN config confirm
+ 39289.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 39318.348: [DBG ][wsbs]: -----PAN config confirm
+ 39330.249: tx-icmp rpl dio   dst:ff02::1a
+ 39330.249: [INFO][6lAd]: Adaptation layer TX queue size 300 Active MAC tx request 0
+ 39364.648: [DBG ][wsbs]: -----PAN config confirm
+ 39368.849: [DBG ][wsbs]: -----PAN advertize confirm
+ 39415.448: [DBG ][wsbs]: -----PAN config confirm
+ 39430.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 39481.348: tx-icmp rpl dio   dst:ff02::1a
+ 39484.848: [DBG ][wsbs]: -----PAN config confirm
+ 39490.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 39534.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 39545.548: [DBG ][wsbs]: -----PAN config confirm
+ 39597.948: [DBG ][wsbs]: -----PAN config confirm
+ 39599.649: [DBG ][wsbs]: -----PAN advertize confirm
+ 39605.448: [INFO][wspa]: Active GTK lifetime 98, frame counter 99 percent, counter 1376
+ 39605.448: [INFO][wspa]: Frame counter change 0, max 19261
+ 39636.448: tx-icmp rpl dio   dst:ff02::1a
+ 39657.449: [DBG ][wsbs]: -----PAN advertize confirm
+ 39664.348: [DBG ][wsbs]: -----PAN config confirm
+ 39674.848: tx-icmp rpl dio   dst:ff02::1a
+ 39717.848: [DBG ][wsbs]: -----PAN config confirm
+ 39728.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 39776.648: [DBG ][wsbs]: -----PAN config confirm
+ 39781.949: [DBG ][wsbs]: -----PAN advertize confirm
+ 39801.548: tx-icmp rpl dio   dst:ff02::1a
+ 39823.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 39848.948: [DBG ][wsbs]: -----PAN config confirm
+ 39889.149: [DBG ][wsbs]: -----PAN advertize confirm
+ 39914.248: [DBG ][wsbs]: -----PAN config confirm
+ 39924.248: tx-icmp rpl dio   dst:ff02::1a
+ 39943.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 39972.848: [DBG ][wsbs]: -----PAN config confirm
+ 40027.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 40039.548: [DBG ][wsbs]: -----PAN config confirm
+ 40053.248: tx-icmp rpl dio   dst:ff02::1a
+ 40069.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 40095.749: [DBG ][wsbs]: -----PAN config confirm
+ 40130.949: [DBG ][wsbs]: -----PAN advertize confirm
+ 40155.348: [DBG ][wsbs]: -----PAN config confirm
+ 40166.748: tx-icmp rpl dio   dst:ff02::1a
+ 40201.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 40209.448: [DBG ][wsbs]: -----PAN config confirm
+ 40248.249: [DBG ][wsbs]: -----PAN advertize confirm
+ 40253.348: [DBG ][wsbs]: -----PAN config confirm
+ 40301.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 40327.448: [DBG ][wsbs]: -----PAN config confirm
+ 40339.148: tx-icmp rpl dio   dst:ff02::1a
+ 40364.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 40395.448: [DBG ][wsbs]: -----PAN config confirm
+ 40430.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 40451.748: [DBG ][wsbs]: -----PAN config confirm
+ 40472.749: tx-icmp rpl dio   dst:ff02::1a
+ 40485.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 40518.348: [DBG ][wsbs]: -----PAN config confirm
+ 40556.749: [DBG ][wsbs]: -----PAN advertize confirm
+ 40560.948: tx-icmp rpl dio   dst:ff02::1a
+ 40568.748: [DBG ][wsbs]: -----PAN config confirm
+ 40603.749: [DBG ][wsbs]: -----PAN advertize confirm
+ 40633.648: [DBG ][wsbs]: -----PAN config confirm
+ 40668.649: [DBG ][wsbs]: -----PAN advertize confirm
+ 40687.648: [DBG ][wsbs]: -----PAN config confirm
+ 40739.248: tx-icmp rpl dio   dst:ff02::1a
+ 40741.048: [DBG ][wsbs]: -----PAN config confirm
+ 40745.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 40793.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 40819.448: [DBG ][wsbs]: -----PAN config confirm
+ 40868.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 40870.448: [DBG ][wsbs]: -----PAN config confirm
+ 40871.148: tx-icmp rpl dio   dst:ff02::1a
+ 40912.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 40932.148: [DBG ][wsbs]: -----PAN config confirm
+ 40962.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 40977.149: [DBG ][wsbs]: -----PAN config confirm
+ 40992.348: tx-icmp rpl dio   dst:ff02::1a
+ 41033.948: [DBG ][wsbs]: -----PAN config confirm
+ 41047.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 41087.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 41115.548: tx-icmp rpl dio   dst:ff02::1a
+ 41121.548: [DBG ][wsbs]: -----PAN config confirm
+ 41147.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 41163.648: [DBG ][wsbs]: -----PAN config confirm
+ 41219.148: [DBG ][wsbs]: -----PAN config confirm
+ 41220.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 41271.048: tx-icmp rpl dio   dst:ff02::1a
+ 41289.748: [DBG ][wsbs]: -----PAN config confirm
+ 41290.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 41336.848: [DBG ][wsbs]: -----PAN config confirm
+ 41348.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 41359.448: tx-icmp rpl dio   dst:ff02::1a
+ 41383.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 41394.149: [DBG ][wsbs]: -----PAN config confirm
+ 41449.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 41457.448: [DBG ][wsbs]: -----PAN config confirm
+ 41492.548: tx-icmp rpl dio   dst:ff02::1a
+ 41506.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 41532.048: [DBG ][wsbs]: -----PAN config confirm
+ 41574.948: [DBG ][wsbs]: -----PAN config confirm
+ 41584.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 41619.148: tx-icmp rpl dio   dst:ff02::1a
+ 41650.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 41659.349: [DBG ][wsbs]: -----PAN config confirm
+ 41700.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 41705.648: [DBG ][wsbs]: -----PAN config confirm
+ 41755.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 41781.148: tx-icmp rpl dio   dst:ff02::1a
+ 41782.349: [DBG ][wsbs]: -----PAN config confirm
+ 41813.049: [DBG ][wsbs]: -----PAN advertize confirm
+ 41830.048: [DBG ][wsbs]: -----PAN config confirm
+ 41889.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 41891.848: [DBG ][wsbs]: -----PAN config confirm
+ 41910.649: tx-icmp rpl dio   dst:ff02::1a
+ 41910.649: [INFO][6lAd]: Adaptation layer TX queue size 320 Active MAC tx request 0
+ 41924.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 41933.548: [DBG ][wsbs]: -----PAN config confirm
+ 41990.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 42015.449: [DBG ][wsbs]: -----PAN config confirm
+ 42042.448: tx-icmp rpl dio   dst:ff02::1a
+ 42046.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 42060.948: [DBG ][wsbs]: -----PAN config confirm
+ 42109.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 42124.848: [DBG ][wsbs]: -----PAN config confirm
+ 42150.449: tx-icmp rpl dio   dst:ff02::1a
+ 42179.350: [DBG ][wsbs]: -----PAN advertize confirm
+ 42193.848: [DBG ][wsbs]: -----PAN config confirm
+ 42220.949: [DBG ][wsbs]: -----PAN advertize confirm
+ 42248.548: [DBG ][wsbs]: -----PAN config confirm
+ 42294.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 42306.348: tx-icmp rpl dio   dst:ff02::1a
+ 42306.649: [DBG ][wsbs]: -----PAN config confirm
+ 42350.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 42360.648: [DBG ][wsbs]: -----PAN config confirm
+ 42407.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 42414.948: tx-icmp rpl dio   dst:ff02::1a
+ 42420.848: [DBG ][wsbs]: -----PAN config confirm
+ 42467.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 42489.348: [DBG ][wsbs]: -----PAN config confirm
+ 42535.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 42538.948: tx-icmp rpl dio   dst:ff02::1a
+ 42540.048: [DBG ][wsbs]: -----PAN config confirm
+ 42599.049: [DBG ][wsbs]: -----PAN advertize confirm
+ 42609.248: [DBG ][wsbs]: -----PAN config confirm
+ 42652.848: [DBG ][wsbs]: -----PAN config confirm
+ 42665.848: tx-icmp rpl dio   dst:ff02::1a
+ 42668.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 42715.248: [DBG ][wsbs]: -----PAN config confirm
+ 42716.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 42779.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 42789.348: [DBG ][wsbs]: -----PAN config confirm
+ 42829.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 42833.848: tx-icmp rpl dio   dst:ff02::1a
+ 42848.548: [DBG ][wsbs]: -----PAN config confirm
+ 42892.749: [DBG ][wsbs]: -----PAN config confirm
+ 42900.749: [DBG ][wsbs]: -----PAN advertize confirm
+ 42948.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 42961.148: [DBG ][wsbs]: -----PAN config confirm
+ 42978.748: tx-icmp rpl dio   dst:ff02::1a
+ 43020.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 43030.549: [DBG ][wsbs]: -----PAN config confirm
+ 43065.849: [DBG ][wsbs]: -----PAN advertize confirm
+ 43082.949: [DBG ][wsbs]: -----PAN config confirm
+ 43083.149: tx-icmp rpl dio   dst:ff02::1a
+ 43137.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 43159.448: [DBG ][wsbs]: -----PAN config confirm
+ 43185.748: tx-icmp rpl dio   dst:ff02::1a
+ 43205.448: [INFO][wspa]: Active GTK lifetime 98, frame counter 99 percent, counter 1376
+ 43205.448: [INFO][wspa]: Frame counter change 0, max 19261
+ 43208.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 43211.348: [DBG ][wsbs]: -----PAN config confirm
+ 43235.248: tx-icmp rpl dio   dst:ff02::1a
+ 43267.148: [DBG ][wsbs]: -----PAN config confirm
+ 43269.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 43303.248: tx-icmp rpl dio   dst:ff02::1a
+ 43309.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 43335.148: [DBG ][wsbs]: -----PAN config confirm
+ 43364.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 43379.148: [DBG ][wsbs]: -----PAN config confirm
+ 43433.448: tx-icmp rpl dio   dst:ff02::1a
+ 43445.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 43457.748: [DBG ][wsbs]: -----PAN config confirm
+ 43493.348: [DBG ][wsbs]: -----PAN config confirm
+ 43507.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 43513.748: tx-icmp rpl dio   dst:ff02::1a
+ 43551.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 43575.848: [DBG ][wsbs]: -----PAN config confirm
+ 43618.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 43625.948: [DBG ][wsbs]: -----PAN config confirm
+ 43673.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 43679.349: [DBG ][wsbs]: -----PAN config confirm
+ 43686.748: tx-icmp rpl dio   dst:ff02::1a
+ 43733.948: [DBG ][wsbs]: -----PAN config confirm
+ 43741.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 43784.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 43800.749: [DBG ][wsbs]: -----PAN config confirm
+ 43804.448: tx-icmp rpl dio   dst:ff02::1a
+ 43850.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 43862.348: [DBG ][wsbs]: -----PAN config confirm
+ 43915.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 43928.448: tx-icmp rpl dio   dst:ff02::1a
+ 43928.848: [DBG ][wsbs]: -----PAN config confirm
+ 43980.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 43994.848: [DBG ][wsbs]: -----PAN config confirm
+ 44032.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 44037.048: tx-icmp rpl dio   dst:ff02::1a
+ 44038.348: [DBG ][wsbs]: -----PAN config confirm
+ 44108.349: [DBG ][wsbs]: -----PAN advertize confirm
+ 44116.048: [DBG ][wsbs]: -----PAN config confirm
+ 44151.749: [DBG ][wsbs]: -----PAN advertize confirm
+ 44155.448: [DBG ][wsbs]: -----PAN config confirm
+ 44173.148: tx-icmp rpl dio   dst:ff02::1a
+ 44212.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 44223.149: [DBG ][wsbs]: -----PAN config confirm
+ 44287.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 44301.548: [DBG ][wsbs]: -----PAN config confirm
+ 44333.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 44350.948: tx-icmp rpl dio   dst:ff02::1a
+ 44350.948: [INFO][6lAd]: Adaptation layer TX queue size 340 Active MAC tx request 0
+ 44353.148: [DBG ][wsbs]: -----PAN config confirm
+ 44393.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 44403.948: [DBG ][wsbs]: -----PAN config confirm
+ 44418.448: tx-icmp rpl dio   dst:ff02::1a
+ 44457.049: [DBG ][wsbs]: -----PAN advertize confirm
+ 44463.748: [DBG ][wsbs]: -----PAN config confirm
+ 44507.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 44525.148: [DBG ][wsbs]: -----PAN config confirm
+ 44553.748: tx-icmp rpl dio   dst:ff02::1a
+ 44561.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 44599.049: [DBG ][wsbs]: -----PAN config confirm
+ 44627.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 44655.148: [DBG ][wsbs]: -----PAN config confirm
+ 44687.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 44700.549: [DBG ][wsbs]: -----PAN config confirm
+ 44724.448: tx-icmp rpl dio   dst:ff02::1a
+ 44752.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 44757.848: [DBG ][wsbs]: -----PAN config confirm
+ 44813.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 44837.048: [DBG ][wsbs]: -----PAN config confirm
+ 44851.649: tx-icmp rpl dio   dst:ff02::1a
+ 44862.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 44902.249: [DBG ][wsbs]: -----PAN config confirm
+ 44941.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 44955.548: [DBG ][wsbs]: -----PAN config confirm
+ 44976.649: tx-icmp rpl dio   dst:ff02::1a
+ 44993.849: [DBG ][wsbs]: -----PAN config confirm
+ 45000.849: [DBG ][wsbs]: -----PAN advertize confirm
+ 45042.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 45057.648: [DBG ][wsbs]: -----PAN config confirm
+ 45113.048: [DBG ][wsbs]: -----PAN config confirm
+ 45117.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 45123.348: tx-icmp rpl dio   dst:ff02::1a
+ 45170.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 45202.448: [DBG ][wsbs]: -----PAN config confirm
+ 45226.348: tx-icmp rpl dio   dst:ff02::1a
+ 45242.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 45258.349: [DBG ][wsbs]: -----PAN config confirm
+ 45293.948: [DBG ][wsbs]: -----PAN config confirm
+ 45303.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 45355.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 45356.948: tx-icmp rpl dio   dst:ff02::1a
+ 45374.148: [DBG ][wsbs]: -----PAN config confirm
+ 45412.849: [DBG ][wsbs]: -----PAN config confirm
+ 45427.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 45470.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 45476.848: [DBG ][wsbs]: -----PAN config confirm
+ 45484.648: tx-icmp rpl dio   dst:ff02::1a
+ 45546.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 45556.648: [DBG ][wsbs]: -----PAN config confirm
+ 45595.149: [DBG ][wsbs]: -----PAN advertize confirm
+ 45610.748: tx-icmp rpl dio   dst:ff02::1a
+ 45619.048: [DBG ][wsbs]: -----PAN config confirm
+ 45662.149: [DBG ][wsbs]: -----PAN advertize confirm
+ 45679.748: [DBG ][wsbs]: -----PAN config confirm
+ 45720.248: [DBG ][wsbs]: -----PAN config confirm
+ 45724.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 45766.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 45785.648: tx-icmp rpl dio   dst:ff02::1a
+ 45795.048: [DBG ][wsbs]: -----PAN config confirm
+ 45843.448: [DBG ][wsbs]: -----PAN config confirm
+ 45847.449: [DBG ][wsbs]: -----PAN advertize confirm
+ 45887.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 45899.148: tx-icmp rpl dio   dst:ff02::1a
+ 45916.648: [DBG ][wsbs]: -----PAN config confirm
+ 45948.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 45959.148: [DBG ][wsbs]: -----PAN config confirm
+ 46007.048: tx-icmp rpl dio   dst:ff02::1a
+ 46020.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 46024.348: [DBG ][wsbs]: -----PAN config confirm
+ 46080.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 46094.848: [DBG ][wsbs]: -----PAN config confirm
+ 46121.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 46151.348: [DBG ][wsbs]: -----PAN config confirm
+ 46183.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 46186.748: tx-icmp rpl dio   dst:ff02::1a
+ 46206.048: [DBG ][wsbs]: -----PAN config confirm
+ 46256.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 46262.348: [DBG ][wsbs]: -----PAN config confirm
+ 46302.448: tx-icmp rpl dio   dst:ff02::1a
+ 46313.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 46333.548: [DBG ][wsbs]: -----PAN config confirm
+ 46379.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 46395.148: [DBG ][wsbs]: -----PAN config confirm
+ 46403.449: tx-icmp rpl dio   dst:ff02::1a
+ 46424.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 46449.848: [DBG ][wsbs]: -----PAN config confirm
+ 46504.248: [DBG ][wsbs]: -----PAN config confirm
+ 46510.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 46566.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 46566.748: tx-icmp rpl dio   dst:ff02::1a
+ 46571.048: [DBG ][wsbs]: -----PAN config confirm
+ 46616.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 46623.148: [DBG ][wsbs]: -----PAN config confirm
+ 46651.649: tx-icmp rpl dio   dst:ff02::1a
+ 46666.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 46691.948: [DBG ][wsbs]: -----PAN config confirm
+ 46739.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 46757.249: [DBG ][wsbs]: -----PAN config confirm
+ 46793.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 46805.448: [INFO][wspa]: Active GTK lifetime 98, frame counter 99 percent, counter 1376
+ 46805.448: [INFO][wspa]: Frame counter change 0, max 19261
+ 46821.048: [DBG ][wsbs]: -----PAN config confirm
+ 46829.548: tx-icmp rpl dio   dst:ff02::1a
+ 46843.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 46880.648: tx-icmp rpl dio   dst:ff02::1a
+ 46880.648: [INFO][6lAd]: Adaptation layer TX queue size 360 Active MAC tx request 0
+ 46880.948: [DBG ][wsbs]: -----PAN config confirm
+ 46913.448: [DBG ][wsbs]: -----PAN config confirm
+ 46923.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 46966.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 46986.148: tx-icmp rpl dio   dst:ff02::1a
+ 46990.648: [DBG ][wsbs]: -----PAN config confirm
+ 47022.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 47061.249: [DBG ][wsbs]: -----PAN config confirm
+ 47082.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 47093.748: [DBG ][wsbs]: -----PAN config confirm
+ 47148.849: tx-icmp rpl dio   dst:ff02::1a
+ 47165.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 47172.049: [DBG ][wsbs]: -----PAN config confirm
+ 47216.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 47226.348: [DBG ][wsbs]: -----PAN config confirm
+ 47270.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 47276.048: tx-icmp rpl dio   dst:ff02::1a
+ 47288.548: [DBG ][wsbs]: -----PAN config confirm
+ 47332.249: [DBG ][wsbs]: -----PAN advertize confirm
+ 47359.948: [DBG ][wsbs]: -----PAN config confirm
+ 47382.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 47421.048: [DBG ][wsbs]: -----PAN config confirm
+ 47424.948: tx-icmp rpl dio   dst:ff02::1a
+ 47442.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 47463.948: [DBG ][wsbs]: -----PAN config confirm
+ 47515.048: tx-icmp rpl dio   dst:ff02::1a
+ 47526.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 47529.649: [DBG ][wsbs]: -----PAN config confirm
+ 47584.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 47585.348: [DBG ][wsbs]: -----PAN config confirm
+ 47639.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 47643.048: [DBG ][wsbs]: -----PAN config confirm
+ 47669.548: tx-icmp rpl dio   dst:ff02::1a
+ 47685.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 47712.149: [DBG ][wsbs]: -----PAN config confirm
+ 47754.949: [DBG ][wsbs]: -----PAN advertize confirm
+ 47770.148: [DBG ][wsbs]: -----PAN config confirm
+ 47796.948: tx-icmp rpl dio   dst:ff02::1a
+ 47814.248: [DBG ][wsbs]: -----PAN config confirm
+ 47816.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 47865.349: [DBG ][wsbs]: -----PAN advertize confirm
+ 47889.049: [DBG ][wsbs]: -----PAN config confirm
+ 47889.548: tx-icmp rpl dio   dst:ff02::1a
+ 47929.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 47939.048: [DBG ][wsbs]: -----PAN config confirm
+ 48001.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 48020.948: [DBG ][wsbs]: -----PAN config confirm
+ 48041.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 48069.448: [DBG ][wsbs]: -----PAN config confirm
+ 48077.348: tx-icmp rpl dio   dst:ff02::1a
+ 48122.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 48131.548: [DBG ][wsbs]: -----PAN config confirm
+ 48160.948: tx-icmp rpl dio   dst:ff02::1a
+ 48182.849: [DBG ][wsbs]: -----PAN advertize confirm
+ 48189.649: [DBG ][wsbs]: -----PAN config confirm
+ 48221.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 48238.448: [DBG ][wsbs]: -----PAN config confirm
+ 48284.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 48298.948: [DBG ][wsbs]: -----PAN config confirm
+ 48336.348: tx-icmp rpl dio   dst:ff02::1a
+ 48346.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 48379.449: [DBG ][wsbs]: -----PAN config confirm
+ 48428.148: tx-icmp rpl dio   dst:ff02::1a
+ 48429.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 48436.248: [DBG ][wsbs]: -----PAN config confirm
+ 48470.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 48477.248: [DBG ][wsbs]: -----PAN config confirm
+ 48536.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 48542.948: [DBG ][wsbs]: -----PAN config confirm
+ 48599.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 48602.448: [DBG ][wsbs]: -----PAN config confirm
+ 48604.848: tx-icmp rpl dio   dst:ff02::1a
+ 48662.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 48664.648: [DBG ][wsbs]: -----PAN config confirm
+ 48694.949: tx-icmp rpl dio   dst:ff02::1a
+ 48721.848: [DBG ][wsbs]: -----PAN config confirm
+ 48727.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 48761.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 48779.549: [DBG ][wsbs]: -----PAN config confirm
+ 48821.848: tx-icmp rpl dio   dst:ff02::1a
+ 48843.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 48846.448: [DBG ][wsbs]: -----PAN config confirm
+ 48893.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 48913.348: [DBG ][wsbs]: -----PAN config confirm
+ 48939.648: tx-icmp rpl dio   dst:ff02::1a
+ 48957.449: [DBG ][wsbs]: -----PAN advertize confirm
+ 48969.549: [DBG ][wsbs]: -----PAN config confirm
+ 49026.548: [DBG ][wsbs]: -----PAN config confirm
+ 49029.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 49064.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 49069.849: tx-icmp rpl dio   dst:ff02::1a
+ 49082.748: [DBG ][wsbs]: -----PAN config confirm
+ 49136.248: [DBG ][wsbs]: -----PAN config confirm
+ 49142.949: [DBG ][wsbs]: -----PAN advertize confirm
+ 49194.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 49216.149: [DBG ][wsbs]: -----PAN config confirm
+ 49245.249: tx-icmp rpl dio   dst:ff02::1a
+ 49255.648: [DBG ][wsbs]: -----PAN advertize confirm
+ 49262.948: [DBG ][wsbs]: -----PAN config confirm
+ 49323.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 49338.048: [DBG ][wsbs]: -----PAN config confirm
+ 49378.649: [DBG ][wsbs]: -----PAN advertize confirm
+ 49379.548: tx-icmp rpl dio   dst:ff02::1a
+ 49388.848: [DBG ][wsbs]: -----PAN config confirm
+ 49440.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 49445.049: [DBG ][wsbs]: -----PAN config confirm
+ 49505.049: [DBG ][wsbs]: -----PAN config confirm
+ 49510.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 49524.748: tx-icmp rpl dio   dst:ff02::1a
+ 49524.748: [INFO][6lAd]: Adaptation layer TX queue size 380 Active MAC tx request 0
+ 49563.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 49564.348: [DBG ][wsbs]: -----PAN config confirm
+ 49603.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 49610.848: tx-icmp rpl dio   dst:ff02::1a
+ 49636.849: [DBG ][wsbs]: -----PAN config confirm
+ 49671.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 49701.148: [DBG ][wsbs]: -----PAN config confirm
+ 49736.849: [DBG ][wsbs]: -----PAN advertize confirm
+ 49740.348: [DBG ][wsbs]: -----PAN config confirm
+ 49760.048: tx-icmp rpl dio   dst:ff02::1a
+ 49788.548: [DBG ][wsbs]: -----PAN advertize confirm
+ 49793.949: [DBG ][wsbs]: -----PAN config confirm
+ 49854.649: [DBG ][wsbs]: -----PAN config confirm
+ 49869.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 49899.148: tx-icmp rpl dio   dst:ff02::1a
+ 49910.249: [DBG ][wsbs]: -----PAN advertize confirm
+ 49913.848: [DBG ][wsbs]: -----PAN config confirm
+ 49964.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 49989.448: tx-icmp rpl dio   dst:ff02::1a
+ 49998.048: [DBG ][wsbs]: -----PAN config confirm
+ 50039.448: [DBG ][wsbs]: -----PAN config confirm
+ 50041.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 50095.948: [DBG ][wsbs]: -----PAN config confirm
+ 50102.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 50130.548: tx-icmp rpl dio   dst:ff02::1a
+ 50161.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 50165.548: [DBG ][wsbs]: -----PAN config confirm
+ 50207.148: [DBG ][wsbs]: -----PAN advertize confirm
+ 50241.848: [DBG ][wsbs]: -----PAN config confirm
+ 50275.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 50282.849: tx-icmp rpl dio   dst:ff02::1a
+ 50285.148: [DBG ][wsbs]: -----PAN config confirm
+ 50338.348: [DBG ][wsbs]: -----PAN config confirm
+ 50349.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 50405.448: [INFO][wspa]: Active GTK lifetime 98, frame counter 99 percent, counter 1376
+ 50405.448: [INFO][wspa]: Frame counter change 0, max 19261
+ 50408.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 50416.749: [DBG ][wsbs]: -----PAN config confirm
+ 50436.948: tx-icmp rpl dio   dst:ff02::1a
+ 50441.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 50458.548: [DBG ][wsbs]: -----PAN config confirm
+ 50484.148: tx-icmp rpl dio   dst:ff02::1a
+ 50515.448: [DBG ][wsbs]: -----PAN config confirm
+ 50527.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 50564.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 50581.148: [DBG ][wsbs]: -----PAN config confirm
+ 50583.948: tx-icmp rpl dio   dst:ff02::1a
+ 50634.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 50653.848: [DBG ][wsbs]: -----PAN config confirm
+ 50700.848: [DBG ][wsbs]: -----PAN config confirm
+ 50708.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 50709.248: tx-icmp rpl dio   dst:ff02::1a
+ 50752.948: [DBG ][wsbs]: -----PAN advertize confirm
+ 50771.649: [DBG ][wsbs]: -----PAN config confirm
+ 50821.448: [DBG ][wsbs]: -----PAN advertize confirm
+ 50841.148: [DBG ][wsbs]: -----PAN config confirm
+ 50884.048: [DBG ][wsbs]: -----PAN advertize confirm
+ 50894.848: tx-icmp rpl dio   dst:ff02::1a
+ 50896.448: [DBG ][wsbs]: -----PAN config confirm
+ 50941.748: [DBG ][wsbs]: -----PAN advertize confirm
+ 50949.348: [DBG ][wsbs]: -----PAN config confirm
+ 50963.648: tx-icmp rpl dio   dst:ff02::1a
+ 50995.848: [DBG ][wsbs]: -----PAN advertize confirm
+ 51011.448: [DBG ][wsbs]: -----PAN config confirm
+ 51046.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 51070.448: [DBG ][wsbs]: -----PAN config confirm
+ 51099.748: tx-icmp rpl dio   dst:ff02::1a
+ 51116.348: [DBG ][wsbs]: -----PAN advertize confirm
+ 51126.948: [DBG ][wsbs]: -----PAN config confirm
+ 51172.248: [DBG ][wsbs]: -----PAN advertize confirm
+ 51176.249: [DBG ][wsbs]: -----PAN config confirm
+ 51232.449: [DBG ][wsbs]: -----PAN advertize confirm
+ 51252.648: tx-icmp rpl dio   dst:ff02::1a
+ 51256.848: [DBG ][wsbs]: -----PAN config confirm
+ 51297.348: [DBG ][wsbs]: -----PAN advertize confirm

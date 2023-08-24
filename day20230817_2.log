@@ -1,0 +1,5044 @@
+Silicon Labs Wi-SUN border router v1.5.3-23-ga79271ce-dirty
+     0.628: [INFO][wspa]: ---------------------NOOP----
+Connected to RCP "CMT rcp develop" (2.2.2), API 0.6.0
+     0.677: [INFO][lNet]: ---------------arm_nwk_interface_configure_6lowpan_bootstrap_set----------------
+     0.677: [INFO][wsbs]: --------------------ws_bootstrap_init----------------------
+     0.677: [INFO][wsbs]: -------ws_bootstrap_tasklet_init-------
+     0.677: [INFO][wspt]: (L)GTK timers revocation lifetime: 86400, new activation time: 3600, time to update: 82800
+     0.677: [INFO][wspt]: (L)GTK timers revocation lifetime: 259200, new activation time: 43200, time to update: 216000
+     0.677: [INFO][wspa]: -----------------start-----wsbr_configure_ws-----------------------
+     0.677: [INFO][wsmg]: ----UC dewell time set: 15ms
+     0.677: [INFO][wspa]: ----forced GTK ca:c5:18:1b:83:3b:a7:2c:87:0f:e4:63:b2:71:13:e2
+     0.677: [INFO][wspa]: ----forced GTK 43:4e:25:92:90:21:4b:1b:f7:af:c9:7c:48:50:d3:69
+     0.677: [INFO][wspa]: ----forced GTK cd:d0:42:92:2c:76:2d:02:cb:36:02:fc:23:7f:7e:34
+     0.677: [INFO][wspa]: ----forced GTK bd:8a:45:11:17:89:ff:9c:31:64:30:4f:85:50:ba:9d
+     0.677: [INFO][wspc]: --------------run into ws_pae_controller_gtk_update----------
+     0.677: [INFO][spke]: ----set gdk: ca:c5:18:1b:83:3b:a7:2c:87:0f:e4:63:b2:71:13:e2
+     0.677: [INFO][wspc]: GTK set index: 0, lifetime 2592000, system time: 0
+     0.677: [INFO][spke]: ----set gdk: 43:4e:25:92:90:21:4b:1b:f7:af:c9:7c:48:50:d3:69
+     0.677: [INFO][wspc]: GTK set index: 1, lifetime 5184000, system time: 0
+     0.677: [INFO][spke]: ----set gdk: cd:d0:42:92:2c:76:2d:02:cb:36:02:fc:23:7f:7e:34
+     0.677: [INFO][wspc]: GTK set index: 2, lifetime 7776000, system time: 0
+     0.677: [INFO][spke]: ----set gdk: bd:8a:45:11:17:89:ff:9c:31:64:30:4f:85:50:ba:9d
+     0.677: [INFO][wspc]: GTK set index: 3, lifetime 10368000, system time: 0
+     0.677: [INFO][wspc]: -------sets active key: index=0
+     0.677: [INFO][wspc]: -----!----ws_pae_controller_next_gtk_update---------
+     0.677: [INFO][wspc]: ----insert new keys: ca:c5:18:1b:83:3b:a7:2c:87:0f:e4:63:b2:71:13:e2
+     0.677: [INFO][spke]: ----set gdk: ca:c5:18:1b:83:3b:a7:2c:87:0f:e4:63:b2:71:13:e2
+     0.677: [INFO][wspc]: ----insert new keys: 43:4e:25:92:90:21:4b:1b:f7:af:c9:7c:48:50:d3:69
+     0.677: [INFO][spke]: ----set gdk: 43:4e:25:92:90:21:4b:1b:f7:af:c9:7c:48:50:d3:69
+     0.677: [INFO][wspc]: ----insert new keys: cd:d0:42:92:2c:76:2d:02:cb:36:02:fc:23:7f:7e:34
+     0.677: [INFO][spke]: ----set gdk: cd:d0:42:92:2c:76:2d:02:cb:36:02:fc:23:7f:7e:34
+     0.677: [INFO][wspc]: ----insert new keys: bd:8a:45:11:17:89:ff:9c:31:64:30:4f:85:50:ba:9d
+     0.677: [INFO][spke]: ----set gdk: bd:8a:45:11:17:89:ff:9c:31:64:30:4f:85:50:ba:9d
+     0.677: [INFO][wspa]: -----------------finish-----wsbr_configure_ws-----------------------
+     0.677: [DBG ][BBRw]: Read BSI 34542 from NVM
+     0.677: [DBG ][BBRw]: Read PAN ID 65535 from NVM
+     0.677: [INFO][addr]: Address added to IF 1: fe80::602e:a459:3f30:9b51
+     0.677: [DBG ][addr]: LL64 Register OK!
+     0.677: [INFO][rout]: Added route:
+     0.677: [DBG ][rout]:                  fe80:/64 if:1 src:'Static' id:0 lifetime:infinite
+     0.677: [DBG ][rout]:      On-link (met 128)
+     0.677: [INFO][rout]: Added route:
+     0.677: [DBG ][rout]:                   ff00:/8 if:1 src:'Static' id:0 lifetime:infinite
+     0.677: [DBG ][rout]:      On-link (met 192)
+     0.677: [INFO][rout]: Added route:
+     0.677: [DBG ][rout]:  fd00:6868:6868::602e:a459:3f30:9b51/128 if:1 src:'Loopback' id:0 lifetime:infinite
+     0.677: [DBG ][rout]:      On-link (met 128)
+     0.677: [INFO][addr]: Address added to IF 1: fd00:6868:6868::602e:a459:3f30:9b51
+Wi-SUN Border Router is ready
+     0.677: [DBG ][wsbs]: global unicast address of interface ws0 is fd00:6868:6868::602e:a459:3f30:9b51
+     0.677: [INFO][wsbs]: ------------ws_bootstrap_event_handler--------------
+     0.677: [INFO][wsbs]: ------------ws_bootstrap_6lbr_event_handler--------------
+     0.677: [DBG ][wsbs]: Tasklet init
+     0.677: [INFO][wsbs]: ------------ws_bootstrap_event_handler--------------
+     0.677: [INFO][wsbs]: ------------ws_bootstrap_6lbr_event_handler--------------
+     0.677: [INFO][wsbs]: Discovery start
+     0.677: [INFO][wsbs]: Wi-SUN packet congestion minTh 450, maxTh 900, drop probability 10 weight 32, Packet/Seconds 15
+     0.678: [INFO][wspc]: Read frame counter: index 0 value 90000000
+     0.678: [INFO][wspc]: Read frame counter: index 1 value 19000000
+     0.678: [INFO][wspc]: Read frame counter: index 2 value 19000000
+     0.678: [INFO][wspc]: Read frame counter: index 3 value 19000000
+     0.678: [WARN][wspc]: NVM EUI-64 mismatch, current: 62:2e:a4:59:3f:30:9b:51 stored: ae:46:1f:fb:5a:51:eb:cc
+     0.678: [DBG ][BBRw]: Border router version number update
+     0.678: [DBG ][BBRw]: Border router LFN version number update
+     0.678: [DBG ][BBRw]: Border router version number update
+  domain: NA
+  class: 0x3
+  mode: 0x5
+  phy operating modes: disabled
+  RCP configuration index: not supported
+  channel 0 frequency: 902.6MHz
+  channel spacing: 600kHz
+  channel count: 42
+  channel masks:
+               advertised         effective         
+     unicast   --                 00:00:00:00:00:fc 
+     broadcast --                 00:00:00:00:00:fc 
+     async     --                 00:00:00:00:00:fc 
+     0.678: [INFO][wspc]: ----------------ws_pae_controller_authenticator_start--------------------
+     0.678: [INFO][wspc]: -----------------ws_pae_auth_start------------
+     0.678: [INFO][wspa]: -----1
+     0.678: [INFO][wspa]: ----next_gtk_index = 0
+     0.678: [INFO][spke]: ----set gdk: ca:c5:18:1b:83:3b:a7:2c:87:0f:e4:63:b2:71:13:e2
+     0.678: [INFO][wspa]: ----installed GDK: ca:c5:18:1b:83:3b:a7:2c:87:0f:e4:63:b2:71:13:e2
+     0.678: [INFO][spke]: ----set gdk: ca:c5:18:1b:83:3b:a7:2c:87:0f:e4:63:b2:71:13:e2
+     0.678: [INFO][wspa]: GTK install new index: 0, lifetime: 2592000 system time: 0
+     0.678: [INFO][wspa]: -----2
+     0.678: [INFO][wspa]: ----next_gtk_index = -1
+     0.678: [INFO][wspa]: ----installed GDK: 33:ac:39:cb:86:f2:a7:f3:a9:ac:f1:fd:72:1e:17:da
+     0.678: [INFO][spke]: ----set gdk: 33:ac:39:cb:86:f2:a7:f3:a9:ac:f1:fd:72:1e:17:da
+     0.678: [INFO][wspa]: LGTK install new index: 0, lifetime: 7776000 system time: 0
+     0.678: [INFO][wspc]: GTK hash set fd:c4:1f:58:bd:a5:29:b9 00:00:00:00:00:00:00:00 00:00:00:00:00:00:00:00 00:00:00:00:00:00:00:00
+     0.678: [INFO][wspc]: NW key set: 0, hash: fd:c4:1f:58:bd:a5:29:b9
+     0.678: [DBG ][wspc]: Frame counter set: 0, stored 90000000 current: 0
+     0.678: [INFO][wspc]: LGTK hash set b9:00:80:c8:14:de:a4:c6 00:00:00:00:00:00:00:00 00:00:00:00:00:00:00:00 00:00:00:00:00:00:00:00
+     0.678: [INFO][wspc]: NW key set: 4, hash: b9:00:80:c8:14:de:a4:c6
+     0.678: [DBG ][wspc]: Stored frame counters, active key set: index 0 value 90000000
+     0.678: [INFO][wspc]: NW send key index set: 0
+     0.678: [DBG ][wspc]: Pending to store new frame counter: index 0 value 0
+     0.678: [DBG ][wspc]: Stored frame counters, active key set: index 0 value 0
+     0.679: [INFO][wspc]: NW send key index set: 4
+     0.679: [INFO][wsbs]: ------------ws_bootstrap_event_handler--------------
+     0.679: [INFO][wsbs]: ------------ws_bootstrap_6lbr_event_handler--------------
+     0.679: [INFO][wsbs]: Operation start
+     0.679: [DBG ][wsbs]: RPL Activate
+     0.679: [INFO][wsbs]: ------------ws_bootstrap_event_handler--------------
+     0.679: [INFO][wsbs]: ------------ws_bootstrap_6lbr_event_handler--------------
+     0.679: [INFO][wsbs]: Routing ready
+Successfully registered to system DBus
+     0.778: [INFO][wsbs]: WS SM:Bootstrap Done
+     1.678: [INFO][BBRw]: BBR Static DODAGID fd00:6868:6868::602e:a459:3f30:9b51
+     1.678: [INFO][BBRw]: RPL root start
+     1.678: [INFO][BBRw]: start using backup prefix fd00:6868:6868:/64
+     1.678: [INFO][BBRw]: RPL global prefix activate fd00:6868:6868:/64
+     1.678: [INFO][rout]: Added route:
+     1.678: [DBG ][rout]:        fd00:6868:6868:/64 if:1 src:'Thread BBR' id:0 lifetime:infinite
+     1.678: [DBG ][rout]:      On-link (met 128)
+     2.677: [DBG ][RPLd]: New Target fd00:6868:6868::602e:a459:3f30:9b51
+warning: missing timers: 1
+    24.127: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+    24.527: tx-icmp rpl dio   dst:ff02::1a
+    24.527: tx-15.4 data      dst:ff:ff:00:00:00:00:00:00 panid:8ae
+    24.819: [DBG ][wsbs]: -----PAN advertize confirm
+    26.837: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+    27.682: [DBG ][wsbs]: -----PAN config confirm
+    50.771: rx-15.4 eapol     src:06:21:d3:81:57:1d:92:1d panid:8ae (23dBm)
+    50.771: [DBG ][wllc]: ----update neighbor ut form: ws_llc_eapol_ffn_ind
+    50.771: [INFO][wsbs]: Active supplicant limit, active: 0 max: 23 summed averageQ: 0 adapt averageQ: 0 LLC averageQ: 0 LLC EAPOL averageQ: 0 drop: F
+    50.771: [DBG ][wspa]: PAE: to active, eui-64: 06:21:d3:81:57:1d:92:1d
+    50.771: [DBG ][ksep]: Initial-key init
+    50.771: rx-eap  tls-init  src:06:21:d3:81:57:1d:92:1d
+    50.771: [DBG ][ksep]: PMK not live PTK not live NR 3 GTKL 0 LGTKL ff
+    50.771: [INFO][wspa]: PAE: start EAP-TLS, eui-64: 06:21:d3:81:57:1d:92:1d
+    50.771: [DBG ][eapa]: EAP-TLS init
+    50.771: [DBG ][tlsp]: TLS: init
+    50.771: [DBG ][eapa]: EAP-TLS start, eui-64: 06:21:d3:81:57:1d:92:1d
+    50.771: tx-eap  tls1 req  src:06:21:d3:81:57:1d:92:1d
+    50.771: tx-15.4 eapol     dst:06:21:d3:81:57:1d:92:1d panid:8ae
+    50.827: [DBG ][ksep]: Initial-key finished, eui-64: 06:21:d3:81:57:1d:92:1d
+    50.830: rx-15.4 eapol     src:06:21:d3:81:57:1d:92:1d panid:8ae (24dBm)
+    50.830: [DBG ][wllc]: ----update neighbor ut form: ws_llc_eapol_ffn_ind
+    50.830: [DBG ][wsne]: UFSI updated: 06:21:d3:81:57:1d:92:1d, drift: 0ms in 0 seconds
+    50.830: rx-eap  tls1 rply src:06:21:d3:81:57:1d:92:1d
+    50.830: tx-eap  tls2 req  src:06:21:d3:81:57:1d:92:1d
+    50.830: tx-15.4 eapol     dst:06:21:d3:81:57:1d:92:1d panid:8ae
+    51.299: rx-15.4 eapol     src:06:21:d3:81:57:1d:92:1d panid:8ae (24dBm)
+    51.299: [DBG ][wllc]: ----update neighbor ut form: ws_llc_eapol_ffn_ind
+    51.299: [DBG ][wsne]: UFSI updated: 06:21:d3:81:57:1d:92:1d, drift: -2ms in 0 seconds
+    51.299: rx-eap  tls2 rply src:06:21:d3:81:57:1d:92:1d
+    51.299: [DBG ][tlsp]: TLS: start, eui-64: 06:21:d3:81:57:1d:92:1d
+    51.306: tx-eap  tls3 req  src:06:21:d3:81:57:1d:92:1d
+    51.306: tx-15.4 eapol     dst:06:21:d3:81:57:1d:92:1d panid:8ae
+    51.395: rx-15.4 eapol     src:06:21:d3:81:57:1d:92:1d panid:8ae (23dBm)
+    51.395: [DBG ][wllc]: ----update neighbor ut form: ws_llc_eapol_ffn_ind
+    51.395: [DBG ][wsne]: UFSI updated: 06:21:d3:81:57:1d:92:1d, drift: 1ms in 0 seconds
+    51.395: rx-eap  tls3 rply src:06:21:d3:81:57:1d:92:1d
+    51.395: tx-eap  tls4 req  src:06:21:d3:81:57:1d:92:1d
+    51.395: tx-15.4 eapol     dst:06:21:d3:81:57:1d:92:1d panid:8ae
+    51.468: rx-15.4 eapol     src:06:21:d3:81:57:1d:92:1d panid:8ae (24dBm)
+    51.468: [DBG ][wllc]: ----update neighbor ut form: ws_llc_eapol_ffn_ind
+    51.468: [DBG ][wsne]: UFSI updated: 06:21:d3:81:57:1d:92:1d, drift: -2ms in 0 seconds
+    51.468: [INFO][wsep]: EAPOL relay filter drop
+    54.255: rx-15.4 eapol     src:06:21:d3:81:57:1d:92:1d panid:8ae (24dBm)
+    54.255: [DBG ][wllc]: ----update neighbor ut form: ws_llc_eapol_ffn_ind
+    54.255: [DBG ][wsne]: UFSI updated: 06:21:d3:81:57:1d:92:1d, drift: 0ms in 2 seconds
+    54.256: rx-eap  tls4 rply src:06:21:d3:81:57:1d:92:1d
+    54.256: tx-eap  tls5 req  src:06:21:d3:81:57:1d:92:1d
+    54.256: tx-15.4 eapol     dst:06:21:d3:81:57:1d:92:1d panid:8ae
+    54.313: rx-15.4 eapol     src:06:21:d3:81:57:1d:92:1d panid:8ae (24dBm)
+    54.313: [DBG ][wllc]: ----update neighbor ut form: ws_llc_eapol_ffn_ind
+    54.313: [DBG ][wsne]: UFSI updated: 06:21:d3:81:57:1d:92:1d, drift: 0ms in 0 seconds
+    54.313: rx-eap  tls5 rply src:06:21:d3:81:57:1d:92:1d
+    54.324: [DBG ][tlsp]: TLS: finish, eui-64: 06:21:d3:81:57:1d:92:1d
+    54.324: [INFO][eapa]: EAP-TLS: handshake success
+    54.324: tx-eap  tls6 req  src:06:21:d3:81:57:1d:92:1d
+    54.324: tx-15.4 eapol     dst:06:21:d3:81:57:1d:92:1d panid:8ae
+    54.458: rx-15.4 eapol     src:06:21:d3:81:57:1d:92:1d panid:8ae (26dBm)
+    54.458: [DBG ][wllc]: ----update neighbor ut form: ws_llc_eapol_ffn_ind
+    54.458: [DBG ][wsne]: UFSI updated: 06:21:d3:81:57:1d:92:1d, drift: -1ms in 0 seconds
+    54.458: rx-eap  tls6 rply src:06:21:d3:81:57:1d:92:1d
+    54.458: tx-eap  tls6 succ src:06:21:d3:81:57:1d:92:1d
+    54.458: [DBG ][eapa]: EAP-TLS finish, eui-64: 06:21:d3:81:57:1d:92:1d
+    54.458: [INFO][wspa]: PAE: start 4WH, eui-64: 06:21:d3:81:57:1d:92:1d
+    54.458: [INFO][wspa]: PAE: update (L)GTK index: 0, eui-64: 06:21:d3:81:57:1d:92:1d
+    54.458: [DBG ][afwh]: 4WH: init
+    54.458: [DBG ][afwh]: 4WH: start, eui-64: 06:21:d3:81:57:1d:92:1d
+    54.458: [DBG ][secl]: PMKID e1:17:9e:5d:6f:3f:0e:27:27:4e:e8:16:02:b5:b0:4d EUI-64 62:2e:a4:59:3f:30:9b:51 06:21:d3:81:57:1d:92:1d
+    54.458: tx-eap  4wh-1     src:06:21:d3:81:57:1d:92:1d
+    54.458: tx-15.4 eapol     dst:06:21:d3:81:57:1d:92:1d panid:8ae
+    54.502: tx-15.4 eapol     dst:06:21:d3:81:57:1d:92:1d panid:8ae
+    54.638: rx-15.4 eapol     src:06:21:d3:81:57:1d:92:1d panid:8ae (24dBm)
+    54.638: [DBG ][wllc]: ----update neighbor ut form: ws_llc_eapol_ffn_ind
+    54.638: [DBG ][wsne]: UFSI updated: 06:21:d3:81:57:1d:92:1d, drift: 0ms in 0 seconds
+    54.638: rx-eap  4wh-2     src:06:21:d3:81:57:1d:92:1d
+    54.638: tx-eap  4wh-3     src:06:21:d3:81:57:1d:92:1d
+    54.638: tx-15.4 eapol     dst:06:21:d3:81:57:1d:92:1d panid:8ae
+    54.705: rx-15.4 eapol     src:06:21:d3:81:57:1d:92:1d panid:8ae (23dBm)
+    54.705: [DBG ][wllc]: ----update neighbor ut form: ws_llc_eapol_ffn_ind
+    54.705: [DBG ][wsne]: UFSI updated: 06:21:d3:81:57:1d:92:1d, drift: 0ms in 0 seconds
+    54.705: rx-eap  4wh-4     src:06:21:d3:81:57:1d:92:1d
+    54.705: [DBG ][afwh]: 4WH: finish, eui-64: 06:21:d3:81:57:1d:92:1d
+    54.705: [INFO][wspa]: PAE: authenticated, eui-64: 06:21:d3:81:57:1d:92:1d
+    54.705: [INFO][wllc]: LLC purge EAPOL temporary entry: 06:21:d3:81:57:1d:92:1d
+warning: missing timers: 1
+    59.277: [DBG ][tlsp]: TLS: finished, eui-64: 06:21:d3:81:57:1d:92:1d free F
+    59.478: [DBG ][eapa]: EAP-TLS finished, eui-64: 06:21:d3:81:57:1d:92:1d
+    59.678: [DBG ][afwh]: 4WH: finished, eui-64: 06:21:d3:81:57:1d:92:1d
+    60.777: [DBG ][wspc]: Stored updated frame counter: index 0 value 90000000
+    66.225: rx-15.4 cfg-sol   src:06:21:d3:81:57:1d:92:1d panid:8ae (23dBm)
+    73.481: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+    74.189: [DBG ][wsbs]: -----PAN advertize confirm
+    74.679: [DBG ][wspl]: PAE: to inactive, eui-64: 06:21:d3:81:57:1d:92:1d
+    74.679: [INFO][wspa]: Supplicant deleted
+    74.679: [INFO][wsbs]: Active supplicant limit, active: 0 max: 23 summed averageQ: 0 adapt averageQ: 0 LLC averageQ: 0 LLC EAPOL averageQ: 0 drop: F
+    74.977: tx-icmp rpl dio   dst:ff02::1a
+    74.977: tx-15.4 data      dst:ff:ff:00:00:00:00:00:00 panid:8ae
+    80.780: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+    81.625: [DBG ][wsbs]: -----PAN config confirm
+    83.696: rx-15.4 data      src:06:21:d3:81:57:1d:92:1d panid:8ae (24dBm)
+    83.696: rx-icmp rpl dis   src:fe80::421:d381:571d:921d
+warning: missing timers: 1
+    95.784: rx-15.4 adv       src:12:48:8d:97:9b:b4:f9:70 panid:94ff (-102dBm)
+    95.797: rx-15.4 adv       src:12:48:8d:97:9b:b4:f9:70 panid:94ff (-102dBm)
+warning: missing timers: 1
+    99.277: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+   100.108: [DBG ][wsbs]: -----PAN config confirm
+   103.491: tx-icmp rpl dio   dst:ff02::1a
+   103.491: tx-15.4 data      dst:ff:ff:00:00:00:00:00:00 panid:8ae
+warning: missing timers: 1
+   140.230: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+   149.929: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+   151.735: tx-icmp rpl dio   dst:ff02::1a
+   151.735: tx-15.4 data      dst:ff:ff:00:00:00:00:00:00 panid:8ae
+   185.827: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+   225.980: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+   248.378: [DBG ][wllc]: -----last PAN advertize is running, return -1
+   263.777: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+   271.378: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+   307.029: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+   350.282: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+   383.277: [DBG ][wllc]: -----last PAN config is running, return -1
+   385.477: [DBG ][wllc]: -----last PAN advertize is running, return -1
+   409.081: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+   447.199: [DBG ][wllc]: -----last PAN advertize is running, return -1
+   464.977: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+   513.028: [DBG ][wllc]: -----last PAN config is running, return -1
+   513.728: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+   565.890: tx-icmp rpl dio   dst:ff02::1a
+   566.277: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+   571.786: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+   633.977: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+   646.076: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+   658.177: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+   674.931: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+   686.927: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+   732.886: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+   764.927: [DBG ][wllc]: -----last PAN config is running, return -1
+   777.027: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+   796.182: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+   821.528: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+   858.281: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+   891.128: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 3
+warning: missing timers: 1
+   929.077: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+   932.727: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 2
+   958.028: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+   994.077: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  1005.677: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  1058.334: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  1068.538: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  1089.027: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+  1122.890: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  1127.677: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+  1165.628: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+  1182.677: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+  1206.028: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  1238.546: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  1259.142: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 8
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  1285.077: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 5
+  1299.178: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 3
+  1341.329: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  1343.751: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  1368.428: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  1411.877: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  1432.177: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  1458.477: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+  1478.230: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  1497.579: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  1544.028: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+  1554.328: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  1592.028: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  1624.978: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  1638.930: tx-icmp rpl dio   dst:ff02::1a
+  1643.936: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  1679.027: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+  1703.128: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+  1725.331: [DBG ][wllc]: -----last PAN config is running, return -1
+  1765.527: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 2
+  1767.028: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  1779.480: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  1839.078: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  1843.382: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  1892.578: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 2
+  1910.178: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 2
+  1913.278: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  1947.130: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  1991.178: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  2008.928: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+  2024.628: [DBG ][wllc]: -----last PAN config is running, return -1
+  2031.834: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+  2077.727: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+  2096.865: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  2149.484: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  2162.577: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  2169.627: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  2197.982: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  2222.978: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  2259.877: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  2267.677: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+  2276.227: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+  2325.079: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+  2349.532: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+  2377.536: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+  2394.187: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+  2398.277: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 2
+  2432.028: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+  2448.927: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  2509.478: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  2520.677: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  2544.978: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 2
+  2577.377: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  2579.978: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  2614.027: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+  2659.532: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  2677.578: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 2
+  2687.229: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+  2703.478: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  2740.541: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  2755.227: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+  2777.831: tx-icmp rpl dio   dst:ff02::1a
+  2777.831: [INFO][6lAd]: Adaptation layer TX queue size 20 Active MAC tx request 0
+  2798.537: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 3
+  2830.978: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  2878.080: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+  2896.841: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  2938.577: [DBG ][wllc]: -----last PAN config is running, return -1
+  2939.782: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 1
+  2949.977: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  2991.427: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  3024.977: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 1
+  3045.377: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  3064.188: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 3
+  3086.084: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  3125.027: [DBG ][wllc]: -----last PAN config is running, return -1
+  3131.127: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  3174.677: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  3185.578: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 3
+warning: missing timers: 3
+  3200.577: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  3250.827: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  3257.228: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  3305.227: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+  3313.978: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  3321.280: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  3354.927: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+  3361.477: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  3421.478: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+  3431.403: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+  3468.177: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+  3476.027: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  3493.691: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+  3551.277: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+  3563.027: [DBG ][wllc]: -----last PAN config is running, return -1
+  3584.031: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  3607.927: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  3608.027: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  3642.727: [INFO][wspa]: Active GTK lifetime 99, frame counter 97 percent, counter 90000043
+  3642.727: [INFO][wspa]: Frame counter change 0, max 19261
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  3664.977: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  3669.088: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  3691.880: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  3732.377: tx-icmp rpl dio   dst:ff02::1a
+  3736.677: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+  3750.477: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  3774.727: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  3808.130: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  3848.779: tx-icmp rpl dio   dst:ff02::1a
+  3855.589: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  3856.378: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+  3904.877: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  3910.278: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+  3945.728: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  3964.096: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+  3984.227: [DBG ][wllc]: -----last PAN config is running, return -1
+  4040.240: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+  4040.977: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+  4074.077: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+  4093.179: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  4108.277: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+  4137.679: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  4168.778: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  4206.778: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 8
+warning: missing timers: 3
+  4221.980: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  4238.183: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  4281.131: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+  4289.478: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  4328.677: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  4361.578: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  4378.028: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+  4390.530: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  4404.855: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  4461.985: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+  4465.477: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  4490.239: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  4521.227: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  4529.196: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  4577.328: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+  4593.783: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  4629.641: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+  4635.106: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+  4665.878: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+  4700.629: [DBG ][wllc]: -----last PAN config is running, return -1
+  4707.730: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  4746.728: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  4754.277: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  4783.877: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  4812.833: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+  4823.077: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+  4869.928: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  4903.577: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+  4936.291: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  4950.027: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  4953.632: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 6
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  4998.328: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  5009.827: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 2
+  5033.427: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+  5066.878: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+  5091.778: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  5109.728: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  5142.127: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  5160.728: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  5178.229: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  5189.078: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  5232.277: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+  5276.877: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 2
+  5309.831: tx-icmp rpl dio   dst:ff02::1a
+  5309.831: [INFO][6lAd]: Adaptation layer TX queue size 40 Active MAC tx request 0
+warning: missing timers: 1
+  5312.277: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+  5330.527: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+  5360.481: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+  5376.381: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+  5418.977: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  5445.528: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+  5459.628: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+  5488.128: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  5492.927: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  5537.327: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  5578.928: [DBG ][wllc]: -----last PAN config is running, return -1
+  5592.827: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+  5607.144: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  5641.077: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+  5661.778: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+  5680.777: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 2
+  5692.907: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  5719.830: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+  5755.777: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+  5800.377: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+  5811.635: [DBG ][wllc]: -----last PAN config is running, return -1
+  5813.228: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  5845.977: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  5866.477: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 5
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  5907.078: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+  5939.628: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  5972.831: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+  5984.878: tx-icmp rpl dio   dst:ff02::1a
+  5990.784: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+  6041.430: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  6068.335: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  6092.827: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  6097.227: tx-icmp rpl dio   dst:ff02::1a
+  6120.739: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+  6147.829: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+  6180.982: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 10
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+  6214.627: tx-icmp rpl dio   dst:ff02::1a
+  6223.827: [DBG ][wllc]: -----last PAN config is running, return -1
+  6224.428: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  6271.677: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+  6287.588: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  6355.129: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  6355.328: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 2
+  6362.029: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+  6400.278: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  6432.796: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  6462.280: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  6471.031: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  6484.482: [DBG ][wllc]: -----last PAN config is running, return -1
+  6507.885: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+  6530.340: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+  6588.628: [DBG ][wllc]: -----last PAN config is running, return -1
+  6593.927: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  6612.978: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+  6637.927: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  6675.592: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  6704.028: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  6711.927: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  6776.347: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 3
+  6783.027: tx-icmp rpl dio   dst:ff02::1a
+  6784.938: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  6815.677: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  6837.680: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+  6874.033: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  6886.132: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  6912.635: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+  6950.127: [DBG ][wllc]: -----last PAN config is running, return -1
+  6951.428: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+  7000.627: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+  7031.327: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 3
+  7058.281: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  7059.480: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  7072.527: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  7144.328: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+  7144.522: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+  7146.847: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  7191.779: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  7218.827: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  7240.427: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+  7252.679: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  7292.930: [INFO][wspa]: Active GTK lifetime 99, frame counter 97 percent, counter 90000043
+  7292.930: [INFO][wspa]: Frame counter change 0, max 19261
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+  7309.897: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  7319.078: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  7343.577: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  7358.727: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+  7373.382: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+  7374.128: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  7418.083: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  7444.077: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+  7495.177: tx-icmp rpl dio   dst:ff02::1a
+  7500.278: [DBG ][wllc]: -----last PAN config is running, return -1
+  7503.786: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+  7556.535: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+  7561.980: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 3
+  7610.329: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 3
+  7615.080: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  7638.186: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  7680.384: [DBG ][wllc]: -----last PAN config is running, return -1
+  7686.577: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  7735.728: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  7750.877: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+  7753.177: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  7802.227: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+  7829.278: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  7872.278: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+  7880.734: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+  7885.328: tx-icmp rpl dio   dst:ff02::1a
+  7885.328: [INFO][6lAd]: Adaptation layer TX queue size 60 Active MAC tx request 0
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 2
+  7915.731: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 6
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  7944.363: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+  7984.977: [DBG ][wllc]: -----last PAN config is running, return -1
+  7996.077: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  8018.579: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  8048.678: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  8049.082: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 5
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  8108.927: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 4
+  8109.341: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  8139.431: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  8165.728: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+  8168.927: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 7
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 7
+warning: missing timers: 1
+  8228.827: [DBG ][wllc]: -----last PAN config is running, return -1
+  8230.727: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  8264.027: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  8277.927: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  8291.377: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+  8341.277: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  8354.128: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+  8409.866: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+  8420.027: [DBG ][wllc]: -----last PAN config is running, return -1
+  8439.728: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 7
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  8475.477: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  8475.578: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  8521.927: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+  8544.831: [DBG ][wllc]: -----last PAN config is running, return -1
+  8546.727: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+  8605.530: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  8605.928: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+  8647.530: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+  8659.827: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  8719.380: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  8720.178: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+  8727.728: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  8760.980: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+  8783.928: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  8841.877: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  8849.527: tx-icmp rpl dio   dst:ff02::1a
+  8852.628: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 3
+  8890.180: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+  8901.878: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+  8928.877: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  8960.680: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  8965.078: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  9006.385: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  9023.147: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  9090.827: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+  9102.828: [DBG ][wllc]: -----last PAN config is running, return -1
+  9103.427: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  9134.078: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 4
+warning: missing timers: 1
+  9144.827: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  9187.629: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 4
+  9201.035: [DBG ][wllc]: -----last PAN config is running, return -1
+  9202.928: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+  9257.027: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+  9279.227: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  9331.527: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+  9333.878: [DBG ][wllc]: -----last PAN advertize is running, return -1
+  9335.579: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  9370.834: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  9396.728: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  9435.278: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+  9469.642: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  9499.077: tx-icmp rpl dio   dst:ff02::1a
+  9501.878: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  9516.927: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  9562.027: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+  9568.077: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  9598.577: tx-icmp rpl dio   dst:ff02::1a
+  9609.786: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 5
+warning: missing timers: 1
+  9642.077: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+  9681.647: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  9694.127: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  9745.627: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  9778.277: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+  9782.177: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+  9803.427: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+  9818.730: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  9866.027: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 3
+warning: missing timers: 3
+  9870.928: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+  9875.439: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  9924.078: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+  9946.528: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+  9990.229: tx-icmp rpl dio   dst:ff02::1a
+  9992.927: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+ 10011.781: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 10062.328: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+ 10080.139: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 10105.627: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 10131.890: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 10159.544: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 3
+ 10176.186: [DBG ][wllc]: -----last PAN config is running, return -1
+ 10179.977: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+ 10234.331: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 10246.478: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 10268.980: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+ 10292.879: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 10314.227: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 10353.189: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 2
+ 10382.780: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 10426.878: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+ 10439.828: [DBG ][wllc]: -----last PAN config is running, return -1
+ 10443.333: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 10471.178: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 6
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 10506.478: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 10524.645: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+ 10525.730: tx-icmp rpl dio   dst:ff02::1a
+ 10525.730: [INFO][6lAd]: Adaptation layer TX queue size 80 Active MAC tx request 0
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 10553.927: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+ 10585.027: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 10609.627: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 10671.079: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 10679.577: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 10716.278: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 2
+ 10728.827: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 10739.242: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 5
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 10779.683: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+ 10811.527: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 3
+ 10828.928: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 10845.877: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+ 10852.877: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 10892.127: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 10925.077: tx-icmp rpl dio   dst:ff02::1a
+ 10927.179: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 10943.942: [INFO][wspa]: Active GTK lifetime 99, frame counter 97 percent, counter 90000043
+ 10943.942: [INFO][wspa]: Frame counter change 0, max 19261
+warning: missing timers: 3
+ 10964.277: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+ 10967.879: [DBG ][wllc]: -----last PAN config is running, return -1
+ 10969.083: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 2
+warning: missing timers: 3
+ 11016.036: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 3
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+ 11035.229: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+ 11045.180: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 11100.179: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 11103.784: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 11157.127: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 11164.978: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+ 11175.478: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+ 11206.527: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 11226.784: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 11278.179: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 11285.878: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 11295.688: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+ 11329.927: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+ 11339.377: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+ 11374.577: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+ 11383.030: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 11411.277: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 11434.627: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+ 11473.643: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+ 11496.328: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 11513.478: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 2
+ 11525.227: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 11557.878: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+ 11582.681: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 11631.914: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 3
+warning: missing timers: 2
+ 11641.927: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 11665.677: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 11682.378: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 11716.429: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+ 11759.677: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 11777.378: tx-icmp rpl dio   dst:ff02::1a
+ 11777.677: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 11809.977: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+ 11820.027: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 11866.677: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 3
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 11900.877: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+ 11925.890: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 11944.277: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 3
+warning: missing timers: 3
+warning: missing timers: 4
+warning: missing timers: 2
+ 11967.877: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+ 11986.793: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+ 12000.377: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 12049.491: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 12084.978: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+ 12103.877: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 12120.578: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+ 12126.190: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 12178.778: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+ 12195.434: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+ 12222.129: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 3
+ 12233.279: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+ 12254.629: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 12286.327: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 12319.129: [DBG ][wllc]: -----last PAN config is running, return -1
+ 12320.147: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 12356.079: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 12372.577: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 12409.592: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+ 12439.078: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 12469.828: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 12488.338: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+ 12501.478: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 12550.377: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 12561.880: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 12579.328: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+ 12589.990: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+ 12624.879: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 12678.931: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+ 12687.895: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 12721.327: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 12732.031: tx-icmp rpl dio   dst:ff02::1a
+ 12734.827: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 12785.857: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 12798.638: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 12836.979: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+ 12857.527: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+ 12901.535: tx-icmp rpl dio   dst:ff02::1a
+ 12918.027: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 12926.679: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 12953.828: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 12991.029: [DBG ][wllc]: -----last PAN config is running, return -1
+ 13001.627: tx-icmp rpl dio   dst:ff02::1a
+ 13001.627: [INFO][6lAd]: Adaptation layer TX queue size 100 Active MAC tx request 0
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 2
+ 13028.277: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 13059.227: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+ 13094.527: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 13112.577: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 13134.030: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 13153.632: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+ 13163.631: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 13225.128: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 5
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 13242.127: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+ 13258.577: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 13279.581: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 13281.977: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+ 13329.077: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+ 13355.548: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+ 13377.637: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+ 13400.488: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+ 13412.227: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 13439.627: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 13480.738: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 13500.977: tx-icmp rpl dio   dst:ff02::1a
+ 13501.077: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+ 13528.327: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 13564.177: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+ 13589.727: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 13636.328: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 3
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 13662.928: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 5
+ 13677.528: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+ 13685.578: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 13723.178: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 13762.578: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 3
+ 13768.228: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 13804.077: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 13817.827: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 13831.287: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 13864.280: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 13898.328: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 13929.133: tx-icmp rpl dio   dst:ff02::1a
+ 13932.927: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 2
+ 13963.186: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 14004.527: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 14020.627: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+ 14070.427: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+ 14081.177: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+ 14082.329: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+ 14116.329: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+ 14129.382: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+ 14169.581: tx-icmp rpl dio   dst:ff02::1a
+ 14176.079: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 14189.627: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 14228.646: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 8
+ 14246.427: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 14299.377: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 14327.228: tx-icmp rpl dio   dst:ff02::1a
+ 14333.034: [DBG ][wllc]: -----last PAN config is running, return -1
+ 14351.327: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 14387.077: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+ 14428.637: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 5
+ 14445.834: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 14472.077: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 14474.359: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 14510.678: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 14541.282: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 14575.631: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+ 14588.736: [INFO][wspa]: Active GTK lifetime 99, frame counter 97 percent, counter 90000043
+ 14588.736: [INFO][wspa]: Frame counter change 0, max 19261
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+ 14610.995: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 14618.477: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 14632.881: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 14660.363: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 14677.927: [DBG ][wllc]: -----last PAN config is running, return -1
+ 14683.833: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 14744.377: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 14746.678: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 14773.992: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 6
+ 14776.778: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 14815.527: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 14847.829: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 14873.128: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 14896.577: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+ 14918.477: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 14941.130: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+ 14979.343: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 15003.032: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 15031.628: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 15035.728: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+ 15052.578: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 15095.538: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 7
+ 15104.079: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 15148.627: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 15155.128: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 15165.932: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 15214.079: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 15218.078: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 3
+warning: missing timers: 6
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 15286.427: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+ 15305.078: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 2
+ 15336.936: tx-icmp rpl dio   dst:ff02::1a
+ 15345.028: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+ 15350.141: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 6
+warning: missing timers: 1
+ 15393.927: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 15413.377: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+ 15445.277: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 2
+ 15470.777: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+ 15474.577: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 15530.578: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+ 15532.536: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+ 15569.227: tx-icmp rpl dio   dst:ff02::1a
+ 15569.227: [INFO][6lAd]: Adaptation layer TX queue size 120 Active MAC tx request 0
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+ 15588.027: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 3
+ 15606.034: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 15641.727: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 15653.180: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 15689.227: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 15696.428: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+ 15730.231: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 15777.936: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 15788.527: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 15821.527: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 15833.579: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 15846.827: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 15888.478: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+ 15910.877: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 15957.428: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+ 15964.932: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+ 15970.227: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 15998.678: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 16031.077: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 16073.377: [DBG ][wllc]: -----last PAN config is running, return -1
+ 16074.378: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 16109.728: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 2
+warning: missing timers: 1
+ 16113.590: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 16137.778: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 16203.737: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 16208.827: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+ 16234.977: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 16257.432: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 16264.779: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+ 16316.341: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 16324.478: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 16352.178: tx-icmp rpl dio   dst:ff02::1a
+ 16356.597: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+ 16374.138: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+ 16423.127: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 5
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 1
+ 16458.839: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 16504.536: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+ 16507.085: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 16522.678: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 16565.377: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 2
+warning: missing timers: 1
+ 16576.777: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+ 16608.629: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 16643.525: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+ 16662.029: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+ 16670.588: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 5
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 16704.179: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 16733.277: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 2
+ 16769.877: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+ 16788.628: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+ 16801.478: tx-icmp rpl dio   dst:ff02::1a
+ 16802.177: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 16862.327: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 16876.481: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 16926.783: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+ 16937.938: tx-icmp rpl dio   dst:ff02::1a
+ 16947.528: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 16977.280: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 2
+ 16994.528: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 4
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 17051.477: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+ 17054.231: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 17056.030: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 3
+ 17110.937: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 17132.627: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 17164.328: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 1
+ 17192.228: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 17207.555: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 3
+ 17222.177: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 17242.977: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 17281.329: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 17314.181: [DBG ][wllc]: -----last PAN config is running, return -1
+ 17317.477: tx-icmp rpl dio   dst:ff02::1a
+ 17332.577: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+ 17379.028: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+ 17399.027: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 17421.527: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 17455.928: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 17473.006: tx-icmp rpl dio   dst:ff02::1a
+ 17477.477: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 17536.928: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 17543.391: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 17552.077: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 1
+ 17598.929: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 3
+warning: missing timers: 1
+ 17603.228: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 17659.478: [DBG ][wllc]: -----last PAN config is running, return -1
+ 17662.577: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+ 17717.777: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 2
+ 17725.777: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 17745.777: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 3
+ 17764.627: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 5
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 17792.027: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 5
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 5
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 17836.779: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+ 17844.727: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 17849.738: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 17886.327: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 17922.929: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 17961.246: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 17963.130: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+ 17969.078: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 2
+ 18019.629: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 18026.128: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 18081.878: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 18083.681: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+ 18107.577: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+ 18146.784: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 18150.691: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+ 18209.131: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 18227.733: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+ 18244.627: [INFO][wspa]: Active GTK lifetime 99, frame counter 97 percent, counter 90000043
+ 18244.627: [INFO][wspa]: Frame counter change 0, max 19261
+ 18248.328: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 18272.377: tx-icmp rpl dio   dst:ff02::1a
+ 18272.377: [INFO][6lAd]: Adaptation layer TX queue size 140 Active MAC tx request 0
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 3
+ 18283.087: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 18323.842: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+ 18328.677: [DBG ][wllc]: -----last PAN config is running, return -1
+ 18330.977: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+ 18385.677: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 18394.346: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+ 18433.582: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 18452.777: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 5
+warning: missing timers: 1
+ 18456.427: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 5
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+ 18518.028: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+ 18532.728: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 18567.427: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 2
+ 18577.278: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+ 18581.235: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 18619.827: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 18659.486: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 18683.928: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 18702.878: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 18725.877: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 18754.579: [DBG ][wllc]: -----last PAN config is running, return -1
+ 18756.877: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 18803.827: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 18817.528: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 18845.228: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 18866.090: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 18887.937: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 18919.588: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 18939.928: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 6
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 2
+ 18997.028: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+ 19000.879: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 19017.377: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 19046.327: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 19081.877: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+ 19095.032: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+ 19101.978: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+ 19135.230: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 19189.379: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 19207.678: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+ 19214.528: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 19252.527: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 19259.927: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 19305.777: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+ 19326.085: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 19372.528: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 19384.427: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 3
+warning: missing timers: 1
+ 19386.728: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 5
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 19432.431: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+ 19447.977: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 19484.531: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 19497.128: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 19503.277: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 19533.828: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 19562.084: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+ 19614.727: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 6
+ 19623.127: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 3
+warning: missing timers: 1
+warning: missing timers: 1
+ 19631.977: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 2
+ 19674.127: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+ 19689.731: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 19734.641: [DBG ][wllc]: -----last PAN advertize is running, return -1
+ 19740.827: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+ 19799.728: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+ 19805.227: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 2
+ 19810.933: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 3
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 1
+ 19853.729: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+ 19867.777: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+ 19897.077: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 2
+warning: missing timers: 1
+ 19899.628: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 11
+uart_rx_hdlc: read: Empty read

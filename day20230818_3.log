@@ -1,0 +1,271 @@
+Silicon Labs Wi-SUN border router v1.5.3-23-ga79271ce-dirty
+     0.453: [INFO][wspa]: ---------------------NOOP----
+Connected to RCP "CMT rcp develop" (2.2.2), API 0.6.0
+     0.498: [INFO][lNet]: ---------------arm_nwk_interface_configure_6lowpan_bootstrap_set----------------
+     0.498: [INFO][wsbs]: --------------------ws_bootstrap_init----------------------
+     0.498: [INFO][wsbs]: -------ws_bootstrap_tasklet_init-------
+     0.498: [INFO][wspt]: (L)GTK timers revocation lifetime: 86400, new activation time: 3600, time to update: 82800
+     0.498: [INFO][wspt]: (L)GTK timers revocation lifetime: 259200, new activation time: 43200, time to update: 216000
+     0.498: [INFO][wspa]: -----------------start-----wsbr_configure_ws-----------------------
+     0.498: [INFO][wsmg]: ----UC dewell time set: 15ms
+     0.498: [INFO][wspa]: ----forced GTK ca:c5:18:1b:83:3b:a7:2c:87:0f:e4:63:b2:71:13:e2
+     0.498: [INFO][wspa]: ----forced GTK 43:4e:25:92:90:21:4b:1b:f7:af:c9:7c:48:50:d3:69
+     0.498: [INFO][wspa]: ----forced GTK cd:d0:42:92:2c:76:2d:02:cb:36:02:fc:23:7f:7e:34
+     0.498: [INFO][wspa]: ----forced GTK bd:8a:45:11:17:89:ff:9c:31:64:30:4f:85:50:ba:9d
+     0.498: [INFO][wspc]: --------------run into ws_pae_controller_gtk_update----------
+     0.498: [INFO][spke]: ----set gdk: ca:c5:18:1b:83:3b:a7:2c:87:0f:e4:63:b2:71:13:e2
+     0.498: [INFO][wspc]: GTK set index: 0, lifetime 2592000, system time: 0
+     0.498: [INFO][spke]: ----set gdk: 43:4e:25:92:90:21:4b:1b:f7:af:c9:7c:48:50:d3:69
+     0.498: [INFO][wspc]: GTK set index: 1, lifetime 5184000, system time: 0
+     0.498: [INFO][spke]: ----set gdk: cd:d0:42:92:2c:76:2d:02:cb:36:02:fc:23:7f:7e:34
+     0.498: [INFO][wspc]: GTK set index: 2, lifetime 7776000, system time: 0
+     0.498: [INFO][spke]: ----set gdk: bd:8a:45:11:17:89:ff:9c:31:64:30:4f:85:50:ba:9d
+     0.498: [INFO][wspc]: GTK set index: 3, lifetime 10368000, system time: 0
+     0.498: [INFO][wspc]: -------sets active key: index=0
+     0.498: [INFO][wspc]: -----!----ws_pae_controller_next_gtk_update---------
+     0.498: [INFO][wspc]: ----insert new keys: ca:c5:18:1b:83:3b:a7:2c:87:0f:e4:63:b2:71:13:e2
+     0.498: [INFO][spke]: ----set gdk: ca:c5:18:1b:83:3b:a7:2c:87:0f:e4:63:b2:71:13:e2
+     0.498: [INFO][wspc]: ----insert new keys: 43:4e:25:92:90:21:4b:1b:f7:af:c9:7c:48:50:d3:69
+     0.498: [INFO][spke]: ----set gdk: 43:4e:25:92:90:21:4b:1b:f7:af:c9:7c:48:50:d3:69
+     0.498: [INFO][wspc]: ----insert new keys: cd:d0:42:92:2c:76:2d:02:cb:36:02:fc:23:7f:7e:34
+     0.498: [INFO][spke]: ----set gdk: cd:d0:42:92:2c:76:2d:02:cb:36:02:fc:23:7f:7e:34
+     0.498: [INFO][wspc]: ----insert new keys: bd:8a:45:11:17:89:ff:9c:31:64:30:4f:85:50:ba:9d
+     0.498: [INFO][spke]: ----set gdk: bd:8a:45:11:17:89:ff:9c:31:64:30:4f:85:50:ba:9d
+     0.498: [INFO][wspa]: -----------------finish-----wsbr_configure_ws-----------------------
+     0.498: [DBG ][BBRw]: Read BSI 34548 from NVM
+     0.498: [DBG ][BBRw]: Read PAN ID 65535 from NVM
+     0.498: [INFO][addr]: Address added to IF 1: fe80::98d1:c9b8:e1db:cb9
+     0.498: [DBG ][addr]: LL64 Register OK!
+     0.498: [INFO][rout]: Added route:
+     0.498: [DBG ][rout]:                  fe80:/64 if:1 src:'Static' id:0 lifetime:infinite
+     0.498: [DBG ][rout]:      On-link (met 128)
+     0.498: [INFO][rout]: Added route:
+     0.498: [DBG ][rout]:                   ff00:/8 if:1 src:'Static' id:0 lifetime:infinite
+     0.498: [DBG ][rout]:      On-link (met 192)
+     0.498: [INFO][rout]: Added route:
+     0.498: [DBG ][rout]:  fd00:6868:6868::98d1:c9b8:e1db:cb9/128 if:1 src:'Loopback' id:0 lifetime:infinite
+     0.498: [DBG ][rout]:      On-link (met 128)
+     0.498: [INFO][addr]: Address added to IF 1: fd00:6868:6868::98d1:c9b8:e1db:cb9
+Wi-SUN Border Router is ready
+     0.498: [DBG ][wsbs]: global unicast address of interface ws0 is fd00:6868:6868::98d1:c9b8:e1db:cb9
+     0.499: [INFO][wsbs]: ------------ws_bootstrap_event_handler--------------
+     0.499: [INFO][wsbs]: ------------ws_bootstrap_6lbr_event_handler--------------
+     0.499: [DBG ][wsbs]: Tasklet init
+     0.499: [INFO][wsbs]: ------------ws_bootstrap_event_handler--------------
+     0.499: [INFO][wsbs]: ------------ws_bootstrap_6lbr_event_handler--------------
+     0.499: [INFO][wsbs]: Discovery start
+     0.499: [INFO][wsbs]: Wi-SUN packet congestion minTh 450, maxTh 900, drop probability 10 weight 32, Packet/Seconds 15
+     0.499: [INFO][wspc]: Read frame counter: index 0 value 96000000
+     0.499: [INFO][wspc]: Read frame counter: index 1 value 25000000
+     0.499: [INFO][wspc]: Read frame counter: index 2 value 25000000
+     0.499: [INFO][wspc]: Read frame counter: index 3 value 25000000
+     0.499: [WARN][wspc]: NVM EUI-64 mismatch, current: 9a:d1:c9:b8:e1:db:0c:b9 stored: 02:d2:ba:fa:92:32:b9:3d
+     0.499: [DBG ][BBRw]: Border router version number update
+     0.499: [DBG ][BBRw]: Border router LFN version number update
+     0.499: [DBG ][BBRw]: Border router version number update
+  domain: NA
+  class: 0x3
+  mode: 0x5
+  phy operating modes: disabled
+  RCP configuration index: not supported
+  channel 0 frequency: 902.6MHz
+  channel spacing: 600kHz
+  channel count: 42
+  channel masks:
+               advertised         effective         
+     unicast   --                 00:00:00:00:00:fc 
+     broadcast --                 00:00:00:00:00:fc 
+     async     --                 00:00:00:00:00:fc 
+     0.499: [INFO][wspc]: ----------------ws_pae_controller_authenticator_start--------------------
+     0.499: [INFO][wspc]: -----------------ws_pae_auth_start------------
+     0.499: [INFO][wspa]: -----1
+     0.499: [INFO][wspa]: ----next_gtk_index = 0
+     0.499: [INFO][spke]: ----set gdk: ca:c5:18:1b:83:3b:a7:2c:87:0f:e4:63:b2:71:13:e2
+     0.499: [INFO][wspa]: ----installed GDK: ca:c5:18:1b:83:3b:a7:2c:87:0f:e4:63:b2:71:13:e2
+     0.499: [INFO][spke]: ----set gdk: ca:c5:18:1b:83:3b:a7:2c:87:0f:e4:63:b2:71:13:e2
+     0.499: [INFO][wspa]: GTK install new index: 0, lifetime: 2592000 system time: 0
+     0.499: [INFO][wspa]: -----2
+     0.499: [INFO][wspa]: ----next_gtk_index = -1
+     0.499: [INFO][wspa]: ----installed GDK: 67:7c:be:ca:83:bf:8c:bf:f5:10:a4:1f:e9:90:a3:8c
+     0.499: [INFO][spke]: ----set gdk: 67:7c:be:ca:83:bf:8c:bf:f5:10:a4:1f:e9:90:a3:8c
+     0.499: [INFO][wspa]: LGTK install new index: 0, lifetime: 7776000 system time: 0
+     0.501: [INFO][wspc]: GTK hash set fd:c4:1f:58:bd:a5:29:b9 00:00:00:00:00:00:00:00 00:00:00:00:00:00:00:00 00:00:00:00:00:00:00:00
+     0.501: [INFO][wspc]: NW key set: 0, hash: fd:c4:1f:58:bd:a5:29:b9
+     0.501: [DBG ][wspc]: Frame counter set: 0, stored 96000000 current: 0
+     0.501: [INFO][wspc]: LGTK hash set 79:ee:28:ff:ef:78:0e:09 00:00:00:00:00:00:00:00 00:00:00:00:00:00:00:00 00:00:00:00:00:00:00:00
+     0.501: [INFO][wspc]: NW key set: 4, hash: 79:ee:28:ff:ef:78:0e:09
+     0.501: [DBG ][wspc]: Stored frame counters, active key set: index 0 value 96000000
+     0.501: [INFO][wspc]: NW send key index set: 0
+     0.501: [DBG ][wspc]: Pending to store new frame counter: index 0 value 0
+     0.501: [DBG ][wspc]: Stored frame counters, active key set: index 0 value 0
+     0.501: [INFO][wspc]: NW send key index set: 4
+     0.501: [INFO][wsbs]: ------------ws_bootstrap_event_handler--------------
+     0.501: [INFO][wsbs]: ------------ws_bootstrap_6lbr_event_handler--------------
+     0.501: [INFO][wsbs]: Operation start
+     0.501: [DBG ][wsbs]: RPL Activate
+     0.501: [INFO][wsbs]: ------------ws_bootstrap_event_handler--------------
+     0.501: [INFO][wsbs]: ------------ws_bootstrap_6lbr_event_handler--------------
+     0.501: [INFO][wsbs]: Routing ready
+Successfully registered to system DBus
+     0.601: [INFO][wsbs]: WS SM:Bootstrap Done
+     1.499: [INFO][BBRw]: BBR Static DODAGID fd00:6868:6868::98d1:c9b8:e1db:cb9
+     1.499: [INFO][BBRw]: RPL root start
+     1.499: [INFO][BBRw]: start using backup prefix fd00:6868:6868:/64
+     1.499: [INFO][BBRw]: RPL global prefix activate fd00:6868:6868:/64
+     1.499: [INFO][rout]: Added route:
+     1.499: [DBG ][rout]:        fd00:6868:6868:/64 if:1 src:'Thread BBR' id:0 lifetime:infinite
+     1.499: [DBG ][rout]:      On-link (met 128)
+     2.498: [DBG ][RPLd]: New Target fd00:6868:6868::98d1:c9b8:e1db:cb9
+warning: missing timers: 1
+    19.948: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+    20.790: [DBG ][wsbs]: -----PAN config confirm
+    30.549: tx-icmp rpl dio   dst:ff02::1a
+    30.549: tx-15.4 data      dst:ff:ff:00:00:00:00:00:00 panid:8ae
+    34.348: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+    35.057: [DBG ][wsbs]: -----PAN advertize confirm
+    43.717: rx-15.4 adv-sol   src:fe:e4:60:a0:b6:8a:d3:a1 panid:8ae (23dBm)
+    43.894: rx-15.4 adv-sol   src:fe:e4:60:a0:b6:8a:d3:a1 panid:8ae (24dBm)
+warning: missing timers: 1
+    55.101: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+    55.499: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+    55.813: [DBG ][wsbs]: -----PAN advertize confirm
+    56.636: [DBG ][wsbs]: -----PAN config confirm
+    60.599: [DBG ][wspc]: Stored updated frame counter: index 0 value 96000000
+    75.498: tx-icmp rpl dio   dst:ff02::1a
+    75.498: tx-15.4 data      dst:ff:ff:00:00:00:00:00:00 panid:8ae
+    79.224: rx-15.4 eapol     src:fe:e4:60:a0:b6:8a:d3:a1 panid:8ae (24dBm)
+    79.224: [DBG ][wllc]: ----update neighbor ut form: ws_llc_eapol_ffn_ind
+    79.225: [INFO][wsbs]: Active supplicant limit, active: 0 max: 23 summed averageQ: 0 adapt averageQ: 0 LLC averageQ: 0 LLC EAPOL averageQ: 0 drop: F
+    79.225: [DBG ][wspa]: PAE: to active, eui-64: fe:e4:60:a0:b6:8a:d3:a1
+    79.225: [DBG ][ksep]: Initial-key init
+    79.225: rx-eap  tls-init  src:fe:e4:60:a0:b6:8a:d3:a1
+    79.225: [DBG ][ksep]: PMK not live PTK not live NR 3 GTKL 0 LGTKL ff
+    79.225: [INFO][wspa]: PAE: start EAP-TLS, eui-64: fe:e4:60:a0:b6:8a:d3:a1
+    79.225: [DBG ][eapa]: EAP-TLS init
+    79.225: [DBG ][tlsp]: TLS: init
+    79.225: [DBG ][eapa]: EAP-TLS start, eui-64: fe:e4:60:a0:b6:8a:d3:a1
+    79.225: tx-eap  tls1 req  src:fe:e4:60:a0:b6:8a:d3:a1
+    79.225: tx-15.4 eapol     dst:fe:e4:60:a0:b6:8a:d3:a1 panid:8ae
+    79.301: [DBG ][ksep]: Initial-key finished, eui-64: fe:e4:60:a0:b6:8a:d3:a1
+    79.550: rx-15.4 eapol     src:fe:e4:60:a0:b6:8a:d3:a1 panid:8ae (23dBm)
+    79.550: [DBG ][wllc]: ----update neighbor ut form: ws_llc_eapol_ffn_ind
+    79.550: [DBG ][wsne]: UFSI updated: fe:e4:60:a0:b6:8a:d3:a1, drift: 1ms in 0 seconds
+    79.550: rx-eap  tls1 rply src:fe:e4:60:a0:b6:8a:d3:a1
+    79.550: tx-eap  tls2 req  src:fe:e4:60:a0:b6:8a:d3:a1
+    79.550: tx-15.4 eapol     dst:fe:e4:60:a0:b6:8a:d3:a1 panid:8ae
+    85.410: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+    86.104: [DBG ][wsbs]: -----PAN advertize confirm
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 2
+warning: missing timers: 1
+   117.049: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+   117.885: [DBG ][wsbs]: -----PAN config confirm
+   120.649: tx-eap  tls2 req  src:fe:e4:60:a0:b6:8a:d3:a1(retry)
+   120.649: tx-15.4 eapol     dst:fe:e4:60:a0:b6:8a:d3:a1 panid:8ae
+   132.949: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+   133.659: [DBG ][wsbs]: -----PAN advertize confirm
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+   173.299: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+warning: missing timers: 1
+   174.134: [DBG ][wsbs]: -----PAN config confirm
+warning: missing timers: 1
+warning: missing timers: 1
+   180.248: tx-icmp rpl dio   dst:ff02::1a
+   180.248: tx-15.4 data      dst:ff:ff:00:00:00:00:00:00 panid:8ae
+   198.358: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+   199.066: [DBG ][wsbs]: -----PAN advertize confirm
+warning: missing timers: 1
+warning: missing timers: 4
+warning: missing timers: 1
+warning: missing timers: 1
+   241.999: tx-eap  tls2 req  src:fe:e4:60:a0:b6:8a:d3:a1(retry)
+   241.999: tx-15.4 eapol     dst:fe:e4:60:a0:b6:8a:d3:a1 panid:8ae
+   248.498: tx-15.4 cfg       dst:00:00:00:00:00:00:00:00
+   255.099: tx-15.4 adv       dst:00:00:00:00:00:00:00:00
+warning: missing timers: 7
+warning: missing timers: 1
+   288.499: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+   325.148: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+   343.613: tx-eap  tls2 req  src:fe:e4:60:a0:b6:8a:d3:a1(retry)
+   361.198: tx-icmp rpl dio   dst:ff02::1a
+   361.198: tx-15.4 data      dst:ff:ff:00:00:00:00:00:00 panid:8ae
+   368.701: [DBG ][wllc]: -----last PAN config is running, return -1
+   373.719: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+   432.049: [DBG ][wllc]: -----last PAN config is running, return -1
+   443.468: [DBG ][wllc]: -----last PAN advertize is running, return -1
+   449.049: tx-icmp rpl dio   dst:ff02::1a
+   453.749: tx-eap  tls2 req  src:fe:e4:60:a0:b6:8a:d3:a1(retry)
+warning: missing timers: 1
+   466.699: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+   500.454: [DBG ][wllc]: -----last PAN advertize is running, return -1
+   501.153: [DBG ][eapa]: EAP-TLS finish, eui-64: fe:e4:60:a0:b6:8a:d3:a1
+   506.051: [DBG ][eapa]: EAP-TLS finished, eui-64: fe:e4:60:a0:b6:8a:d3:a1
+   511.050: [DBG ][tlsp]: TLS: finished, eui-64: fe:e4:60:a0:b6:8a:d3:a1 free F
+warning: missing timers: 1
+   525.298: [DBG ][wllc]: -----last PAN config is running, return -1
+   551.600: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+   584.949: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+   607.199: tx-icmp rpl dio   dst:ff02::1a
+   617.799: [DBG ][wllc]: -----last PAN advertize is running, return -1
+   631.214: [DBG ][wspl]: PAE: to inactive, eui-64: fe:e4:60:a0:b6:8a:d3:a1
+ws_pae_key_storage_supp_write():72: warning: "!pae_supp->sec_keys.ptk_eui_64_set"
+   631.214: [INFO][wspa]: Supplicant deleted
+   631.214: [INFO][wsbs]: Active supplicant limit, active: 0 max: 23 summed averageQ: 3 adapt averageQ: 1 LLC averageQ: 1 LLC EAPOL averageQ: 1 drop: F
+   638.915: rx-15.4 adv-sol   src:fe:e4:60:a0:b6:8a:d3:a1 panid:8ae (24dBm)
+warning: missing timers: 2
+   646.299: [DBG ][wllc]: -----last PAN config is running, return -1
+   649.298: [DBG ][wllc]: -----last PAN advertize is running, return -1
+   677.392: rx-15.4 adv-sol   src:fe:e4:60:a0:b6:8a:d3:a1 panid:8ae (24dBm)
+   690.721: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+   701.549: tx-icmp rpl dio   dst:ff02::1a
+warning: missing timers: 1
+warning: missing timers: 1
+   721.950: [DBG ][wllc]: -----last PAN advertize is running, return -1
+   726.650: [DBG ][wllc]: -----last PAN config is running, return -1
+   739.202: rx-15.4 adv-sol   src:fe:e4:60:a0:b6:8a:d3:a1 panid:8ae (24dBm)
+warning: missing timers: 1
+   752.301: [DBG ][wllc]: -----last PAN advertize is running, return -1
+   778.516: [DBG ][wllc]: -----last PAN config is running, return -1
+   779.799: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 2
+warning: missing timers: 1
+   817.213: rx-15.4 adv-sol   src:fe:e4:60:a0:b6:8a:d3:a1 panid:8ae (24dBm)
+   825.457: tx-icmp rpl dio   dst:ff02::1a
+   829.954: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+   844.548: [DBG ][wllc]: -----last PAN config is running, return -1
+   848.653: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1
+warning: missing timers: 1
+   896.799: rx-15.4 adv-sol   src:fe:e4:60:a0:b6:8a:d3:a1 panid:8ae (24dBm)
+warning: missing timers: 1
+warning: missing timers: 1
+   903.403: [DBG ][wllc]: -----last PAN config is running, return -1
+   908.415: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+   930.949: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+   934.012: rx-15.4 adv-sol   src:fe:e4:60:a0:b6:8a:d3:a1 panid:8ae (24dBm)
+   948.099: [DBG ][wllc]: -----last PAN advertize is running, return -1
+   959.098: [DBG ][wllc]: -----last PAN config is running, return -1
+warning: missing timers: 1
+warning: missing timers: 4
+   979.149: [DBG ][wllc]: -----last PAN advertize is running, return -1
+warning: missing timers: 1
+warning: missing timers: 1

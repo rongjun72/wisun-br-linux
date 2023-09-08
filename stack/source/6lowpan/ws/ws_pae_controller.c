@@ -231,7 +231,6 @@ int8_t ws_pae_controller_authenticator_start(struct net_if *interface_ptr, uint1
 {
     (void) local_port;
     (void) remote_port;
-    tr_info("----------------ws_pae_controller_authenticator_start--------------------");
 
     if (!interface_ptr || !remote_addr) {
         return -1;
@@ -276,7 +275,6 @@ int8_t ws_pae_controller_authenticator_start(struct net_if *interface_ptr, uint1
 
     controller->auth_started = true;
 
-    tr_info("-----------------ws_pae_auth_start------------");
     ws_pae_auth_start(interface_ptr);
 
     return 0;
@@ -1681,7 +1679,6 @@ int8_t ws_pae_controller_border_router_addr_read(struct net_if *interface_ptr, u
 
 int8_t ws_pae_controller_gtk_update(int8_t interface_id, uint8_t *gtk[GTK_NUM])
 {
-    tr_info("--------------run into ws_pae_controller_gtk_update----------");
     if (!gtk) {
         return -1;
     }
@@ -1714,7 +1711,6 @@ int8_t ws_pae_controller_gtk_update(int8_t interface_id, uint8_t *gtk[GTK_NUM])
     int8_t index = sec_prot_keys_gtk_install_order_first_index_get(&controller->gtks.gtks);
     sec_prot_keys_gtk_status_all_fresh_set(&controller->gtks.gtks);
     sec_prot_keys_gtk_status_active_set(&controller->gtks.gtks, index);
-    tr_info("-------sets active key: index=%d", index);
 
     // Notifies PAE authenticator that GTKs have been updated */
     if (controller->pae_gtks_updated) {
@@ -1769,7 +1765,6 @@ int8_t ws_pae_controller_lgtk_update(int8_t interface_id, uint8_t *lgtk[LGTK_NUM
 
 int8_t ws_pae_controller_next_gtk_update(int8_t interface_id, uint8_t *gtk[GTK_NUM])
 {
-    tr_info("-----!----ws_pae_controller_next_gtk_update---------");
     if (!gtk) {
         return -1;
     }
@@ -1782,10 +1777,8 @@ int8_t ws_pae_controller_next_gtk_update(int8_t interface_id, uint8_t *gtk[GTK_N
     // Inserts new keys and removed keys set as not used
     for (uint8_t i = 0; i < GTK_NUM; i++) {
         if (gtk[i]) {
-            tr_info("----insert new keys: %s", trace_array(gtk[i], 16));
             sec_prot_keys_gtk_set(&controller->gtks.next_gtks, i, gtk[i], 0);
         } else {
-            tr_info("----remove keys not used: %d", i);
             sec_prot_keys_gtk_clear(&controller->gtks.next_gtks, i);
         }
     }

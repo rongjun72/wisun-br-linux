@@ -454,7 +454,6 @@ static void ws_llc_data_confirm(struct llc_data_base *base, struct llc_message *
             if (ws_wh_utt_read(confirm_data->headerIeList, confirm_data->headerIeListLength, &ie_utt)) {
                 if (success)
                     neighbor_llc->neighbor->lifetime = neighbor_llc->neighbor->link_lifetime;
-                tr_debug("----update neighbor ut form: ws_llc_data_confirm");
                 ws_neighbor_class_ut_update(neighbor_llc->ws_neighbor, ie_utt.ufsi, confirm->timestamp,
                                             neighbor_llc->neighbor->mac64);
             }
@@ -660,7 +659,6 @@ static void ws_llc_data_ffn_ind(const struct net_if *net_if, const mcps_data_ind
 
         if (!ws_wh_utt_read(ie_ext->headerIeList, ie_ext->headerIeListLength, &ie_utt))
             BUG("missing UTT-IE in data frame from FFN");
-        tr_debug("----update neighbor ut form: ws_llc_data_ffn_ind");
         ws_neighbor_class_ut_update(neighbor.ws_neighbor, ie_utt.ufsi, data->timestamp, data->SrcAddr);
         if (ws_wh_bt_read(ie_ext->headerIeList, ie_ext->headerIeListLength, &ie_bt)) {
             ws_neighbor_class_bt_update(neighbor.ws_neighbor, ie_bt.broadcast_slot_number,
@@ -836,7 +834,6 @@ static void ws_llc_eapol_ffn_ind(const struct net_if *net_if, const mcps_data_in
 
     if (!ws_wh_utt_read(ie_ext->headerIeList, ie_ext->headerIeListLength, &ie_utt))
         BUG("missing UTT-IE in EAPOL frame from FFN");
-    tr_debug("----update neighbor ut form: ws_llc_eapol_ffn_ind");
     ws_neighbor_class_ut_update(neighbor.ws_neighbor, ie_utt.ufsi, data->timestamp, data->SrcAddr);
     if (ws_wh_bt_read(ie_ext->headerIeList, ie_ext->headerIeListLength, &ie_bt)) {
         ws_neighbor_class_bt_update(neighbor.ws_neighbor, ie_bt.broadcast_slot_number,
@@ -1820,19 +1817,15 @@ int8_t ws_llc_asynch_request(struct net_if *interface, struct ws_llc_mngt_req *r
     }
 
     if (request->frame_type == WS_FT_PA) {
-        if (interface->pan_advert_running) {
-            tr_debug("-----last PAN advertize is running, return -1");
+        if (interface->pan_advert_running)
             return -1;
-        } else {
+        else
             interface->pan_advert_running = true;
-        }
     } else if (request->frame_type == WS_FT_PC) {
-        if (interface->pan_config_running) {
-            tr_debug("-----last PAN config is running, return -1"); 
+        if (interface->pan_config_running)
             return -1;
-        } else {
+        else
             interface->pan_config_running = true;
-        }
     }
 
     //Allocate LLC message pointer

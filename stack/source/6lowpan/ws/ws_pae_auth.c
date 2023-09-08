@@ -411,7 +411,6 @@ void ws_pae_auth_start(struct net_if *interface_ptr)
     int gtk_index = sec_prot_keys_gtk_status_active_get(pae_auth->sec_keys_nw_info->gtks);
     if (gtk_index < 0) {
         // If there is no key, inserts a new one
-        tr_info("-----1");
         ws_pae_auth_gtk_key_insert(pae_auth->sec_keys_nw_info->gtks, pae_auth->gtks.next_gtks, pae_auth->sec_cfg->timer_cfg.gtk.expire_offset, false);
         gtk_index = sec_prot_keys_gtk_install_order_first_index_get(pae_auth->sec_keys_nw_info->gtks);
         ws_pae_auth_active_gtk_set(pae_auth->sec_keys_nw_info->gtks, gtk_index);
@@ -423,7 +422,6 @@ void ws_pae_auth_start(struct net_if *interface_ptr)
     int lgtk_index = sec_prot_keys_gtk_status_active_get(pae_auth->sec_keys_nw_info->lgtks);
     if (lgtk_index < 0) {
         // If there is no key, inserts a new one
-        tr_info("-----2");
         ws_pae_auth_gtk_key_insert(pae_auth->sec_keys_nw_info->lgtks, pae_auth->lgtks.next_gtks, pae_auth->sec_cfg->timer_cfg.lgtk.expire_offset, true);
         lgtk_index = sec_prot_keys_gtk_install_order_first_index_get(pae_auth->sec_keys_nw_info->lgtks);
         ws_pae_auth_active_gtk_set(pae_auth->sec_keys_nw_info->lgtks, lgtk_index);
@@ -1021,7 +1019,6 @@ static void ws_pae_auth_gtk_key_insert(sec_prot_gtk_keys_t *gtks, sec_prot_gtk_k
 
     // Checks if next GTK values are set and gets first GTK to install
     int8_t next_gtk_index = sec_prot_keys_gtk_install_order_first_index_get(next_gtks);
-    tr_info("----next_gtk_index = %d", next_gtk_index);
     if (next_gtk_index >= 0) {
         // Gets GTK value
         uint8_t *gtk = sec_prot_keys_gtk_get(next_gtks, next_gtk_index);
@@ -1035,7 +1032,6 @@ static void ws_pae_auth_gtk_key_insert(sec_prot_gtk_keys_t *gtks, sec_prot_gtk_k
         } while (sec_prot_keys_gtk_valid_check(gtk_value) < 0);
     }
 
-    tr_info("----installed GDK: %s", trace_array(gtk_value, 16));
     ws_pae_auth_gtk_insert(gtks, gtk_value, lifetime, is_lgtk);
 }
 

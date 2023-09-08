@@ -148,17 +148,17 @@ static void handle_btl_update(struct os_ctxt *ctxt)
     ret = read(ctxt->data_fd, btl_rx_buf, sizeof(btl_rx_buf));
     if (!memmem(btl_rx_buf, ret, btl_str, strlen(btl_str)))
         FATAL(1, "cannot get bootloader banner");
+    // option '1' to upload gbl
     write(ctxt->data_fd, &btl_upload_gbl, sizeof(uint8_t));
 }
 
 static void handle_btl_run(struct os_ctxt *ctxt)
 {
-    char btl_rx_buf[4096] = { };
     char btl_run = '2';
 
     // wait for the Gecko Bootloader banner
-    read(ctxt->data_fd, btl_rx_buf, sizeof(btl_rx_buf));
-    // option '2' to start xmodem download
+    usleep(500000);
+    // option '2' to run
     write(ctxt->data_fd, &btl_run, sizeof(uint8_t));
 }
 
@@ -181,6 +181,7 @@ static void handle_rcp_reset(struct os_ctxt *ctxt)
     spinel_pop_u8(&rx_buf);
     cmd = spinel_pop_uint(&rx_buf);
     if (cmd == SPINEL_CMD_NOOP) {
+        rx_buf.cnt = 0;
         rx_buf.data_size = read_data(ctxt, buffer, sizeof(buffer));
         spinel_pop_u8(&rx_buf);
         cmd = spinel_pop_uint(&rx_buf);

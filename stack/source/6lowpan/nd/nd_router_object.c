@@ -159,6 +159,7 @@ static void nd_update_registration(struct net_if *cur_interface, ipv6_neighbour_
     if (aro->status == ARO_SUCCESS && aro->lifetime != 0) {
         neigh->type = IP_NEIGHBOUR_REGISTERED;
         neigh->lifetime = aro->lifetime * UINT32_C(60);
+        tr_info("------ nd_update_registration(): neigh->lifetime = %d", neigh->lifetime);
         ipv6_neighbour_set_state(&cur_interface->ipv6_neighbour_cache, neigh, IP_NEIGHBOUR_STALE);
         /* Register with 2 seconds off the lifetime - don't want the NCE to expire before the route */
         ipv6_route_add_metric(neigh->ip_address, 128, cur_interface->id, neigh->ip_address, ROUTE_ARO, NULL, 0, neigh->lifetime - 2, 32);
@@ -206,6 +207,7 @@ bool nd_ns_earo_handler(struct net_if *cur_interface, const uint8_t *earo_ptr, s
     uint8_t flags;
     uint8_t tid;
 
+    tr_info("----- nd_ns_earo_handler(): had an ARO, hanle it");
     //   RFC 6775 Section 6.5 - Processing a Neighbor Solicitation
     // If the source address of the NS is the unspecified address, or if no
     // SLLAO is included, then any included ARO is ignored, that is, the NS

@@ -158,7 +158,7 @@ bool ws_bootstrap_neighbor_add(struct net_if *net_if, const uint8_t eui64[8], st
 void ws_bootstrap_neighbor_list_clean(struct net_if *interface);
 void ws_nud_table_reset(struct net_if *cur);
 void ws_address_registration_update(struct net_if *interface, const uint8_t addr[16]);
-
+void test_clean_mac_neighbor_table(struct net_if *interface, const uint8_t *mac_64);
 
 void ws_bootstrap_fhss_configure_channel_masks(struct net_if *cur, fhss_ws_configuration_t *fhss_configuration);
 int8_t ws_bootstrap_fhss_set_defaults(struct net_if *cur, fhss_ws_configuration_t *fhss_configuration);

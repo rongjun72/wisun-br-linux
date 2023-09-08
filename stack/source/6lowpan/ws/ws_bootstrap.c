@@ -156,6 +156,25 @@ void ws_bootstrap_mac_neighbor_short_time_set(struct net_if *interface, const ui
     }
 }
 
+void test_clean_mac_neighbor_table(struct net_if *interface, const uint8_t *mac_64)
+{
+    //mlme_device_descriptor_t device_desc;
+    //ws_neighbor_class_entry_t *ws_neighbour = NULL;
+    mac_neighbor_table_entry_t *neighbor_buffer = NULL;
+
+    neighbor_buffer = mac_neighbor_table_address_discover(interface->mac_parameters.mac_neighbor_table, mac_64, ADDR_802_15_4_LONG);
+   
+    if (neighbor_buffer) {
+        ws_neighbor_class_entry_get(&interface->ws_info.neighbor_storage, neighbor_buffer->index);
+        rcp_set_neighbor(neighbor_buffer->index, mac_helper_panid_get(interface), neighbor_buffer->mac16, neighbor_buffer->mac64, 0);
+        // mac_helper_devicetable_set(&device_desc, interface, neighbor_buffer->index, interface->mac_parameters->mac_default_key_index, true);
+        mac_neighbor_table_neighbor_remove(interface->mac_parameters.mac_neighbor_table, neighbor_buffer); 
+        ws_neighbor_class_entry_remove(&interface->ws_info.neighbor_storage, neighbor_buffer->index);
+        tr_info("-----------------MAC address: %s clean registered", trace_array(mac_64, 8));
+    }
+  
+}    
+
 static void ws_bootstrap_neighbor_delete(struct net_if *interface, mac_neighbor_table_entry_t *neighbor)
 {
     tr_debug("neighbor[%d] = %s, removed", neighbor->index, tr_eui64(neighbor->mac64));
@@ -1719,6 +1738,8 @@ static bool ws_rpl_new_parent_callback(uint8_t *ll_parent_address, void *handle,
     //Discover neigh ready here for possible ETX validate
     memcpy(mac64, ll_parent_address + 8, 8);
     mac64[0] ^= 2;
+
+    tr_warn("----------------------------- ws_rpl_new_parent_callback()");
 
 
     ws_bootstrap_neighbor_get(cur, mac64, &neigh_buffer);

@@ -46,6 +46,7 @@
 #include "security/protocols/gkh_sec_prot/auth_gkh_sec_prot.h"
 #include "security/protocols/radius_sec_prot/radius_client_sec_prot.h"
 #include "security/protocols/msg_sec_prot/msg_sec_prot.h"
+#include "6lowpan/ws/ws_bootstrap.h"
 #include "6lowpan/ws/ws_config.h"
 #include "6lowpan/ws/ws_common.h"
 #include "6lowpan/ws/ws_common_defines.h"
@@ -1272,6 +1273,9 @@ static kmp_api_t *ws_pae_auth_kmp_incoming_ind(kmp_service_t *service, uint8_t m
                  */
                 tr_debug("PAE: to active, eui-64: %s", tr_eui64(supp_entry->addr.eui_64));
                 ns_list_add_to_start(&pae_auth->active_supp_list, supp_entry);
+                /* For the new supplicant, if its corresponding mac address existed in the neighbor table, clean it */
+                struct net_if *interface_ptr = protocol_stack_interface_info_get_by_id(pae_auth->interface_ptr->id);
+                test_clean_mac_neighbor_table(interface_ptr, supp_entry->addr.eui_64);
             }
         }
     }

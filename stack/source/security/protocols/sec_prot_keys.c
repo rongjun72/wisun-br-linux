@@ -463,6 +463,8 @@ int8_t sec_prot_keys_gtk_set(sec_prot_gtk_keys_t *gtks, uint8_t index, const uin
     gtks->gtk[index].status = GTK_STATUS_NEW;
     gtks->gtk[index].install_order = install_order;
     memcpy(gtks->gtk[index].key, gtk, GTK_LEN);
+    
+    tr_info("----set gdk: %s", trace_array(gtks->gtk[index].key, GTK_LEN));
 
     gtks->updated = true;
 

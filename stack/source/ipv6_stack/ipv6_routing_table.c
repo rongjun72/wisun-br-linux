@@ -688,7 +688,7 @@ void ipv6_neighbour_cache_print(const ipv6_neighbour_cache_t *cache)
     tr_debug("Neighbour Cache %d", cache->interface_id);
     tr_debug("Reachable Time: %"PRIu32"   Retrans Timer: %"PRIu32"   MTU: %"PRIu16"", cache->reachable_time, cache->retrans_timer, cache->link_mtu);
     ns_list_foreach(const ipv6_neighbour_t, cur, &cache->list) {
-        tr_debug("%sIP Addr: %s", cur->is_router ? "Router " : "", tr_ipv6(cur->ip_address));
+        tr_debug("%sIP Addr: %s : Lifetime: %d", cur->is_router ? "Router " : "", tr_ipv6(cur->ip_address), cur->lifetime);
         tr_debug("LL Addr: (%s %"PRIu32") %s", state_names[cur->state], cur->timer, tr_key(cur->ll_address, addr_len_from_type(cur->ll_type)));
         if (cache->recv_addr_reg && memcmp(ipv6_neighbour_eui64(cache, cur), ADDR_EUI64_ZERO, 8))
             tr_debug("EUI-64:  (%s %"PRIu32") %s", type_names[cur->type], cur->lifetime, tr_eui64(ipv6_neighbour_eui64(cache, cur)));
@@ -1734,6 +1734,8 @@ void ipv6_route_table_ttl_update(int seconds)
 
         if (r->lifetime > seconds) {
             r->lifetime -= seconds;
+            if (r->lifetime%100 == 0)
+                tr_debug("------ r->lifetime = %d", r->lifetime);
             continue;
         }
 

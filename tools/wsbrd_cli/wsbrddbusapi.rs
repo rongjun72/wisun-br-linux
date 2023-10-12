@@ -87,6 +87,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> OrgFreedes
 }
 
 pub trait ComSilabsWisunBorderRouter {
+    fn reset_border_router(&self, arg0: u8) -> Result<(), dbus::Error>;
     fn join_multicast_group(&self, arg0: Vec<u8>) -> Result<(), dbus::Error>;
     fn leave_multicast_group(&self, arg0: Vec<u8>) -> Result<(), dbus::Error>;
     fn set_mode_switch(&self, arg0: Vec<u8>, arg1: i32) -> Result<(), dbus::Error>;
@@ -111,6 +112,10 @@ pub trait ComSilabsWisunBorderRouter {
 }
 
 impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsWisunBorderRouter for blocking::Proxy<'a, C> {
+
+    fn reset_border_router(&self, arg0: u8) -> Result<(), dbus::Error> {
+        self.method_call("com.silabs.Wisun.BorderRouter", "resetBorderRouter", (arg0, ))
+    }
 
     fn join_multicast_group(&self, arg0: Vec<u8>) -> Result<(), dbus::Error> {
         self.method_call("com.silabs.Wisun.BorderRouter", "JoinMulticastGroup", (arg0, ))

@@ -131,6 +131,20 @@ fn do_status(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+fn do_reset(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    let _ret = dbus_proxy.reset_border_router(0);
+
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches = App::new("wsbrd_cli")
         .setting(AppSettings::SubcommandRequired)
@@ -138,11 +152,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .subcommand(
             SubCommand::with_name("status").about("Display a brief status of the Wi-SUN network"),
         )
+        .subcommand(
+            SubCommand::with_name("reset-router").about("Reset the Border router"),
+        )
         .get_matches();
     let dbus_user = matches.is_present("user");
 
     match matches.subcommand_name() {
         Some("status") => do_status(dbus_user),
+        Some("reset-router") => do_reset(dbus_user),
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }
+
 }

@@ -1019,6 +1019,7 @@ static void ws_pae_auth_gtk_key_insert(sec_prot_gtk_keys_t *gtks, sec_prot_gtk_k
 
     // Checks if next GTK values are set and gets first GTK to install
     int8_t next_gtk_index = sec_prot_keys_gtk_install_order_first_index_get(next_gtks);
+    tr_info("----next_gtk_index = %d", next_gtk_index);
     if (next_gtk_index >= 0) {
         // Gets GTK value
         uint8_t *gtk = sec_prot_keys_gtk_get(next_gtks, next_gtk_index);
@@ -1032,6 +1033,7 @@ static void ws_pae_auth_gtk_key_insert(sec_prot_gtk_keys_t *gtks, sec_prot_gtk_k
         } while (sec_prot_keys_gtk_valid_check(gtk_value) < 0);
     }
 
+    tr_info("----installed GDK: %s", trace_array(gtk_value, 16));
     ws_pae_auth_gtk_insert(gtks, gtk_value, lifetime, is_lgtk);
 }
 

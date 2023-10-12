@@ -76,7 +76,7 @@ struct rcp {
     struct rcp_rail_config *rail_config_list;
 };
 
-void rcp_noop(void);
+void rcp_noop(uint8_t flag);
 void rcp_reset(void);
 void rcp_reset_stack(void);
 void rcp_start(uint16_t channel, uint16_t panid, bool coordinator);

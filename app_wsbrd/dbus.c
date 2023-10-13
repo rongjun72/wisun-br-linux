@@ -62,40 +62,17 @@ static int dbus_set_slot_algorithm(sd_bus_message *m, void *userdata, sd_bus_err
     return 0;
 }
 
-int dbus_reset_border_router(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
-{
-    struct wsbr_ctxt *ctxt = userdata;
-    int ret;
-    uint8_t *eui64;
-    size_t eui64_len;
-    int phy_mode_id;
-
-    ret = sd_bus_message_read_array(m, 'y', (const void **)&eui64, &eui64_len);
-    if (ret < 0)
-        return sd_bus_error_set_errno(ret_error, -ret);
-
-    ret = sd_bus_message_read_basic(m, 'i', &phy_mode_id);
-    if (ret < 0)
-        return sd_bus_error_set_errno(ret_error, -ret);
-
-    if (eui64_len == 0)
-        eui64 = NULL;
-    else if (eui64_len != 8)
-        return sd_bus_error_set_errno(ret_error, EINVAL);
-
-    if (phy_mode_id > 0)
-        ret = ws_bbr_set_mode_switch(ctxt->rcp_if_id, 1, phy_mode_id, eui64); // mode switch enabled
-    else if (phy_mode_id == -1)
-        ret = ws_bbr_set_mode_switch(ctxt->rcp_if_id, -1, 0, eui64); // mode switch disabled
-    else if (phy_mode_id == 0)
-        ret = ws_bbr_set_mode_switch(ctxt->rcp_if_id, 0, 0, eui64); // mode switch back to default
-
-    if (ret < 0)
-        return sd_bus_error_set_errno(ret_error, EINVAL);
-    sd_bus_reply_method_return(m, NULL);
-
-    return 0;
-}
+//int dbus_stop_fan10(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+//{
+//    struct wsbr_ctxt *ctxt = userdata;
+//
+//    tr_warn("-----stop BBR: %d", ctxt->rcp_if_id);
+//    ws_bbr_stop(ctxt->rcp_if_id); 
+//
+//    sd_bus_reply_method_return(m, NULL);
+//
+//    return 0;
+//}
 
 int dbus_set_mode_switch(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 {
@@ -104,6 +81,8 @@ int dbus_set_mode_switch(sd_bus_message *m, void *userdata, sd_bus_error *ret_er
     uint8_t *eui64;
     size_t eui64_len;
     int phy_mode_id;
+
+    tr_warn("---------dbus_set_mode_switch()");
 
     ret = sd_bus_message_read_array(m, 'y', (const void **)&eui64, &eui64_len);
     if (ret < 0)
@@ -223,11 +202,33 @@ static int dbus_get_transient_keys(sd_bus_message *reply, void *userdata,
     return 0;
 }
 
+//static int dbus_stop_fan10(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+//{
+//    struct wsbr_ctxt *ctxt = userdata;
+//
+//    tr_warn("-----stop BBR: %d", ctxt->rcp_if_id);
+//    ws_bbr_stop(ctxt->rcp_if_id); 
+//
+//    sd_bus_reply_method_return(m, NULL);
+//
+//    return 0;
+//}
+
+static int dbus_stop_fan10(sd_bus *bus, const char *path, const char *interface,
+                         const char *property, sd_bus_message *reply,
+                         void *userdata, sd_bus_error *ret_error)
+{
+    struct wsbr_ctxt *ctxt = userdata;
+    tr_warn("-----stop BBR:");
+    ws_bbr_stop(ctxt->rcp_if_id); 
+    return dbus_get_transient_keys(reply, userdata, ret_error, false);
+}
+
 static int dbus_get_gtks(sd_bus *bus, const char *path, const char *interface,
                          const char *property, sd_bus_message *reply,
                          void *userdata, sd_bus_error *ret_error)
 {
-    tr_warn("-------dbus here");
+    tr_warn("-------dbus here 2");
     return dbus_get_transient_keys(reply, userdata, ret_error, false);
 }
 
@@ -664,8 +665,8 @@ int dbus_get_string(sd_bus *bus, const char *path, const char *interface,
 
 static const sd_bus_vtable dbus_vtable[] = {
         SD_BUS_VTABLE_START(0),
-        SD_BUS_METHOD("resetBorderRouter", "ay", NULL,
-                      dbus_reset_border_router, 0),
+        //SD_BUS_METHOD("stopFan10", "ay", NULL,
+        //              dbus_stop_fan10, 0),
         SD_BUS_METHOD("JoinMulticastGroup", "ay", NULL,
                       dbus_join_multicast_group, 0),
         SD_BUS_METHOD("LeaveMulticastGroup", "ay", NULL,
@@ -682,6 +683,9 @@ static const sd_bus_vtable dbus_vtable[] = {
                       dbus_install_gtk, 0),
         SD_BUS_METHOD("InstallLgtk", "ay", NULL,
                       dbus_install_lgtk, 0),
+        SD_BUS_PROPERTY("stopFan10", "aay", dbus_stop_fan10,
+                        offsetof(struct wsbr_ctxt, rcp_if_id),
+                        SD_BUS_VTABLE_PROPERTY_EMITS_CHANGE),
         SD_BUS_PROPERTY("Gtks", "aay", dbus_get_gtks,
                         offsetof(struct wsbr_ctxt, rcp_if_id),
                         SD_BUS_VTABLE_PROPERTY_EMITS_CHANGE),

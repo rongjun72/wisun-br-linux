@@ -800,6 +800,8 @@ void ws_bbr_stop(int8_t interface_id)
 {
     struct net_if *cur = protocol_stack_interface_info_get_by_id(interface_id);
 
+    tr_warn("-----stop BBR: %p", cur);
+
     ws_bbr_routing_stop(cur);
     backbone_interface_id = -1;
     current_instance_id++;

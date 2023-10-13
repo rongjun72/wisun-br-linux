@@ -87,13 +87,14 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> OrgFreedes
 }
 
 pub trait ComSilabsWisunBorderRouter {
-    fn reset_border_router(&self, arg0: u8) -> Result<(), dbus::Error>;
+    //fn stop_fan10(&self, arg0: u8) -> Result<(), dbus::Error>;
     fn join_multicast_group(&self, arg0: Vec<u8>) -> Result<(), dbus::Error>;
     fn leave_multicast_group(&self, arg0: Vec<u8>) -> Result<(), dbus::Error>;
     fn set_mode_switch(&self, arg0: Vec<u8>, arg1: i32) -> Result<(), dbus::Error>;
     fn set_slot_algorithm(&self, arg0: u8) -> Result<(), dbus::Error>;
     fn revoke_pairwise_keys(&self, arg0: Vec<u8>) -> Result<(), dbus::Error>;
     fn revoke_group_keys(&self, arg0: Vec<u8>, arg1: Vec<u8>) -> Result<(), dbus::Error>;
+    fn stop_fan10(&self) -> Result<Vec<Vec<u8>>, dbus::Error>;
     fn gtks(&self) -> Result<Vec<Vec<u8>>, dbus::Error>;
     fn gaks(&self) -> Result<Vec<Vec<u8>>, dbus::Error>;
     fn lgtks(&self) -> Result<Vec<Vec<u8>>, dbus::Error>;
@@ -113,9 +114,10 @@ pub trait ComSilabsWisunBorderRouter {
 
 impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsWisunBorderRouter for blocking::Proxy<'a, C> {
 
-    fn reset_border_router(&self, arg0: u8) -> Result<(), dbus::Error> {
-        self.method_call("com.silabs.Wisun.BorderRouter", "resetBorderRouter", (arg0, ))
-    }
+    //fn stop_fan10(&self, arg0: u8) -> Result<(), dbus::Error> {
+    //    println!("stop_fan10: {}", arg0);
+    //    self.method_call("com.silabs.Wisun.BorderRouter", "stopFan10", (arg0, ))
+    //}
 
     fn join_multicast_group(&self, arg0: Vec<u8>) -> Result<(), dbus::Error> {
         self.method_call("com.silabs.Wisun.BorderRouter", "JoinMulticastGroup", (arg0, ))
@@ -139,6 +141,10 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsW
 
     fn revoke_group_keys(&self, arg0: Vec<u8>, arg1: Vec<u8>) -> Result<(), dbus::Error> {
         self.method_call("com.silabs.Wisun.BorderRouter", "RevokeGroupKeys", (arg0, arg1, ))
+    }
+
+    fn stop_fan10(&self) -> Result<Vec<Vec<u8>>, dbus::Error> {
+        <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(&self, "com.silabs.Wisun.BorderRouter", "stopFan10")
     }
 
     fn gtks(&self) -> Result<Vec<Vec<u8>>, dbus::Error> {

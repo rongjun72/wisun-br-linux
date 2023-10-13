@@ -131,7 +131,7 @@ fn do_status(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn do_reset(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
+fn do_stopfan10(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
     let dbus_conn;
     if dbus_user {
         dbus_conn = Connection::new_session()?;
@@ -140,7 +140,12 @@ fn do_reset(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
     }
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
-    let _ret = dbus_proxy.reset_border_router(0);
+    match dbus_proxy.wisun_network_name() {
+        Ok(val) => println!("network_name: {}", val),
+        Err(e) => return Err(Box::new(e)),
+    }
+    
+    let _ret = dbus_proxy.stop_fan10().unwrap_or(vec![]);
 
     Ok(())
 }
@@ -153,14 +158,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             SubCommand::with_name("status").about("Display a brief status of the Wi-SUN network"),
         )
         .subcommand(
-            SubCommand::with_name("reset-router").about("Reset the Border router"),
+            SubCommand::with_name("stop-fan10").about("Stop the current runing FAN1.0 BBR"),
         )
         .get_matches();
     let dbus_user = matches.is_present("user");
 
     match matches.subcommand_name() {
         Some("status") => do_status(dbus_user),
-        Some("reset-router") => do_reset(dbus_user),
+        Some("stop-fan10") => do_stopfan10(dbus_user),
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }
 

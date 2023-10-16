@@ -144,8 +144,13 @@ fn do_stopfan10(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
         Ok(val) => println!("network_name: {}", val),
         Err(e) => return Err(Box::new(e)),
     }
+
+    let vec: Vec<u8> = Vec::new();
+
+    ////let _ret = dbus_proxy.set_mode_switch(vec, 1);
     
-    let _ret = dbus_proxy.stop_fan10().unwrap_or(vec![]);
+    let _ret = dbus_proxy.stop_fan10(vec, 1);////.unwrap_or(vec![]);
+    ////let _ret = dbus_proxy.stop_fan10(0);
 
     Ok(())
 }

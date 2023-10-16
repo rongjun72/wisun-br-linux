@@ -62,18 +62,6 @@ static int dbus_set_slot_algorithm(sd_bus_message *m, void *userdata, sd_bus_err
     return 0;
 }
 
-//int dbus_stop_fan10(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
-//{
-//    struct wsbr_ctxt *ctxt = userdata;
-//
-//    tr_warn("-----stop BBR: %d", ctxt->rcp_if_id);
-//    ws_bbr_stop(ctxt->rcp_if_id); 
-//
-//    sd_bus_reply_method_return(m, NULL);
-//
-//    return 0;
-//}
-
 int dbus_set_mode_switch(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 {
     struct wsbr_ctxt *ctxt = userdata;
@@ -106,6 +94,24 @@ int dbus_set_mode_switch(sd_bus_message *m, void *userdata, sd_bus_error *ret_er
 
     if (ret < 0)
         return sd_bus_error_set_errno(ret_error, EINVAL);
+    sd_bus_reply_method_return(m, NULL);
+
+    return 0;
+}
+
+int dbus_stop_fan10(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    struct wsbr_ctxt *ctxt = &g_ctxt;
+    ////struct wsbr_ctxt *ctxt = userdata;
+
+    tr_warn("-----userdata:%p", userdata);
+    int interface_id = *(int *)userdata;
+    tr_warn("-----interface_id:%d", interface_id);
+    tr_warn("-----ctxt->rcp_if_id:%d", ctxt->rcp_if_id);
+
+    tr_warn("-----stop BBR: %d", ctxt->rcp_if_id);
+    ws_bbr_stop(ctxt->rcp_if_id); 
+
     sd_bus_reply_method_return(m, NULL);
 
     return 0;
@@ -202,27 +208,22 @@ static int dbus_get_transient_keys(sd_bus_message *reply, void *userdata,
     return 0;
 }
 
-//static int dbus_stop_fan10(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
-//{
-//    struct wsbr_ctxt *ctxt = userdata;
-//
-//    tr_warn("-----stop BBR: %d", ctxt->rcp_if_id);
-//    ws_bbr_stop(ctxt->rcp_if_id); 
-//
-//    sd_bus_reply_method_return(m, NULL);
-//
-//    return 0;
-//}
-
-static int dbus_stop_fan10(sd_bus *bus, const char *path, const char *interface,
-                         const char *property, sd_bus_message *reply,
-                         void *userdata, sd_bus_error *ret_error)
-{
-    struct wsbr_ctxt *ctxt = userdata;
-    tr_warn("-----stop BBR:");
-    ws_bbr_stop(ctxt->rcp_if_id); 
-    return dbus_get_transient_keys(reply, userdata, ret_error, false);
-}
+////static int dbus_stop_fan10(sd_bus *bus, const char *path, const char *interface,
+////                         const char *property, sd_bus_message *reply,
+////                         void *userdata, sd_bus_error *ret_error)
+////{
+////    struct wsbr_ctxt *ctxt = &g_ctxt;
+////    ////struct wsbr_ctxt *ctxt = userdata;
+////
+////    tr_warn("-----userdata:%p", userdata);
+////    int interface_id = *(int *)userdata;
+////    tr_warn("-----interface_id:%d", interface_id);
+////    tr_warn("-----ctxt->rcp_if_id:%d", ctxt->rcp_if_id);
+////
+////    tr_warn("-----stop BBR:");
+////    ws_bbr_stop(ctxt->rcp_if_id); 
+////    return dbus_get_transient_keys(reply, userdata, ret_error, false);
+////}
 
 static int dbus_get_gtks(sd_bus *bus, const char *path, const char *interface,
                          const char *property, sd_bus_message *reply,
@@ -665,14 +666,14 @@ int dbus_get_string(sd_bus *bus, const char *path, const char *interface,
 
 static const sd_bus_vtable dbus_vtable[] = {
         SD_BUS_VTABLE_START(0),
-        //SD_BUS_METHOD("stopFan10", "ay", NULL,
-        //              dbus_stop_fan10, 0),
+        SD_BUS_METHOD("stopFan10", "ayi", NULL,
+                      dbus_stop_fan10, SD_BUS_VTABLE_METHOD_NO_REPLY),
         SD_BUS_METHOD("JoinMulticastGroup", "ay", NULL,
                       dbus_join_multicast_group, 0),
         SD_BUS_METHOD("LeaveMulticastGroup", "ay", NULL,
                       dbus_leave_multicast_group, 0),
         SD_BUS_METHOD("SetModeSwitch", "ayi", NULL,
-                      dbus_set_mode_switch, 0),
+                      dbus_set_mode_switch, SD_BUS_VTABLE_METHOD_NO_REPLY),
         SD_BUS_METHOD("SetSlotAlgorithm", "y", NULL,
                       dbus_set_slot_algorithm, 0),
         SD_BUS_METHOD("RevokePairwiseKeys", "ay", NULL,
@@ -683,9 +684,9 @@ static const sd_bus_vtable dbus_vtable[] = {
                       dbus_install_gtk, 0),
         SD_BUS_METHOD("InstallLgtk", "ay", NULL,
                       dbus_install_lgtk, 0),
-        SD_BUS_PROPERTY("stopFan10", "aay", dbus_stop_fan10,
-                        offsetof(struct wsbr_ctxt, rcp_if_id),
-                        SD_BUS_VTABLE_PROPERTY_EMITS_CHANGE),
+        ////SD_BUS_PROPERTY("stopFan10", "aay", dbus_stop_fan10,
+        ////                offsetof(struct wsbr_ctxt, rcp_if_id),
+        ////                SD_BUS_VTABLE_PROPERTY_EMITS_CHANGE),
         SD_BUS_PROPERTY("Gtks", "aay", dbus_get_gtks,
                         offsetof(struct wsbr_ctxt, rcp_if_id),
                         SD_BUS_VTABLE_PROPERTY_EMITS_CHANGE),

@@ -46,6 +46,12 @@ typedef enum mlme_primitive mlme_primitive_e;
 #define RCP_HAS_RF_CONFIG_LIST 0x0004
 #define RCP_HAS_RF_CONFIG      0x0008
 
+enum {
+    NOOP_RESET = 0,
+    NOOP_SYNC = 1,
+};
+
+
 struct rcp_rail_config {
     int      index;
     uint32_t chan0_freq;

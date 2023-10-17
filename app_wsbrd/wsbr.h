@@ -64,5 +64,6 @@ struct wsbr_ctxt {
 extern struct wsbr_ctxt g_ctxt;
 
 void wsbr_dhcp_lease_update(struct wsbr_ctxt *ctxt, const uint8_t eui64[8], const uint8_t ipv6[16]);
+int wsbr_restart(struct wsbr_ctxt *ctxt);
 
 #endif

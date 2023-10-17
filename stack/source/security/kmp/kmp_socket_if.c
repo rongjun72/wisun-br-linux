@@ -167,11 +167,13 @@ int8_t kmp_socket_if_unregister(kmp_service_t *service)
     }
 
     for (int i = 0; i < KMP_INSTANCE_NUMBER; i++) {
-        if (g_kmp_socket_if_instances[i]->kmp_service == service) {
-            if (g_kmp_socket_if_instances[i]->kmp_socket_id >= 0)
-                close(g_kmp_socket_if_instances[i]->kmp_socket_id);
-            kmp_service_msg_if_register(service, g_kmp_socket_if_instances[i]->instance_id, NULL, 0, 0);
-            free(g_kmp_socket_if_instances[i]);
+        if (g_kmp_socket_if_instances[i] != NULL) {
+            if (g_kmp_socket_if_instances[i]->kmp_service == service) {
+                if (g_kmp_socket_if_instances[i]->kmp_socket_id >= 0)
+                    close(g_kmp_socket_if_instances[i]->kmp_socket_id);
+                kmp_service_msg_if_register(service, g_kmp_socket_if_instances[i]->instance_id, NULL, 0, 0);
+                free(g_kmp_socket_if_instances[i]);
+            }
         }
     }
     return 0;

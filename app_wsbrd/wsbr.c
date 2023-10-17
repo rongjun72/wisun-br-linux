@@ -536,11 +536,11 @@ int wsbr_main(int argc, char *argv[])
     }
     ctxt->os_ctxt->trig_fd = ctxt->os_ctxt->data_fd;
 
-    rcp_noop(0);
+    rcp_noop(NOOP_RESET);
     tr_info("--------wait 300ms for RCP reset----");
     usleep(300000);
     
-    rcp_noop(1);
+    rcp_noop(NOOP_SYNC);
     rcp_reset();
     wsbr_rcp_init(ctxt);
     wsbr_tun_init(ctxt);
@@ -565,6 +565,28 @@ int wsbr_main(int argc, char *argv[])
 
     while (true)
         wsbr_poll(ctxt, fds);
+
+    return 0;
+}
+
+int wsbr_restart(struct wsbr_ctxt *ctxt)
+{
+    arm_nwk_interface_down(ctxt->rcp_if_id);
+
+//////    rcp_noop(NOOP_RESET);
+//////    usleep(300000);
+//////    rcp_reset();
+//////    wsbr_rcp_init(ctxt);
+//////
+//////    if (net_init_core())
+//////        BUG("net_init_core");
+//////
+//////    ctxt->rcp_if_id = arm_nwk_interface_lowpan_init(&ctxt->rcp, ctxt->config.lowpan_mtu, "ws0");
+//////    if (ctxt->rcp_if_id < 0)
+//////        BUG("arm_nwk_interface_lowpan_init: %d", ctxt->rcp_if_id);
+//////
+//////    wsbr_network_init(ctxt);
+
 
     return 0;
 }

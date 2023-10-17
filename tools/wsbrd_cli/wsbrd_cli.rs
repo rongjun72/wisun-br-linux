@@ -141,16 +141,32 @@ fn do_stopfan10(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
     match dbus_proxy.wisun_network_name() {
-        Ok(val) => println!("network_name: {}", val),
+        Ok(val) => println!("stop FAN1.0: {}", val),
         Err(e) => return Err(Box::new(e)),
     }
 
     let vec: Vec<u8> = Vec::new();
+    let _ret = dbus_proxy.stop_fan10(vec, 1);
 
-    ////let _ret = dbus_proxy.set_mode_switch(vec, 1);
-    
-    let _ret = dbus_proxy.stop_fan10(vec, 1);////.unwrap_or(vec![]);
-    ////let _ret = dbus_proxy.stop_fan10(0);
+    Ok(())
+}
+
+fn do_startfan10(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    match dbus_proxy.wisun_network_name() {
+        Ok(val) => println!("Start FAN1.0: {}", val),
+        Err(e) => return Err(Box::new(e)),
+    }
+
+    let vec: Vec<u8> = Vec::new();
+    let _ret = dbus_proxy.start_fan10(vec, 1);
 
     Ok(())
 }
@@ -163,6 +179,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             SubCommand::with_name("status").about("Display a brief status of the Wi-SUN network"),
         )
         .subcommand(
+            SubCommand::with_name("start-fan10").about("Start runing FAN1.0 BBR"),
+        )
+        .subcommand(
             SubCommand::with_name("stop-fan10").about("Stop the current runing FAN1.0 BBR"),
         )
         .get_matches();
@@ -170,6 +189,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match matches.subcommand_name() {
         Some("status") => do_status(dbus_user),
+        Some("start-fan10") => do_startfan10(dbus_user),
         Some("stop-fan10") => do_stopfan10(dbus_user),
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }

@@ -122,12 +122,12 @@ void rcp_noop(uint8_t flag)
     struct iobuf_write buf = { };
     spinel_push_u8(&buf, rcp_get_spinel_hdr());
     spinel_push_uint(&buf, SPINEL_CMD_NOOP);
-    if (flag == 0) {
+    if (flag == NOOP_RESET) {
         /* transmit a spectial value to RCP tell it to reset */
         spinel_push_u32(&buf, 0xffffffff);
         spinel_push_u32(&buf, 0);
     }
-    else if (flag == 1) {
+    else if (flag == NOOP_SYNC) {
 #if ENABLE_HOST_RCP_TIME_ADJUST
         /* debug part for host-rcp time offset calculation -----start */
         struct timespec tp;

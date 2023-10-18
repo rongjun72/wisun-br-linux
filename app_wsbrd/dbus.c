@@ -103,8 +103,8 @@ int dbus_start_fan10(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 {
     struct wsbr_ctxt *ctxt = userdata;
 
-    tr_warn("-----network interface down: %d", ctxt->rcp_if_id);
-    arm_nwk_interface_down(ctxt->rcp_if_id); 
+    tr_warn("-----restart FAN10: %p", ctxt);
+    wsbr_restart(ctxt); 
 
     sd_bus_reply_method_return(m, NULL);
 
@@ -116,15 +116,12 @@ int dbus_stop_fan10(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
     struct wsbr_ctxt *ctxt = userdata;
 
     tr_warn("-----userdata:%p", ctxt);
-    ////tr_warn("-----usr:%p", usr);
     tr_warn("-----ctxt->rcp_if_id:%d", ctxt->rcp_if_id);
-    ////tr_warn("-----usr->rcp_if_id:%d", usr->rcp_if_id);
+
+    ws_bbr_stop(ctxt->rcp_if_id);
 
     tr_warn("-----network interface down: %d", ctxt->rcp_if_id);
     arm_nwk_interface_down(ctxt->rcp_if_id); 
-
-    ////tr_warn("-----restart BBR: %p", ctxt);
-    ////wsbr_restart(ctxt);
 
     sd_bus_reply_method_return(m, NULL);
 
@@ -221,23 +218,6 @@ static int dbus_get_transient_keys(sd_bus_message *reply, void *userdata,
     WARN_ON(ret < 0, "%s", strerror(-ret));
     return 0;
 }
-
-////static int dbus_stop_fan10(sd_bus *bus, const char *path, const char *interface,
-////                         const char *property, sd_bus_message *reply,
-////                         void *userdata, sd_bus_error *ret_error)
-////{
-////    struct wsbr_ctxt *ctxt = &g_ctxt;
-////    ////struct wsbr_ctxt *ctxt = userdata;
-////
-////    tr_warn("-----userdata:%p", userdata);
-////    int interface_id = *(int *)userdata;
-////    tr_warn("-----interface_id:%d", interface_id);
-////    tr_warn("-----ctxt->rcp_if_id:%d", ctxt->rcp_if_id);
-////
-////    tr_warn("-----stop BBR:");
-////    ws_bbr_stop(ctxt->rcp_if_id); 
-////    return dbus_get_transient_keys(reply, userdata, ret_error, false);
-////}
 
 static int dbus_get_gtks(sd_bus *bus, const char *path, const char *interface,
                          const char *property, sd_bus_message *reply,
@@ -565,6 +545,7 @@ int dbus_get_nodes(sd_bus *bus, const char *path, const char *interface,
     supp_entry_t *supp;
     uint8_t ipv6[16];
 
+    tr_warn("----dbus_get_nodes()");
     ret = ws_bbr_info_get(ctxt->rcp_if_id, &br_info);
     if (ret)
         return sd_bus_error_set_errno(ret_error, EAGAIN);

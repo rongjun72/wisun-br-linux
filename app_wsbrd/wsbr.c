@@ -288,6 +288,7 @@ static void wsbr_network_init(struct wsbr_ctxt *ctxt)
 {
     uint8_t ipv6[16];
     int ret;
+    static uint8_t boot_cnt = 0;
 
     ret = arm_nwk_interface_configure_6lowpan_bootstrap_set(ctxt->rcp_if_id,
                                                           NET_6LOWPAN_BORDER_ROUTER,
@@ -304,8 +305,11 @@ static void wsbr_network_init(struct wsbr_ctxt *ctxt)
     wsbr_check_link_local_addr(ctxt);
     if (ws_bbr_start(ctxt->rcp_if_id, ctxt->rcp_if_id))
         WARN("ws_bbr_start");
-    if (ctxt->config.internal_dhcp)
-        dhcp_start(&ctxt->dhcp_server, ctxt->config.tun_dev, ctxt->rcp.eui64, ipv6);
+
+    if (boot_cnt == 0) {
+        if (ctxt->config.internal_dhcp)
+            dhcp_start(&ctxt->dhcp_server, ctxt->config.tun_dev, ctxt->rcp.eui64, ipv6);
+    }
     if (strlen(ctxt->config.radius_secret) != 0)
         if (ws_bbr_radius_shared_secret_set(ctxt->rcp_if_id, strlen(ctxt->config.radius_secret), (uint8_t *)ctxt->config.radius_secret))
             WARN("ws_bbr_radius_shared_secret_set");
@@ -314,6 +318,8 @@ static void wsbr_network_init(struct wsbr_ctxt *ctxt)
             WARN("ws_bbr_radius_address_set");
     // Artificially add wsbrd to the DHCP lease list
     wsbr_dhcp_lease_update(ctxt, ctxt->rcp.eui64, ipv6);
+
+    boot_cnt++;
 }
 
 static int wsbr_uart_tx(struct os_ctxt *os_ctxt, const void *buf, unsigned int buf_len)
@@ -343,7 +349,7 @@ static void wsbr_handle_reset(struct wsbr_ctxt *ctxt)
         else
             FATAL(3, "MAC layer has been reset. Operation not supported");
     }
-    INFO("Connected to RCP \"%s\" (%d.%d.%d), API %d.%d.%d", ctxt->rcp.version_label,
+    tr_info("Connected to RCP \"%s\" (%d.%d.%d), API %d.%d.%d", ctxt->rcp.version_label,
           FIELD_GET(0xFF000000, ctxt->rcp.version_fw),
           FIELD_GET(0x00FFFF00, ctxt->rcp.version_fw),
           FIELD_GET(0x000000FF, ctxt->rcp.version_fw),
@@ -539,7 +545,7 @@ int wsbr_main(int argc, char *argv[])
     rcp_noop(NOOP_RESET);
     tr_info("--------wait 300ms for RCP reset----");
     usleep(300000);
-    
+   
     rcp_noop(NOOP_SYNC);
     rcp_reset();
     wsbr_rcp_init(ctxt);
@@ -553,7 +559,6 @@ int wsbr_main(int argc, char *argv[])
     ctxt->rcp_if_id = arm_nwk_interface_lowpan_init(&ctxt->rcp, ctxt->config.lowpan_mtu, "ws0");
     if (ctxt->rcp_if_id < 0)
         BUG("arm_nwk_interface_lowpan_init: %d", ctxt->rcp_if_id);
-
     wsbr_network_init(ctxt);
     event_scheduler_run_until_idle();
 
@@ -571,21 +576,25 @@ int wsbr_main(int argc, char *argv[])
 
 int wsbr_restart(struct wsbr_ctxt *ctxt)
 {
-    arm_nwk_interface_down(ctxt->rcp_if_id);
+    ns_list_init(&protocol_interface_info_list);
+    ctxt->rcp.init_state = 0;
 
-//////    rcp_noop(NOOP_RESET);
-//////    usleep(300000);
-//////    rcp_reset();
-//////    wsbr_rcp_init(ctxt);
-//////
-//////    if (net_init_core())
-//////        BUG("net_init_core");
-//////
-//////    ctxt->rcp_if_id = arm_nwk_interface_lowpan_init(&ctxt->rcp, ctxt->config.lowpan_mtu, "ws0");
-//////    if (ctxt->rcp_if_id < 0)
-//////        BUG("arm_nwk_interface_lowpan_init: %d", ctxt->rcp_if_id);
-//////
-//////    wsbr_network_init(ctxt);
+    rcp_noop(NOOP_RESET);
+    tr_warn("--------wait 300ms for RCP reset----");
+    usleep(300000);
+    rcp_noop(NOOP_SYNC);
+    rcp_reset();
+    wsbr_rcp_init(ctxt);
+
+    if (net_init_core())
+        BUG("net_init_core");
+
+    ctxt->rcp_if_id = arm_nwk_interface_lowpan_init(&ctxt->rcp, ctxt->config.lowpan_mtu, "ws0");
+
+    if (ctxt->rcp_if_id < 0)
+        BUG("arm_nwk_interface_lowpan_init: %d", ctxt->rcp_if_id);
+
+    wsbr_network_init(ctxt);
 
 
     return 0;

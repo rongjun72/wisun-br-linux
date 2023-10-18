@@ -792,6 +792,8 @@ int ws_bbr_start(int8_t interface_id, int8_t bb_interface_id)
     // TODO make bb configurations
 
     backbone_interface_id = bb_interface_id;
+    
+    bbr_delay_timer = 0;
 
     return 0;
 }

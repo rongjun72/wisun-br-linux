@@ -223,7 +223,6 @@ static int dbus_get_gtks(sd_bus *bus, const char *path, const char *interface,
                          const char *property, sd_bus_message *reply,
                          void *userdata, sd_bus_error *ret_error)
 {
-    tr_warn("-------dbus here 2");
     return dbus_get_transient_keys(reply, userdata, ret_error, false);
 }
 
@@ -545,7 +544,6 @@ int dbus_get_nodes(sd_bus *bus, const char *path, const char *interface,
     supp_entry_t *supp;
     uint8_t ipv6[16];
 
-    tr_warn("----dbus_get_nodes()");
     ret = ws_bbr_info_get(ctxt->rcp_if_id, &br_info);
     if (ret)
         return sd_bus_error_set_errno(ret_error, EAGAIN);

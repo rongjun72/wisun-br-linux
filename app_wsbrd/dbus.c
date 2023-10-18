@@ -103,6 +103,11 @@ int dbus_start_fan10(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 {
     struct wsbr_ctxt *ctxt = userdata;
 
+    /* stop BBR and close network interface first */
+    ws_bbr_stop(ctxt->rcp_if_id);
+    arm_nwk_interface_down(ctxt->rcp_if_id); 
+
+    /* restart BBR after stop */
     tr_warn("-----restart FAN10: %p", ctxt);
     wsbr_restart(ctxt); 
 

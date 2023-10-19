@@ -23,10 +23,11 @@ use wsbrddbusapi::ComSilabsWisunBorderRouter;
 use clap::App;
 use clap::AppSettings;
 use clap::SubCommand;
+use std::net::{Ipv6Addr};
 
 
 fn format_byte_array(input: &[u8]) -> String {
-    input.iter().map(|n| format!("{:02x}", n)).collect::<Vec<_>>().join(":")
+    input.iter().map(|m| format!("{:02x}", m)).collect::<Vec<_>>().join(":")
 }
 
 fn is_parent(node: &(Vec<u8>, PropMap), target: &[u8]) -> bool {
@@ -171,26 +172,45 @@ fn do_startfan10(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+fn do_networkstate(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("Network state:");
+    let network_state = dbus_proxy.show_network_state().unwrap_or(vec![]);
+    for (i, g) in network_state.iter().enumerate() {
+        let ip_addr = Ipv6Addr::new((g[0] as u16)*256+(g[1] as u16), (g[2] as u16)*256+(g[3] as u16), 
+                                    (g[4] as u16)*256+(g[5] as u16), (g[6] as u16)*256+(g[7] as u16), 
+                                    (g[8] as u16)*256+(g[9] as u16), (g[10] as u16)*256+(g[11] as u16),
+                                    (g[12] as u16)*256+(g[13] as u16), (g[14] as u16)*256+(g[15] as u16));
+        println!("IP address[{}]: {}", i, ip_addr);
+    }
+
+    Ok(())
+}
+
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches = App::new("wsbrd_cli")
         .setting(AppSettings::SubcommandRequired)
         .args_from_usage("--user 'Use user bus instead of system bus'")
-        .subcommand(
-            SubCommand::with_name("status").about("Display a brief status of the Wi-SUN network"),
-        )
-        .subcommand(
-            SubCommand::with_name("start-fan10").about("Start runing FAN1.0 BBR"),
-        )
-        .subcommand(
-            SubCommand::with_name("stop-fan10").about("Stop the current runing FAN1.0 BBR"),
-        )
+        .subcommand(SubCommand::with_name("status").about("Display a brief status of the Wi-SUN network"),)
+        .subcommand(SubCommand::with_name("start-fan10").about("Start runing FAN1.0 BBR"),)
+        .subcommand(SubCommand::with_name("stop-fan10").about("Stop the current runing FAN1.0 BBR"),)
+        .subcommand(SubCommand::with_name("network-state").about("Show wisun network state"),)
         .get_matches();
     let dbus_user = matches.is_present("user");
 
     match matches.subcommand_name() {
-        Some("status") => do_status(dbus_user),
-        Some("start-fan10") => do_startfan10(dbus_user),
-        Some("stop-fan10") => do_stopfan10(dbus_user),
+        Some("status")          => do_status(dbus_user),
+        Some("start-fan10")     => do_startfan10(dbus_user),
+        Some("stop-fan10")      => do_stopfan10(dbus_user),
+        Some("network-state")   => do_networkstate(dbus_user),
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }
 

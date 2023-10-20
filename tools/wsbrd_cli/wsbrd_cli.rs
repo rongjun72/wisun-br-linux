@@ -313,7 +313,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             set_networkname(dbus_user, wisun_nwkname)
         }
-        ////Some("set-wisun-phy-configs")   => get_wisun_phy_configs(dbus_user),
         Some("set-wisun-phy-configs")   => {
             if let Some(subcmd) = matches.subcommand_matches("set-wisun-phy-configs") {
                 if let Some(domainval) = subcmd.value_of("domain") {

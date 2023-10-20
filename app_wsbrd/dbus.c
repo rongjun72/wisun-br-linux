@@ -707,14 +707,7 @@ int dbus_set_network_name(sd_bus_message *m, void *userdata, sd_bus_error *ret_e
         return sd_bus_error_set_errno(ret_error, -ret);
     tr_info("Set wisun network_name: %s", nwkname);
     ws_management_network_name_set(interface_id, nwkname);
-
-
-    /* stop BBR and close network interface first */
-    ////ws_bbr_stop(ctxt->rcp_if_id);
-    ////arm_nwk_interface_down(ctxt->rcp_if_id); 
-
-    /* restart BBR after stop */
-    ////wsbr_restart(ctxt); 
+    strncpy(ctxt->config.ws_name, nwkname, 32);
 
     sd_bus_reply_method_return(m, NULL);
     return 0;

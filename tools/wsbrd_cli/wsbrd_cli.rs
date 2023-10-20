@@ -20,10 +20,12 @@ use dbus::blocking::Connection;
 use dbus::arg::PropMap;
 use dbus::arg::prop_cast;
 use wsbrddbusapi::ComSilabsWisunBorderRouter;
-use clap::App;
+////use clap::App;
 use clap::AppSettings;
-use clap::SubCommand;
+////use clap::SubCommand;
+use clap::{Arg, App, SubCommand};
 use std::net::{Ipv6Addr};
+use std::string::String;
 
 
 fn format_byte_array(input: &[u8]) -> String {
@@ -194,8 +196,47 @@ fn do_networkstate(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+fn get_networkname(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    match dbus_proxy.wisun_network_name() {
+        Ok(val) => println!("Wisun Network Name: {}", val),
+        Err(e) => return Err(Box::new(e)),
+    }
+
+    Ok(())
+}
+
+fn set_networkname(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    match dbus_proxy.wisun_network_name() {
+        Ok(val) => println!("Start FAN1.0: {}", val),
+        Err(e) => return Err(Box::new(e)),
+    }
+
+    println!("wisun network name setting: {}", arg0);
+
+////    let vec: Vec<u8> = Vec::new();
+////    let _ret = dbus_proxy.start_fan10(vec, 1);
+
+    Ok(())
+}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut wisun_nwkname: String = String::from("Wi-SUN test");
     let matches = App::new("wsbrd_cli")
         .setting(AppSettings::SubcommandRequired)
         .args_from_usage("--user 'Use user bus instead of system bus'")
@@ -203,14 +244,29 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .subcommand(SubCommand::with_name("start-fan10").about("Start runing FAN1.0 BBR"),)
         .subcommand(SubCommand::with_name("stop-fan10").about("Stop the current runing FAN1.0 BBR"),)
         .subcommand(SubCommand::with_name("network-state").about("Show wisun network state"),)
+        .subcommand(SubCommand::with_name("get-network-name").about("Show wisun network name"),)
+        .subcommand(SubCommand::with_name("set-network-name").about("Set wisun network name. After set, the BBR will restart FAN")
+            .arg(Arg::with_name("nwk_name")
+            .help("set expected wisun network name")
+            .empty_values(false))
+        ,)
         .get_matches();
     let dbus_user = matches.is_present("user");
 
     match matches.subcommand_name() {
-        Some("status")          => do_status(dbus_user),
-        Some("start-fan10")     => do_startfan10(dbus_user),
-        Some("stop-fan10")      => do_stopfan10(dbus_user),
-        Some("network-state")   => do_networkstate(dbus_user),
+        Some("status")              => do_status(dbus_user),
+        Some("start-fan10")         => do_startfan10(dbus_user),
+        Some("stop-fan10")          => do_stopfan10(dbus_user),
+        Some("network-state")       => do_networkstate(dbus_user),
+        Some("get-network-name")    => get_networkname(dbus_user),
+        Some("set-network-name")    => {
+            if let Some(subcmd) = matches.subcommand_matches("set-network-name") {
+                if let Some(nwkname) = subcmd.value_of("nwk_name") {
+                    wisun_nwkname = nwkname.to_string();
+                }
+            }
+            set_networkname(dbus_user, wisun_nwkname)
+        }
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }
 

@@ -222,10 +222,23 @@ fn get_wisun_phy_configs(dbus_user: bool) -> Result<(), Box<dyn std::error::Erro
     }
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
-    //match dbus_proxy.get_wisun_phy_configs() {
-    //    Ok(val) => println!("Wisun Network Name: {}", val),
-    //    Err(e) => return Err(Box::new(e)),
-    //}
+    match dbus_proxy.wisun_fan_version().unwrap_or(u8::MAX) {
+        1 => println!("fan_version: FAN 1.0"),
+        2 => println!("fan_version: FAN 1.1"),
+        _ => (),
+    }
+    println!("domain: {}", dbus_proxy.wisun_domain().unwrap_or("[UNKNOWN]".to_string()));
+    let mode         = dbus_proxy.wisun_mode().unwrap_or(0);
+    let class        = dbus_proxy.wisun_class().unwrap_or(0);
+    let phy_mode_id  = dbus_proxy.wisun_phy_mode_id().unwrap_or(0);
+    let chan_plan_id = dbus_proxy.wisun_chan_plan_id().unwrap_or(0);
+    if mode != 0 && class != 0 {
+        println!("mode: {:x}", mode);
+        println!("class: {}", class);
+    } else if phy_mode_id != 0 && chan_plan_id != 0 {
+        println!("phy_mode_id: {}", phy_mode_id);
+        println!("chan_plan_id: {}", chan_plan_id);
+    }
 
     Ok(())
 }

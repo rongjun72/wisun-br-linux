@@ -694,8 +694,28 @@ static int dbus_get_network_state(sd_bus *bus, const char *path, const char *int
 }
 
 
+int dbus_set_network_name(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    ////struct wsbr_ctxt *ctxt = userdata;
+    ////int interface_id = ctxt->rcp_if_id;
+    const char *nwkname;
+    int ret;
 
+    ret = sd_bus_message_read_basic(m, 's', (const void **)&nwkname);
+    if (ret < 0)
+        return sd_bus_error_set_errno(ret_error, -ret);
+    tr_warn("--------parameter transfered: %s", nwkname);
 
+    /* stop BBR and close network interface first */
+    ////ws_bbr_stop(ctxt->rcp_if_id);
+    ////arm_nwk_interface_down(ctxt->rcp_if_id); 
+
+    /* restart BBR after stop */
+    ////wsbr_restart(ctxt); 
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
 
 static const sd_bus_vtable dbus_vtable[] = {
         SD_BUS_VTABLE_START(0),
@@ -766,6 +786,8 @@ static const sd_bus_vtable dbus_vtable[] = {
         /******* now command */
         SD_BUS_PROPERTY("NetworkState", "aay", dbus_get_network_state, 0,
                         SD_BUS_VTABLE_PROPERTY_EMITS_CHANGE),
+        SD_BUS_METHOD("SetNetworkName", "s", NULL,
+                        dbus_set_network_name, 0),
         SD_BUS_VTABLE_END
 };
 

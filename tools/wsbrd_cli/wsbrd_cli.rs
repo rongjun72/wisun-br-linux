@@ -174,7 +174,7 @@ fn do_startfan10(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn do_networkstate(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
+fn get_networkstate(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
     let dbus_conn;
     if dbus_user {
         dbus_conn = Connection::new_session()?;
@@ -184,7 +184,7 @@ fn do_networkstate(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
     println!("Network state:");
-    let network_state = dbus_proxy.show_network_state().unwrap_or(vec![]);
+    let network_state = dbus_proxy.get_network_state().unwrap_or(vec![]);
     for (i, g) in network_state.iter().enumerate() {
         let ip_addr = Ipv6Addr::new((g[0] as u16)*256+(g[1] as u16), (g[2] as u16)*256+(g[3] as u16), 
                                     (g[4] as u16)*256+(g[5] as u16), (g[6] as u16)*256+(g[7] as u16), 
@@ -222,15 +222,8 @@ fn set_networkname(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::err
     }
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
-    match dbus_proxy.wisun_network_name() {
-        Ok(val) => println!("Start FAN1.0: {}", val),
-        Err(e) => return Err(Box::new(e)),
-    }
-
     println!("wisun network name setting: {}", arg0);
-
-////    let vec: Vec<u8> = Vec::new();
-////    let _ret = dbus_proxy.start_fan10(vec, 1);
+    let _ret = dbus_proxy.set_network_name(arg0);
 
     Ok(())
 }
@@ -243,7 +236,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .subcommand(SubCommand::with_name("status").about("Display a brief status of the Wi-SUN network"),)
         .subcommand(SubCommand::with_name("start-fan10").about("Start runing FAN1.0 BBR"),)
         .subcommand(SubCommand::with_name("stop-fan10").about("Stop the current runing FAN1.0 BBR"),)
-        .subcommand(SubCommand::with_name("network-state").about("Show wisun network state"),)
+        .subcommand(SubCommand::with_name("get-network-state").about("Show wisun network state"),)
         .subcommand(SubCommand::with_name("get-network-name").about("Show wisun network name"),)
         .subcommand(SubCommand::with_name("set-network-name").about("Set wisun network name. After set, the BBR will restart FAN")
             .arg(Arg::with_name("nwk_name")
@@ -257,7 +250,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("status")              => do_status(dbus_user),
         Some("start-fan10")         => do_startfan10(dbus_user),
         Some("stop-fan10")          => do_stopfan10(dbus_user),
-        Some("network-state")       => do_networkstate(dbus_user),
+        Some("get-network-state")   => get_networkstate(dbus_user),
         Some("get-network-name")    => get_networkname(dbus_user),
         Some("set-network-name")    => {
             if let Some(subcmd) = matches.subcommand_matches("set-network-name") {

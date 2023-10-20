@@ -258,8 +258,26 @@ fn set_networkname(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::err
     Ok(())
 }
 
+fn set_wisun_phy_configs(dbus_user: bool, arg0: u8, arg1: u8, arg2: u8) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("Wisun PHY config setting:: \nDomain: {}\nClass: {}\nMode: {}", arg0, arg1, arg2);
+    let _ret = dbus_proxy.set_wisun_phy_configs(arg0, arg1, arg2);
+
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut wisun_nwkname: String = String::from("Wi-SUN test");
+    let mut wisun_domain: u8    = 0;
+    let mut wisun_class: u8     = 0;
+    let mut wisun_mode: u8      = 0;
     let matches = App::new("wsbrd_cli")
         .setting(AppSettings::SubcommandRequired)
         .args_from_usage("--user 'Use user bus instead of system bus'")
@@ -270,9 +288,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .subcommand(SubCommand::with_name("get-network-name").about("Show wisun network name"),)
         .subcommand(SubCommand::with_name("get-wisun-phy-configs").about("Show wisun phy configs"),)
         .subcommand(SubCommand::with_name("set-network-name").about("Set wisun network name. After set, the BBR will restart FAN")
-            .arg(Arg::with_name("nwk_name")
-            .help("set expected wisun network name")
-            .empty_values(false))
+            .arg(Arg::with_name("nwk_name").help("set expected wisun network name").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-wisun-phy-configs").about("Set wisun phy configs: domain, class and mode")
+            .arg(Arg::with_name("domain").help("set expected wisun domain").empty_values(false))
+            .arg(Arg::with_name("class").help("set expected wisun class").empty_values(false))
+            .arg(Arg::with_name("mode").help("set expected wisun mode").empty_values(false))
         ,)
         .get_matches();
     let dbus_user = matches.is_present("user");
@@ -291,6 +312,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             set_networkname(dbus_user, wisun_nwkname)
+        }
+        ////Some("set-wisun-phy-configs")   => get_wisun_phy_configs(dbus_user),
+        Some("set-wisun-phy-configs")   => {
+            if let Some(subcmd) = matches.subcommand_matches("set-wisun-phy-configs") {
+                if let Some(domainval) = subcmd.value_of("domain") {
+                    wisun_domain = domainval.parse::<u8>().unwrap();
+                }
+                if let Some(domainval) = subcmd.value_of("class") {
+                    wisun_class = domainval.parse::<u8>().unwrap();
+                }
+                if let Some(domainval) = subcmd.value_of("mode") {
+                    wisun_mode = domainval.parse::<u8>().unwrap();
+                }
+            }
+            set_wisun_phy_configs(dbus_user, wisun_domain, wisun_class, wisun_mode)
         }
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }

@@ -713,6 +713,46 @@ int dbus_set_network_name(sd_bus_message *m, void *userdata, sd_bus_error *ret_e
     return 0;
 }
 
+int dbus_set_phy_configs(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    struct wsbr_ctxt *ctxt = userdata;
+    int interface_id = ctxt->rcp_if_id;
+    int ret;
+
+    uint8_t regulatory_domain, operating_class, operating_mode;
+
+    ret = sd_bus_message_read(m, "y", &regulatory_domain);
+    if (ret < 0)
+        return sd_bus_error_set_errno(ret_error, -ret);
+    ret = sd_bus_message_read(m, "y", &operating_class);
+    if (ret < 0)
+        return sd_bus_error_set_errno(ret_error, -ret);
+    ret = sd_bus_message_read(m, "y", &operating_mode);
+    if (ret < 0)
+        return sd_bus_error_set_errno(ret_error, -ret);
+
+
+    /* stop BBR and close network interface first */
+    ws_bbr_stop(ctxt->rcp_if_id);
+    arm_nwk_interface_down(ctxt->rcp_if_id); 
+
+    tr_warn("-----Expected Domain: %d\tClass: %d\tMode: %d", regulatory_domain, operating_class, operating_mode);
+    ctxt->config.ws_domain = regulatory_domain;
+    ctxt->config.ws_class  = operating_class;
+    ctxt->config.ws_mode   = operating_mode;
+    ret = ws_management_regulatory_domain_set(interface_id, ctxt->config.ws_domain,
+                                              ctxt->config.ws_class, ctxt->config.ws_mode,
+                                              ctxt->config.ws_phy_mode_id, ctxt->config.ws_chan_plan_id);
+    WARN_ON(ret);
+
+    /* restart BBR after stop */
+    tr_warn("-----restart FAN10: %p", ctxt);
+    wsbr_restart(ctxt);     
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
 static const sd_bus_vtable dbus_vtable[] = {
         SD_BUS_VTABLE_START(0),
         SD_BUS_METHOD("startFan10", "ayi", NULL,
@@ -784,6 +824,8 @@ static const sd_bus_vtable dbus_vtable[] = {
                         SD_BUS_VTABLE_PROPERTY_EMITS_CHANGE),
         SD_BUS_METHOD("SetNetworkName", "s", NULL,
                         dbus_set_network_name, 0),
+        SD_BUS_METHOD("SetPhyConfigs", "yyy", NULL,
+                        dbus_set_phy_configs, 0),
         SD_BUS_VTABLE_END
 };
 

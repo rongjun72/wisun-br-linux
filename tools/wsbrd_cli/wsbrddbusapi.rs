@@ -113,6 +113,7 @@ pub trait ComSilabsWisunBorderRouter {
     /*********** new command */
     fn get_network_state(&self) -> Result<Vec<Vec<u8>>, dbus::Error>;
     fn set_network_name(&self, arg0: String) -> Result<(), dbus::Error>;
+    fn set_wisun_phy_configs(&self, arg0: u8, arg1: u8, arg2: u8) -> Result<(), dbus::Error>;
 }
 
 impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsWisunBorderRouter for blocking::Proxy<'a, C> {
@@ -218,4 +219,9 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsW
     fn set_network_name(&self, arg0: String) -> Result<(), dbus::Error> {
         self.method_call("com.silabs.Wisun.BorderRouter", "SetNetworkName", (arg0, ))
     }
+
+    fn set_wisun_phy_configs(&self, arg0: u8, arg1: u8, arg2: u8) -> Result<(), dbus::Error> {
+        self.method_call("com.silabs.Wisun.BorderRouter", "SetPhyConfigs", (arg0, arg1, arg2, ))
+    }
+
 }

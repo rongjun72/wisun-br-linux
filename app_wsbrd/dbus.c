@@ -32,6 +32,7 @@
 #include "stack/source/nwk_interface/protocol.h"
 #include "stack/source/security/protocols/sec_prot_keys.h"
 #include "stack/source/common_protocols/icmpv6.h"
+#include "stack/stack/ws_management_api.h"
 
 #include "commandline_values.h"
 #include "rcp_api.h"
@@ -696,15 +697,17 @@ static int dbus_get_network_state(sd_bus *bus, const char *path, const char *int
 
 int dbus_set_network_name(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 {
-    ////struct wsbr_ctxt *ctxt = userdata;
-    ////int interface_id = ctxt->rcp_if_id;
-    const char *nwkname;
+    struct wsbr_ctxt *ctxt = userdata;
+    int interface_id = ctxt->rcp_if_id;
+    char *nwkname;
     int ret;
 
-    ret = sd_bus_message_read_basic(m, 's', (const void **)&nwkname);
+    ret = sd_bus_message_read_basic(m, 's', (void **)&nwkname);
     if (ret < 0)
         return sd_bus_error_set_errno(ret_error, -ret);
-    tr_warn("--------parameter transfered: %s", nwkname);
+    tr_info("Set wisun network_name: %s", nwkname);
+    ws_management_network_name_set(interface_id, nwkname);
+
 
     /* stop BBR and close network interface first */
     ////ws_bbr_stop(ctxt->rcp_if_id);

@@ -113,6 +113,9 @@ pub trait ComSilabsWisunBorderRouter {
     /*********** new command */
     fn get_network_state(&self) -> Result<Vec<Vec<u8>>, dbus::Error>;
     fn get_timing_parameters(&self) -> Result<Vec<u16>, dbus::Error>;
+    fn get_fhss_channel_mask(&self) -> Result<Vec<u32>, dbus::Error>;
+    fn get_fhss_timing_configure(&self) -> Result<Vec<u32>, dbus::Error>;
+    fn get_gtk_active_key_index(&self) -> Result<u8, dbus::Error>;
     fn set_network_name(&self, arg0: String) -> Result<(), dbus::Error>;
     fn set_wisun_phy_configs(&self, arg0: u8, arg1: u8, arg2: u8) -> Result<(), dbus::Error>;
     fn set_timing_parameters(&self, arg0: u16, arg1: u16, arg2: u8, arg3: u16) -> Result<(), dbus::Error>;
@@ -232,6 +235,18 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsW
 
     fn set_timing_parameters(&self, arg0: u16, arg1: u16, arg2: u8, arg3: u16) -> Result<(), dbus::Error> {
         self.method_call("com.silabs.Wisun.BorderRouter", "SetTimingParams", (arg0, arg1, arg2, arg3, ))
+    }
+
+    fn get_fhss_channel_mask(&self) -> Result<Vec<u32>, dbus::Error> {
+        <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(&self, "com.silabs.Wisun.BorderRouter", "getFhssChannelMask")
+    }
+
+    fn get_fhss_timing_configure(&self) -> Result<Vec<u32>, dbus::Error> {
+        <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(&self, "com.silabs.Wisun.BorderRouter", "getFhssTimingConfigure")
+    }
+
+    fn get_gtk_active_key_index(&self) -> Result<u8, dbus::Error> {
+        <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(&self, "com.silabs.Wisun.BorderRouter", "getGtkActiveKeyIndex")
     }
 
 }

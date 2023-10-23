@@ -512,6 +512,7 @@ gtkhash_t *ws_pae_controller_gtk_hash_ptr_get(struct net_if *interface_ptr);
  */
 gtkhash_t *ws_pae_controller_lgtk_hash_ptr_get(struct net_if *interface_ptr);
 
+int8_t ws_pae_controller_gtk_active_index_get(struct net_if *interface_ptr);
 int8_t ws_pae_controller_lgtk_active_index_get(struct net_if *interface_ptr);
 
 /**

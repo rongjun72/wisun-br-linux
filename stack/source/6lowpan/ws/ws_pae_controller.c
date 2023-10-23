@@ -1954,11 +1954,21 @@ gtkhash_t *ws_pae_controller_lgtk_hash_ptr_get(struct net_if *interface_ptr)
     return controller->lgtks.gtkhash;
 }
 
+int8_t ws_pae_controller_gtk_active_index_get(struct net_if *interface_ptr)
+{
+    pae_controller_t *controller = ws_pae_controller_get(interface_ptr);
+    if (!controller) {
+        return -1;
+    }
+
+    return controller->gtks.gtk_index;
+}
+
 int8_t ws_pae_controller_lgtk_active_index_get(struct net_if *interface_ptr)
 {
     pae_controller_t *controller = ws_pae_controller_get(interface_ptr);
     if (!controller) {
-        return 0;
+        return -1;
     }
 
     return controller->lgtks.gtk_index;

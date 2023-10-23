@@ -262,6 +262,102 @@ fn get_timing_parameters(dbus_user: bool) -> Result<(), Box<dyn std::error::Erro
     Ok(())
 }
 
+fn get_fhss_channel_mask(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("Fhss channel mask:");
+    let fhss_channel_mask = dbus_proxy.get_fhss_channel_mask().unwrap_or(vec![]);
+    println!("{:#08x?}", fhss_channel_mask);
+
+    Ok(())
+}
+
+fn get_fhss_timing_configure(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("Fhss timing configure:");
+    let fhss_timing_configure = dbus_proxy.get_fhss_timing_configure().unwrap_or(vec![]);
+    println!("uc_dwell_interval:  {}", fhss_timing_configure[0]);
+    println!("broadcast_interval: {}", fhss_timing_configure[1]);
+    println!("bc_dwell_interval:  {}", fhss_timing_configure[2]);
+    println!("uc_channel_function:{}", fhss_timing_configure[3]);
+    println!("bc_channel_function:{}", fhss_timing_configure[4]);
+
+    Ok(())
+}
+
+fn get_wisun_pan_id(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("Wi-SUN PAN id: {:#04x}", dbus_proxy.wisun_pan_id().unwrap_or(0));
+
+    Ok(())
+}
+
+fn get_wisun_pan_size(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("Wi-SUN PAN size: {}", dbus_proxy.wisun_size().unwrap_or("[UNKNOWN]".to_string()));
+
+    Ok(())
+}
+
+fn get_wisun_gtks(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    let gtks = dbus_proxy.gtks().unwrap_or(vec![]);
+    println!("Wi-SUN GTKs:");
+    for (i, g) in gtks.iter().enumerate() {
+        println!("GTK[{}]: {}", i, format_byte_array(g));
+    }
+
+    Ok(())
+}
+
+fn get_wisun_gtk_active_key_index(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("Wi-SUN GTK active key index: {}", dbus_proxy.get_gtk_active_key_index().unwrap_or(0));
+
+    Ok(())
+}
+
 fn set_networkname(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::Error>> {
     let dbus_conn;
     if dbus_user {
@@ -326,7 +422,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .subcommand(SubCommand::with_name("get-network-state").about("Show wisun network state"),)
         .subcommand(SubCommand::with_name("get-network-name").about("Show wisun network name"),)
         .subcommand(SubCommand::with_name("get-wisun-phy-configs").about("Show wisun phy configs"),)
-        .subcommand(SubCommand::with_name("get-timing-parameters").about("get timing parameters, trickle_imin, trickle_imax, trickle_k: and pan_timeout"),)
+        .subcommand(SubCommand::with_name("get-timing-parameters").about("Get timing parameters, trickle_imin, trickle_imax, trickle_k: and pan_timeout"),)
+        .subcommand(SubCommand::with_name("get-fhss-channel-mask").about("Get fhss channel mask array[8]"),)
+        .subcommand(SubCommand::with_name("get-fhss-timing-configure").about("Get fhss timing configure such as bc_dwell_interval bc_interval bc_dwell_interval uc_channel_function bc_channel_function"),)
+        .subcommand(SubCommand::with_name("get-wisun-pan-id").about("Get Wi-SUN PAN ID"),)
+        .subcommand(SubCommand::with_name("get-wisun-pan-size").about("Get Wi-SUN PAN size"),)
+        .subcommand(SubCommand::with_name("get-wisun-gtk-keys").about("Get wisun index gtk keys"),)
+        .subcommand(SubCommand::with_name("get-wisun-gtk-active-key-index").about("Get wisun gtk active key index"),)
         .subcommand(SubCommand::with_name("set-network-name").about("Set wisun network name. After set, the BBR will restart FAN")
             .arg(Arg::with_name("nwk_name").help("set expected wisun network name").empty_values(false))
         ,)
@@ -345,14 +447,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let dbus_user = matches.is_present("user");
 
     match matches.subcommand_name() {
-        Some("status")                  => do_status(dbus_user),
-        Some("start-fan10")             => do_startfan10(dbus_user),
-        Some("stop-fan10")              => do_stopfan10(dbus_user),
-        Some("get-network-state")       => get_networkstate(dbus_user),
-        Some("get-network-name")        => get_networkname(dbus_user),
-        Some("get-wisun-phy-configs")   => get_wisun_phy_configs(dbus_user),
-        Some("get-timing-parameters")   => get_timing_parameters(dbus_user),
-        Some("set-network-name")        => {
+        Some("status")                      => do_status(dbus_user),
+        Some("start-fan10")                 => do_startfan10(dbus_user),
+        Some("stop-fan10")                  => do_stopfan10(dbus_user),
+        Some("get-network-state")           => get_networkstate(dbus_user),
+        Some("get-network-name")            => get_networkname(dbus_user),
+        Some("get-wisun-phy-configs")       => get_wisun_phy_configs(dbus_user),
+        Some("get-timing-parameters")       => get_timing_parameters(dbus_user),
+        Some("get-fhss-channel-mask")       => get_fhss_channel_mask(dbus_user),
+        Some("get-fhss-timing-configure")   => get_fhss_timing_configure(dbus_user),
+        Some("get-wisun-pan-id")            => get_wisun_pan_id(dbus_user),
+        Some("get-wisun-pan-size")          => get_wisun_pan_size(dbus_user),
+        Some("get-wisun-gtk-keys")          => get_wisun_gtks(dbus_user),
+        Some("get-wisun-gtk-active-key-index")  => get_wisun_gtk_active_key_index(dbus_user),
+        Some("set-network-name")            => {
             if let Some(subcmd) = matches.subcommand_matches("set-network-name") {
                 if let Some(nwkname) = subcmd.value_of("nwk_name") {
                     wisun_nwkname = nwkname.to_string();
@@ -360,7 +468,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             set_networkname(dbus_user, wisun_nwkname)
         }
-        Some("set-wisun-phy-configs")   => {
+        Some("set-wisun-phy-configs")       => {
             if let Some(subcmd) = matches.subcommand_matches("set-wisun-phy-configs") {
                 if let Some(domainval) = subcmd.value_of("domain") {
                     wisun_domain = domainval.parse::<u8>().unwrap();
@@ -374,7 +482,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             set_wisun_phy_configs(dbus_user, wisun_domain, wisun_class, wisun_mode)
         }
-        Some("set-timing-parameters")   => {
+        Some("set-timing-parameters")       => {
             if let Some(subcmd) = matches.subcommand_matches("set-timing-parameters") {
                 if let Some(domainval) = subcmd.value_of("trickle_imin") {
                     trickle_imin = domainval.parse::<u16>().unwrap();

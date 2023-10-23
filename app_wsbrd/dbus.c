@@ -807,6 +807,74 @@ int dbus_get_timing_param(sd_bus *bus, const char *path, const char *interface,
     return 0;
 }
 
+int dbus_get_fhss_channel_mask(sd_bus *bus, const char *path, const char *interface,
+                        const char *property, sd_bus_message *reply,
+                        void *userdata, sd_bus_error *ret_error)
+{
+    struct wsbr_ctxt *ctxt = userdata;
+    int interface_id = ctxt->rcp_if_id;
+    uint32_t channel_mask[8];
+    int ret;
+
+    ws_management_channel_mask_get(interface_id, (uint8_t *)channel_mask);
+    //////tr_warn("fhss channal mask: 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x\n", channel_mask[0], channel_mask[1], channel_mask[2], channel_mask[3], channel_mask[4], channel_mask[5], channel_mask[6], channel_mask[7]);
+
+    ret = sd_bus_message_append_array(reply, 'u', &channel_mask, 32);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    return 0;
+}
+
+int dbus_get_fhss_timing_configure(sd_bus *bus, const char *path, const char *interface,
+                        const char *property, sd_bus_message *reply,
+                        void *userdata, sd_bus_error *ret_error)
+{
+    struct wsbr_ctxt *ctxt = userdata;
+    int interface_id = ctxt->rcp_if_id;
+    uint8_t  uc_channel_function;
+    uint8_t  bc_channel_function;
+    uint16_t fixed_channel;
+    uint8_t  uc_dwell_interval;
+    uint8_t  bc_dwell_interval;
+    uint32_t broadcast_interval;
+    uint32_t fhss_timing_configure[5];
+    int ret;
+
+    ws_management_fhss_unicast_channel_function_get(interface_id, &uc_channel_function, 
+                                                    &fixed_channel, &uc_dwell_interval);
+    ws_management_fhss_broadcast_channel_function_get(interface_id, &bc_channel_function, 
+                                &fixed_channel, &bc_dwell_interval, &broadcast_interval);
+
+    //////tr_warn("fhss timing configure: uc_dwell_interval %d ms, bc_interval %d ms, bc_dwell_interval %d ms\n", 
+    //////                            uc_dwell_interval, broadcast_interval, bc_dwell_interval);
+    fhss_timing_configure[0] = (uint32_t)uc_dwell_interval;
+    fhss_timing_configure[1] = broadcast_interval;
+    fhss_timing_configure[2] = (uint32_t)bc_dwell_interval;
+    fhss_timing_configure[3] = (uint32_t)uc_channel_function;
+    fhss_timing_configure[4] = (uint32_t)bc_channel_function;
+
+    ret = sd_bus_message_append_array(reply, 'u', &fhss_timing_configure, 20);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    return 0;
+}
+
+int dbus_get_gtk_active_key_index(sd_bus *bus, const char *path, const char *interface,
+                        const char *property, sd_bus_message *reply,
+                        void *userdata, sd_bus_error *ret_error)
+{
+    struct wsbr_ctxt *ctxt = userdata;
+    struct net_if *interface_ptr = protocol_stack_interface_info_get_by_id(ctxt->rcp_if_id);
+    int ret;
+
+    int8_t gtk_active_index = ws_pae_controller_gtk_active_index_get(interface_ptr);
+    WARN_ON(gtk_active_index < 0, "%s", strerror(-gtk_active_index));
+
+    ret = sd_bus_message_append(reply, "y", (uint8_t)gtk_active_index);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    return 0;
+
+}
+
 static const sd_bus_vtable dbus_vtable[] = {
         SD_BUS_VTABLE_START(0),
         SD_BUS_METHOD("startFan10", "ayi", NULL,
@@ -884,6 +952,12 @@ static const sd_bus_vtable dbus_vtable[] = {
                         SD_BUS_VTABLE_PROPERTY_EMITS_CHANGE),
         SD_BUS_METHOD("SetTimingParams", "qqyq", NULL,
                         dbus_set_timing_params, 0),
+        SD_BUS_PROPERTY("getFhssChannelMask", "au", dbus_get_fhss_channel_mask, 0,
+                        SD_BUS_VTABLE_PROPERTY_EMITS_CHANGE),
+        SD_BUS_PROPERTY("getFhssTimingConfigure", "au", dbus_get_fhss_timing_configure, 0,
+                        SD_BUS_VTABLE_PROPERTY_EMITS_CHANGE),
+        SD_BUS_PROPERTY("getGtkActiveKeyIndex", "y", dbus_get_gtk_active_key_index, 0,
+                        SD_BUS_VTABLE_PROPERTY_EMITS_CHANGE),
         SD_BUS_VTABLE_END
 };
 

@@ -112,6 +112,7 @@ pub trait ComSilabsWisunBorderRouter {
     fn wisun_fan_version(&self) -> Result<u8, dbus::Error>;
     /*********** new command */
     fn get_network_state(&self) -> Result<Vec<Vec<u8>>, dbus::Error>;
+    fn get_timing_parameters(&self) -> Result<Vec<u16>, dbus::Error>;
     fn set_network_name(&self, arg0: String) -> Result<(), dbus::Error>;
     fn set_wisun_phy_configs(&self, arg0: u8, arg1: u8, arg2: u8) -> Result<(), dbus::Error>;
 }
@@ -222,6 +223,10 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsW
 
     fn set_wisun_phy_configs(&self, arg0: u8, arg1: u8, arg2: u8) -> Result<(), dbus::Error> {
         self.method_call("com.silabs.Wisun.BorderRouter", "SetPhyConfigs", (arg0, arg1, arg2, ))
+    }
+
+    fn get_timing_parameters(&self) -> Result<Vec<u16>, dbus::Error> {
+        <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(&self, "com.silabs.Wisun.BorderRouter", "GetTimingParam")
     }
 
 }

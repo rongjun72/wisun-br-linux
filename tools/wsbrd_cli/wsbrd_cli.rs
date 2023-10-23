@@ -243,6 +243,25 @@ fn get_wisun_phy_configs(dbus_user: bool) -> Result<(), Box<dyn std::error::Erro
     Ok(())
 }
 
+fn get_timing_parameters(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("Timing parameters:");
+    let timing_parameters = dbus_proxy.get_timing_parameters().unwrap_or(vec![]);
+    println!("disc_trickle_imin:\t {}", timing_parameters[0]);
+    println!("disc_trickle_imax:\t {}", timing_parameters[1]);
+    println!("disc_trickle_k:   \t {}", timing_parameters[2]);
+    println!("pan_timeout:      \t {}", timing_parameters[3]);
+
+    Ok(())
+}
+
 fn set_networkname(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::Error>> {
     let dbus_conn;
     if dbus_user {
@@ -287,6 +306,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .subcommand(SubCommand::with_name("get-network-state").about("Show wisun network state"),)
         .subcommand(SubCommand::with_name("get-network-name").about("Show wisun network name"),)
         .subcommand(SubCommand::with_name("get-wisun-phy-configs").about("Show wisun phy configs"),)
+        .subcommand(SubCommand::with_name("get-timing-parameters").about("get timing parameters, trickle_imin, trickle_imax, trickle_k: and pan_timeout"),)
         .subcommand(SubCommand::with_name("set-network-name").about("Set wisun network name. After set, the BBR will restart FAN")
             .arg(Arg::with_name("nwk_name").help("set expected wisun network name").empty_values(false))
         ,)
@@ -305,6 +325,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("get-network-state")       => get_networkstate(dbus_user),
         Some("get-network-name")        => get_networkname(dbus_user),
         Some("get-wisun-phy-configs")   => get_wisun_phy_configs(dbus_user),
+        Some("get-timing-parameters")   => get_timing_parameters(dbus_user),
         Some("set-network-name")        => {
             if let Some(subcmd) = matches.subcommand_matches("set-network-name") {
                 if let Some(nwkname) = subcmd.value_of("nwk_name") {

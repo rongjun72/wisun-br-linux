@@ -753,6 +753,31 @@ int dbus_set_phy_configs(sd_bus_message *m, void *userdata, sd_bus_error *ret_er
     return 0;
 }
 
+int dbus_get_timing_param(sd_bus *bus, const char *path, const char *interface,
+                        const char *property, sd_bus_message *reply,
+                        void *userdata, sd_bus_error *ret_error)
+{
+    struct wsbr_ctxt *ctxt = userdata;
+    int interface_id = ctxt->rcp_if_id;
+    uint16_t disc_trickle_imin;
+    uint16_t disc_trickle_imax;  
+    uint8_t disc_trickle_k;
+    uint16_t pan_timeout;
+    uint16_t timing_params[4];
+    int ret;
+
+    ws_management_timing_parameters_get(interface_id, &disc_trickle_imin, &disc_trickle_imax, &disc_trickle_k, &pan_timeout);
+    //////tr_warn("disc_trickle_imin: 0x%04x, disc_trickle_imax: 0x%04x, disc_trickle_k: 0x%02x, pan_timeout: 0x%04x\n", disc_trickle_imin, disc_trickle_imax, disc_trickle_k, pan_timeout);
+    timing_params[0] = disc_trickle_imin;
+    timing_params[1] = disc_trickle_imax;
+    timing_params[2] = (uint16_t)disc_trickle_k;
+    timing_params[3] = pan_timeout;
+
+    ret = sd_bus_message_append_array(reply, 'q', &timing_params, 8);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    return 0;
+}
+
 static const sd_bus_vtable dbus_vtable[] = {
         SD_BUS_VTABLE_START(0),
         SD_BUS_METHOD("startFan10", "ayi", NULL,
@@ -826,6 +851,8 @@ static const sd_bus_vtable dbus_vtable[] = {
                         dbus_set_network_name, 0),
         SD_BUS_METHOD("SetPhyConfigs", "yyy", NULL,
                         dbus_set_phy_configs, 0),
+        SD_BUS_PROPERTY("GetTimingParam", "aq", dbus_get_timing_param, 0,
+                        SD_BUS_VTABLE_PROPERTY_EMITS_CHANGE),
         SD_BUS_VTABLE_END
 };
 

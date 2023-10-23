@@ -753,6 +753,35 @@ int dbus_set_phy_configs(sd_bus_message *m, void *userdata, sd_bus_error *ret_er
     return 0;
 }
 
+int dbus_set_timing_params(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    struct wsbr_ctxt *ctxt = userdata;
+    int interface_id = ctxt->rcp_if_id;
+    int ret;
+
+    uint8_t trickle_k;
+    uint16_t trickle_imin, trickle_imax, pan_timeout;
+
+    ret = sd_bus_message_read(m, "q", &trickle_imin);
+    if (ret < 0)
+        return sd_bus_error_set_errno(ret_error, -ret);
+    ret = sd_bus_message_read(m, "q", &trickle_imax);
+    if (ret < 0)
+        return sd_bus_error_set_errno(ret_error, -ret);
+    ret = sd_bus_message_read(m, "y", &trickle_k);
+    if (ret < 0)
+        return sd_bus_error_set_errno(ret_error, -ret);
+    ret = sd_bus_message_read(m, "q", &pan_timeout);
+    if (ret < 0)
+        return sd_bus_error_set_errno(ret_error, -ret);
+
+    ws_management_timing_parameters_set(interface_id, trickle_imin, trickle_imax, trickle_k, pan_timeout);
+    //////tr_warn("disc_trickle_imin: 0x%04x, disc_trickle_imax: 0x%04x, disc_trickle_k: 0x%02x, pan_timeout: 0x%04x\n", trickle_imin, trickle_imax, trickle_k, pan_timeout);
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
 int dbus_get_timing_param(sd_bus *bus, const char *path, const char *interface,
                         const char *property, sd_bus_message *reply,
                         void *userdata, sd_bus_error *ret_error)
@@ -853,6 +882,8 @@ static const sd_bus_vtable dbus_vtable[] = {
                         dbus_set_phy_configs, 0),
         SD_BUS_PROPERTY("GetTimingParam", "aq", dbus_get_timing_param, 0,
                         SD_BUS_VTABLE_PROPERTY_EMITS_CHANGE),
+        SD_BUS_METHOD("SetTimingParams", "qqyq", NULL,
+                        dbus_set_timing_params, 0),
         SD_BUS_VTABLE_END
 };
 

@@ -115,6 +115,7 @@ pub trait ComSilabsWisunBorderRouter {
     fn get_timing_parameters(&self) -> Result<Vec<u16>, dbus::Error>;
     fn set_network_name(&self, arg0: String) -> Result<(), dbus::Error>;
     fn set_wisun_phy_configs(&self, arg0: u8, arg1: u8, arg2: u8) -> Result<(), dbus::Error>;
+    fn set_timing_parameters(&self, arg0: u16, arg1: u16, arg2: u8, arg3: u16) -> Result<(), dbus::Error>;
 }
 
 impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsWisunBorderRouter for blocking::Proxy<'a, C> {
@@ -227,6 +228,10 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsW
 
     fn get_timing_parameters(&self) -> Result<Vec<u16>, dbus::Error> {
         <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(&self, "com.silabs.Wisun.BorderRouter", "GetTimingParam")
+    }
+
+    fn set_timing_parameters(&self, arg0: u16, arg1: u16, arg2: u8, arg3: u16) -> Result<(), dbus::Error> {
+        self.method_call("com.silabs.Wisun.BorderRouter", "SetTimingParams", (arg0, arg1, arg2, arg3, ))
     }
 
 }

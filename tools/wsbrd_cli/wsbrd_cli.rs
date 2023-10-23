@@ -286,8 +286,23 @@ fn set_wisun_phy_configs(dbus_user: bool, arg0: u8, arg1: u8, arg2: u8) -> Resul
     }
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
-    println!("Wisun PHY config setting:: \nDomain: {}\nClass: {}\nMode: {}", arg0, arg1, arg2);
+    println!("Wisun PHY config setting: \nDomain: {}\nClass: {}\nMode: {}", arg0, arg1, arg2);
     let _ret = dbus_proxy.set_wisun_phy_configs(arg0, arg1, arg2);
+
+    Ok(())
+}
+
+fn set_timing_parameters(dbus_user: bool, arg0: u16, arg1: u16, arg2: u8, arg3: u16) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("Set new timing parameters: \ntrickle_imin: {}\ntrickle_imax: {}\ntrickle_k: {}\npan_timeout: {}", arg0, arg1, arg2, arg3);
+    let _ret = dbus_proxy.set_timing_parameters(arg0, arg1, arg2, arg3);
 
     Ok(())
 }
@@ -297,6 +312,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut wisun_domain: u8    = 0;
     let mut wisun_class: u8     = 0;
     let mut wisun_mode: u8      = 0;
+    let mut trickle_imin: u16   = 0;
+    let mut trickle_imax: u16   = 0;
+    let mut trickle_k: u8       = 0;
+    let mut pan_timeout: u16    = 0;
+
     let matches = App::new("wsbrd_cli")
         .setting(AppSettings::SubcommandRequired)
         .args_from_usage("--user 'Use user bus instead of system bus'")
@@ -314,6 +334,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .arg(Arg::with_name("domain").help("set expected wisun domain").empty_values(false))
             .arg(Arg::with_name("class").help("set expected wisun class").empty_values(false))
             .arg(Arg::with_name("mode").help("set expected wisun mode").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-timing-parameters").about("Set timing parameters, trickle_imin, trickle_imax, trickle_k: and pan_timeout")
+            .arg(Arg::with_name("trickle_imin").help("set expected minimum trickle interval").empty_values(false))
+            .arg(Arg::with_name("trickle_imax").help("set expected maximum trickle interval").empty_values(false))
+            .arg(Arg::with_name("trickle_k").help("set expected trickle k").empty_values(false))
+            .arg(Arg::with_name("pan_timeout").help("set expected PAN timeout").empty_values(false))
         ,)
         .get_matches();
     let dbus_user = matches.is_present("user");
@@ -347,6 +373,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             set_wisun_phy_configs(dbus_user, wisun_domain, wisun_class, wisun_mode)
+        }
+        Some("set-timing-parameters")   => {
+            if let Some(subcmd) = matches.subcommand_matches("set-timing-parameters") {
+                if let Some(domainval) = subcmd.value_of("trickle_imin") {
+                    trickle_imin = domainval.parse::<u16>().unwrap();
+                }
+                if let Some(domainval) = subcmd.value_of("trickle_imax") {
+                    trickle_imax = domainval.parse::<u16>().unwrap();
+                }
+                if let Some(domainval) = subcmd.value_of("trickle_k") {
+                    trickle_k = domainval.parse::<u8>().unwrap();
+                }
+                if let Some(domainval) = subcmd.value_of("pan_timeout") {
+                    pan_timeout = domainval.parse::<u16>().unwrap();
+                }
+            }
+            set_timing_parameters(dbus_user, trickle_imin, trickle_imax, trickle_k, pan_timeout)
         }
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }

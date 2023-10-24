@@ -476,6 +476,38 @@ fn set_timing_parameters(dbus_user: bool, arg0: u16, arg1: u16, arg2: u8, arg3: 
     Ok(())
 }
 
+fn set_fhss_channel_mask_f4b(dbus_user: bool, arg0: u32, arg1: u32, arg2: u32, arg3: u32) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Set First 4 long word Channel mask: \nChannel_mask[0]: {:#08x}\nChannel_mask[1]: {:#08x}\nChannel_mask[0]: {:#08x}\nChannel_mask[0]: {:#08x}", arg0, arg1, arg2, arg3);
+    let _ret = dbus_proxy.set_fhss_channel_mask_f4b(arg0, arg1, arg2, arg3);
+
+    Ok(())
+}
+
+fn set_fhss_channel_mask_l4b(dbus_user: bool, arg0: u32, arg1: u32, arg2: u32, arg3: u32) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Set Last 4 long word Channel mask: \nChannel_mask[4]: {:#08x}\nChannel_mask[5]: {:#08x}\nChannel_mask[6]: {:#08x}\nChannel_mask[7]: {:#08x}", arg0, arg1, arg2, arg3);
+    let _ret = dbus_proxy.set_fhss_channel_mask_l4b(arg0, arg1, arg2, arg3);
+
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut wisun_nwkname: String = String::from("Wi-SUN test");
     let mut wisun_domain: u8    = 0;
@@ -485,6 +517,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut trickle_imax: u16   = 0;
     let mut trickle_k: u8       = 0;
     let mut pan_timeout: u16    = 0;
+    let mut long_word0: u32     = 0xffffffff;
+    let mut long_word1: u32     = 0xffffffff;
+    let mut long_word2: u32     = 0xffffffff;
+    let mut long_word3: u32     = 0xffffffff;
+    let mut long_word4: u32     = 0xffffffff;
+    let mut long_word5: u32     = 0xffffffff;
+    let mut long_word6: u32     = 0xffffffff;
+    let mut long_word7: u32     = 0xffffffff;
 
     let matches = App::new("wsbrd_cli")
         .setting(AppSettings::SubcommandRequired)
@@ -516,6 +556,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .arg(Arg::with_name("trickle_imax").help("set expected maximum trickle interval").empty_values(false))
             .arg(Arg::with_name("trickle_k").help("set expected trickle k").empty_values(false))
             .arg(Arg::with_name("pan_timeout").help("set expected PAN timeout").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-fhss-channel-mask-f4b").about("Set first 4 long word(32bit) of fhss channel mask")
+            .arg(Arg::with_name("long_word0").help("Set 1st long word(32bit) of fhss channel mask").empty_values(false))
+            .arg(Arg::with_name("long_word1").help("Set 2nd long word(32bit) of fhss channel mask").empty_values(false))
+            .arg(Arg::with_name("long_word2").help("Set 3rd long word(32bit) of fhss channel mask").empty_values(false))
+            .arg(Arg::with_name("long_word3").help("Set 4th long word(32bit) of fhss channel mask").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-fhss-channel-mask-l4b").about("Set last 4 long word(32bit) of fhss channel mask")
+            .arg(Arg::with_name("long_word4").help("Set 4st long word(32bit) of fhss channel mask").empty_values(false))
+            .arg(Arg::with_name("long_word5").help("Set 5nd long word(32bit) of fhss channel mask").empty_values(false))
+            .arg(Arg::with_name("long_word6").help("Set 6rd long word(32bit) of fhss channel mask").empty_values(false))
+            .arg(Arg::with_name("long_word7").help("Set 7th long word(32bit) of fhss channel mask").empty_values(false))
         ,)
         .get_matches();
     let dbus_user = matches.is_present("user");
@@ -573,6 +625,40 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             set_timing_parameters(dbus_user, trickle_imin, trickle_imax, trickle_k, pan_timeout)
+        }
+        Some("set-fhss-channel-mask-f4b")       => {
+            if let Some(subcmd) = matches.subcommand_matches("set-fhss-channel-mask-f4b") {
+                if let Some(domainval) = subcmd.value_of("long_word0") {
+                    long_word0 = domainval.parse::<u32>().unwrap();
+                }
+                if let Some(domainval) = subcmd.value_of("long_word1") {
+                    long_word1 = domainval.parse::<u32>().unwrap();
+                }
+                if let Some(domainval) = subcmd.value_of("long_word2") {
+                    long_word2 = domainval.parse::<u32>().unwrap();
+                }
+                if let Some(domainval) = subcmd.value_of("long_word3") {
+                    long_word3 = domainval.parse::<u32>().unwrap();
+                }
+            }
+            set_fhss_channel_mask_f4b(dbus_user, long_word0, long_word1, long_word2, long_word3)
+        }
+        Some("set-fhss-channel-mask-l4b")       => {
+            if let Some(subcmd) = matches.subcommand_matches("set-fhss-channel-mask-l4b") {
+                if let Some(domainval) = subcmd.value_of("long_word4") {
+                    long_word4 = domainval.parse::<u32>().unwrap();
+                }
+                if let Some(domainval) = subcmd.value_of("long_word5") {
+                    long_word5 = domainval.parse::<u32>().unwrap();
+                }
+                if let Some(domainval) = subcmd.value_of("long_word6") {
+                    long_word6 = domainval.parse::<u32>().unwrap();
+                }
+                if let Some(domainval) = subcmd.value_of("long_word7") {
+                    long_word7 = domainval.parse::<u32>().unwrap();
+                }
+            }
+            set_fhss_channel_mask_l4b(dbus_user, long_word4, long_word5, long_word6, long_word7)
         }
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }

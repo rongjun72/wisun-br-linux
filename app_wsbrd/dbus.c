@@ -703,8 +703,7 @@ int dbus_set_network_name(sd_bus_message *m, void *userdata, sd_bus_error *ret_e
     int ret;
 
     ret = sd_bus_message_read_basic(m, 's', (void **)&nwkname);
-    if (ret < 0)
-        return sd_bus_error_set_errno(ret_error, -ret);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
     tr_info("Set wisun network_name: %s", nwkname);
     ws_management_network_name_set(interface_id, nwkname);
     strncpy(ctxt->config.ws_name, nwkname, 32);
@@ -722,14 +721,11 @@ int dbus_set_phy_configs(sd_bus_message *m, void *userdata, sd_bus_error *ret_er
     uint8_t regulatory_domain, operating_class, operating_mode;
 
     ret = sd_bus_message_read(m, "y", &regulatory_domain);
-    if (ret < 0)
-        return sd_bus_error_set_errno(ret_error, -ret);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
     ret = sd_bus_message_read(m, "y", &operating_class);
-    if (ret < 0)
-        return sd_bus_error_set_errno(ret_error, -ret);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
     ret = sd_bus_message_read(m, "y", &operating_mode);
-    if (ret < 0)
-        return sd_bus_error_set_errno(ret_error, -ret);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
 
 
     /* stop BBR and close network interface first */
@@ -763,17 +759,13 @@ int dbus_set_timing_params(sd_bus_message *m, void *userdata, sd_bus_error *ret_
     uint16_t trickle_imin, trickle_imax, pan_timeout;
 
     ret = sd_bus_message_read(m, "q", &trickle_imin);
-    if (ret < 0)
-        return sd_bus_error_set_errno(ret_error, -ret);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
     ret = sd_bus_message_read(m, "q", &trickle_imax);
-    if (ret < 0)
-        return sd_bus_error_set_errno(ret_error, -ret);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
     ret = sd_bus_message_read(m, "y", &trickle_k);
-    if (ret < 0)
-        return sd_bus_error_set_errno(ret_error, -ret);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
     ret = sd_bus_message_read(m, "q", &pan_timeout);
-    if (ret < 0)
-        return sd_bus_error_set_errno(ret_error, -ret);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
 
     ws_management_timing_parameters_set(interface_id, trickle_imin, trickle_imax, trickle_k, pan_timeout);
     //////tr_warn("disc_trickle_imin: 0x%04x, disc_trickle_imax: 0x%04x, disc_trickle_k: 0x%02x, pan_timeout: 0x%04x\n", trickle_imin, trickle_imax, trickle_k, pan_timeout);
@@ -958,6 +950,53 @@ int dbus_get_wisun_cfg_settings(sd_bus *bus, const char *path, const char *inter
     return 0;
 }
 
+int dbus_set_fhss_ch_mask_f4b(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    struct wsbr_ctxt *ctxt = userdata;
+    int ret;
+
+    uint32_t Channel_mask[8];
+    /* get current channel mask settings from stack, than we modify it and set back */
+    ws_management_channel_mask_get(ctxt->rcp_if_id, (uint8_t *)Channel_mask);
+
+    ret = sd_bus_message_read(m, "u", &Channel_mask[0]);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    ret = sd_bus_message_read(m, "u", &Channel_mask[1]);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    ret = sd_bus_message_read(m, "u", &Channel_mask[2]);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    ret = sd_bus_message_read(m, "u", &Channel_mask[3]);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    /* get current channel mask settings from stack, than we modify it and set back */
+    ws_management_channel_mask_set(ctxt->rcp_if_id, (uint8_t *)Channel_mask);
+
+    return 0;
+}
+
+int dbus_set_fhss_ch_mask_l4b(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    struct wsbr_ctxt *ctxt = userdata;
+    int ret;
+
+    uint32_t Channel_mask[8];
+    /* get current channel mask settings from stack, than we modify it and set back */
+    ws_management_channel_mask_get(ctxt->rcp_if_id, (uint8_t *)Channel_mask);
+
+    ret = sd_bus_message_read(m, "u", &Channel_mask[4]);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    ret = sd_bus_message_read(m, "u", &Channel_mask[5]);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    ret = sd_bus_message_read(m, "u", &Channel_mask[6]);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    ret = sd_bus_message_read(m, "u", &Channel_mask[7]);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    /* get current channel mask settings from stack, than we modify it and set back */
+    ws_management_channel_mask_set(ctxt->rcp_if_id, (uint8_t *)Channel_mask);
+
+    return 0;
+}
 
 static const sd_bus_vtable dbus_vtable[] = {
         SD_BUS_VTABLE_START(0),
@@ -1044,6 +1083,10 @@ static const sd_bus_vtable dbus_vtable[] = {
                         SD_BUS_VTABLE_PROPERTY_EMITS_CHANGE),
         SD_BUS_PROPERTY("getWisunCfgSettings", "aq", dbus_get_wisun_cfg_settings, 0,
                         SD_BUS_VTABLE_PROPERTY_EMITS_CHANGE),
+        SD_BUS_METHOD("setFhssChMaskF4b", "uuuu", NULL,
+                        dbus_set_fhss_ch_mask_f4b, 0),
+        SD_BUS_METHOD("setFhssChMaskL4b", "uuuu", NULL,
+                        dbus_set_fhss_ch_mask_l4b, 0),
         SD_BUS_VTABLE_END
 };
 

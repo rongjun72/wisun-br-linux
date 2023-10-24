@@ -508,23 +508,61 @@ fn set_fhss_channel_mask_l4b(dbus_user: bool, arg0: u32, arg1: u32, arg2: u32, a
     Ok(())
 }
 
+fn set_fhss_timing_configure(dbus_user: bool, arg0: u8, arg1: u32, arg2: u8) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Set fhss timing configure: \nuc_dwell_interval: {}\nbroadcast_interval: {}\nbc_dwell_interval: {}", arg0, arg1, arg2);
+    let _ret = dbus_proxy.set_fhss_timing_configure(arg0, arg1, arg2);
+
+    Ok(())
+}
+
+fn set_fhss_uc_function(dbus_user: bool, arg0: u8, arg1: u16, arg2: u8) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Set fhss timing configure: \nchannel_function: {}\nfixed_channel: {}\ndwell_interval: {}", arg0, arg1, arg2);
+    let _ret = dbus_proxy.set_fhss_uc_function(arg0, arg1, arg2);
+
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut wisun_nwkname: String = String::from("Wi-SUN test");
-    let mut wisun_domain: u8    = 0;
-    let mut wisun_class: u8     = 0;
-    let mut wisun_mode: u8      = 0;
-    let mut trickle_imin: u16   = 0;
-    let mut trickle_imax: u16   = 0;
-    let mut trickle_k: u8       = 0;
-    let mut pan_timeout: u16    = 0;
-    let mut long_word0: u32     = 0xffffffff;
-    let mut long_word1: u32     = 0xffffffff;
-    let mut long_word2: u32     = 0xffffffff;
-    let mut long_word3: u32     = 0xffffffff;
-    let mut long_word4: u32     = 0xffffffff;
-    let mut long_word5: u32     = 0xffffffff;
-    let mut long_word6: u32     = 0xffffffff;
-    let mut long_word7: u32     = 0xffffffff;
+    let mut wisun_nwkname: String   = String::from("Wi-SUN test");
+    let mut wisun_domain: u8        = 0;
+    let mut wisun_class: u8         = 0;
+    let mut wisun_mode: u8          = 0;
+    let mut trickle_imin: u16       = 0;
+    let mut trickle_imax: u16       = 0;
+    let mut trickle_k: u8           = 0;
+    let mut pan_timeout: u16        = 0;
+    let mut long_word0: u32         = 0xffffffff;
+    let mut long_word1: u32         = 0xffffffff;
+    let mut long_word2: u32         = 0xffffffff;
+    let mut long_word3: u32         = 0xffffffff;
+    let mut long_word4: u32         = 0xffffffff;
+    let mut long_word5: u32         = 0xffffffff;
+    let mut long_word6: u32         = 0xffffffff;
+    let mut long_word7: u32         = 0xffffffff;
+    let mut uc_dwell_interval: u8   = 0;
+    let mut broadcast_interval: u32 = 0;
+    let mut bc_dwell_interval:u8    = 0;
+    let mut channel_function        = 0;
+    let mut fixed_channel           = 0;
+    let mut dwell_interval          = 0;
 
     let matches = App::new("wsbrd_cli")
         .setting(AppSettings::SubcommandRequired)
@@ -568,6 +606,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .arg(Arg::with_name("long_word5").help("Set 5nd long word(32bit) of fhss channel mask").empty_values(false))
             .arg(Arg::with_name("long_word6").help("Set 6rd long word(32bit) of fhss channel mask").empty_values(false))
             .arg(Arg::with_name("long_word7").help("Set 7th long word(32bit) of fhss channel mask").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-fhss-timing-configure").about("Set fhss timing configure such as bc_dwell_interval bc_interval bc_dwell_interval")
+            .arg(Arg::with_name("uc_dwell_interval").help("set fhss timing configure bc_dwell_interval").empty_values(false))
+            .arg(Arg::with_name("broadcast_interval").help("set fhss timing configure bc_interval").empty_values(false))
+            .arg(Arg::with_name("bc_dwell_interval").help("set fhss timing configure bc_dwell_interval").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-fhss-uc-function").about("set fhss unicast channel function")
+            .arg(Arg::with_name("channel_function").help("set fhss unicast channel function").empty_values(false))
+            .arg(Arg::with_name("fixed_channel").help("set fhss unicast channel function: fixed channel").empty_values(false))
+            .arg(Arg::with_name("dwell_interval").help("set fhss unicast channel function: dewell interval").empty_values(false))
         ,)
         .get_matches();
     let dbus_user = matches.is_present("user");
@@ -659,6 +707,34 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             set_fhss_channel_mask_l4b(dbus_user, long_word4, long_word5, long_word6, long_word7)
+        }
+        Some("set-fhss-timing-configure")       => {
+            if let Some(subcmd) = matches.subcommand_matches("set-fhss-timing-configure") {
+                if let Some(domainval) = subcmd.value_of("uc_dwell_interval") {
+                    uc_dwell_interval = domainval.parse::<u8>().unwrap();
+                }
+                if let Some(domainval) = subcmd.value_of("broadcast_interval") {
+                    broadcast_interval = domainval.parse::<u32>().unwrap();
+                }
+                if let Some(domainval) = subcmd.value_of("bc_dwell_interval") {
+                    bc_dwell_interval = domainval.parse::<u8>().unwrap();
+                }
+            }
+            set_fhss_timing_configure(dbus_user, uc_dwell_interval, broadcast_interval, bc_dwell_interval)
+        }
+        Some("set-fhss-uc-function")       => {
+            if let Some(subcmd) = matches.subcommand_matches("set-fhss-uc-function") {
+                if let Some(domainval) = subcmd.value_of("channel_function") {
+                    channel_function = domainval.parse::<u8>().unwrap();
+                }
+                if let Some(domainval) = subcmd.value_of("fixed_channel") {
+                    fixed_channel = domainval.parse::<u16>().unwrap();
+                }
+                if let Some(domainval) = subcmd.value_of("dwell_interval") {
+                    dwell_interval = domainval.parse::<u8>().unwrap();
+                }
+            }
+            set_fhss_uc_function(dbus_user, channel_function, fixed_channel, dwell_interval)
         }
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }

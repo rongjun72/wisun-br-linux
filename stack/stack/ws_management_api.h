@@ -829,4 +829,12 @@ int ws_neighbor_info_get(
     ws_neighbour_info_t *neighbor_ptr,
     uint16_t count);
 
+
+
+int ws_management_fhss_timing_configure_set(
+    int8_t interface_id,
+    uint8_t fhss_uc_dwell_interval,
+    uint32_t fhss_broadcast_interval,
+    uint8_t fhss_bc_dwell_interval);
+
 #endif

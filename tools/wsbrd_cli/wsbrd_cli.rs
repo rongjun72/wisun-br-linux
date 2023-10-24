@@ -358,6 +358,79 @@ fn get_wisun_gtk_active_key_index(dbus_user: bool) -> Result<(), Box<dyn std::er
     Ok(())
 }
 
+fn get_wisun_cfg_settings(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("Wi-SUN configuration settings:");
+    println!("-----------------------------------------------------------------");
+    match dbus_proxy.wisun_network_name() {
+        Ok(val) => println!("Wisun Network Name                  :{}", val),
+        Err(e) => return Err(Box::new(e)),
+    }
+
+    let wisun_cfg_settings = dbus_proxy.get_wisun_cfg_settings().unwrap_or(vec![]);
+    println!("ws_cfg_gen_network_size                   :{}",      wisun_cfg_settings[0]);
+    println!("ws_cfg_gen_network_pan_id                 :{:#04x}", wisun_cfg_settings[1]);
+    println!("ws_cfg_gen_rpl_parent_candidate_max       :{}", wisun_cfg_settings[2]);
+    println!("ws_cfg_gen_rpl_selected_parent_max        :{}", wisun_cfg_settings[3]);
+
+    println!("ws_cfg_phy_regulatory_domain              :{}", wisun_cfg_settings[4]);
+    println!("ws_cfg_phy_operating_class                :{}", wisun_cfg_settings[5]);
+    println!("ws_cfg_phy_operating_mode                 :{}", wisun_cfg_settings[6]);
+    println!("ws_cfg_phy_phy_mode_id                    :{}", wisun_cfg_settings[7]);
+    println!("ws_cfg_phy_channel_plan_id                :{}", wisun_cfg_settings[8]);
+
+    println!("ws_cfg_timing_disc_trickle_imin           :{}", wisun_cfg_settings[9]);
+    println!("ws_cfg_timing_disc_trickle_imax           :{}", wisun_cfg_settings[10]);
+    println!("ws_cfg_timing_disc_trickle_k              :{}", wisun_cfg_settings[11]);
+    println!("ws_cfg_timing_pan_timeout                 :{}", wisun_cfg_settings[12]);
+    println!("ws_cfg_timing_temp_link_min_timeout       :{}", wisun_cfg_settings[13]);
+    println!("ws_cfg_timing_temp_eapol_min_timeout      :{}", wisun_cfg_settings[14]);
+
+    println!("ws_cfg_bbr_dio_interval_min               :{}", wisun_cfg_settings[15]);
+    println!("ws_cfg_bbr_dio_interval_doublings         :{}", wisun_cfg_settings[16]);
+    println!("ws_cfg_bbr_dio_redundancy_constant        :{}", wisun_cfg_settings[17]);
+    println!("ws_cfg_bbr_dag_max_rank_increase          :{}", wisun_cfg_settings[18]);
+    println!("ws_cfg_bbr_min_hop_rank_increase          :{}", wisun_cfg_settings[19]);
+    println!("ws_cfg_bbr_rpl_default_lifetime           :{}", (wisun_cfg_settings[20] as u32) + (wisun_cfg_settings[21] as u32)*65536);
+
+    println!("ws_cfg_fhss_uc_dwell_interval             :{}", wisun_cfg_settings[22]);
+    println!("ws_cfg_fhss_bc_dwell_interval             :{}", wisun_cfg_settings[23]);
+    println!("ws_cfg_fhss_bc_interval                   :{}", (wisun_cfg_settings[24] as u32) + (wisun_cfg_settings[25] as u32)*65526);
+    println!("ws_cfg_fhss_uc_channel_function           :{}", wisun_cfg_settings[26]);
+    println!("ws_cfg_fhss_uc_fixed_channel              :{}", wisun_cfg_settings[27]);
+    println!("ws_cfg_fhss_bc_fixed_channel              :{}", wisun_cfg_settings[28]);
+    println!("ws_cfg_fhss_channel_mask[0]               :{}", wisun_cfg_settings[29]);
+    println!("ws_cfg_fhss_channel_mask[1]               :{}", wisun_cfg_settings[30]);
+    println!("ws_cfg_fhss_channel_mask[2]               :{}", wisun_cfg_settings[31]);
+    println!("ws_cfg_fhss_channel_mask[3]               :{}", wisun_cfg_settings[32]);
+    println!("ws_cfg_fhss_channel_mask[4]               :{}", wisun_cfg_settings[33]);
+    println!("ws_cfg_fhss_channel_mask[5]               :{}", wisun_cfg_settings[34]);
+    println!("ws_cfg_fhss_channel_mask[6]               :{}", wisun_cfg_settings[35]);
+    println!("ws_cfg_fhss_channel_mask[7]               :{}", wisun_cfg_settings[36]);
+
+    println!("ws_cfg_mpl_trickle_imin                   :{}", wisun_cfg_settings[37]);
+    println!("ws_cfg_mpl_trickle_imax                   :{}", wisun_cfg_settings[38]);
+    println!("ws_cfg_mpl_trickle_k                      :{}", wisun_cfg_settings[39]);
+    println!("ws_cfg_mpl_trickle_timer_exp              :{}", wisun_cfg_settings[40]);
+    println!("ws_cfg_mpl_seed_set_entry_lifetime        :{}", wisun_cfg_settings[41]);
+
+    println!("ws_cfg_sectimer_gtk_expire_offset         :{}", (wisun_cfg_settings[42] as u32) + (wisun_cfg_settings[43] as u32)*65536);
+    println!("ws_cfg_sectimer_pmk_lifetime              :{}", (wisun_cfg_settings[44] as u32) + (wisun_cfg_settings[45] as u32)*65536);
+    println!("ws_cfg_sectimer_ptk_lifetime              :{}", (wisun_cfg_settings[46] as u32) + (wisun_cfg_settings[47] as u32)*65536);
+    println!("ws_cfg_sectimer_gtk_new_act_time          :{}", wisun_cfg_settings[48]);
+    println!("ws_cfg_sectimer_revocat_lifetime_reduct   :{}",wisun_cfg_settings[49]);
+    println!("ws_cfg_sectimer_gtk_new_install_req       :{}", wisun_cfg_settings[50]);
+
+    Ok(())
+}
+
 fn set_networkname(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::Error>> {
     let dbus_conn;
     if dbus_user {
@@ -429,6 +502,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .subcommand(SubCommand::with_name("get-wisun-pan-size").about("Get Wi-SUN PAN size"),)
         .subcommand(SubCommand::with_name("get-wisun-gtk-keys").about("Get wisun index gtk keys"),)
         .subcommand(SubCommand::with_name("get-wisun-gtk-active-key-index").about("Get wisun gtk active key index"),)
+        .subcommand(SubCommand::with_name("get-wisun-cfg-settings").about("Get wisun configuration settings"),)
         .subcommand(SubCommand::with_name("set-network-name").about("Set wisun network name. After set, the BBR will restart FAN")
             .arg(Arg::with_name("nwk_name").help("set expected wisun network name").empty_values(false))
         ,)
@@ -460,6 +534,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("get-wisun-pan-size")          => get_wisun_pan_size(dbus_user),
         Some("get-wisun-gtk-keys")          => get_wisun_gtks(dbus_user),
         Some("get-wisun-gtk-active-key-index")  => get_wisun_gtk_active_key_index(dbus_user),
+        Some("get-wisun-cfg-settings")      => get_wisun_cfg_settings(dbus_user),
         Some("set-network-name")            => {
             if let Some(subcmd) = matches.subcommand_matches("set-network-name") {
                 if let Some(nwkname) = subcmd.value_of("nwk_name") {

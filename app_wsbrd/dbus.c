@@ -875,6 +875,90 @@ int dbus_get_gtk_active_key_index(sd_bus *bus, const char *path, const char *int
 
 }
 
+int dbus_get_wisun_cfg_settings(sd_bus *bus, const char *path, const char *interface,
+                        const char *property, sd_bus_message *reply,
+                        void *userdata, sd_bus_error *ret_error)
+{
+    struct wsbr_ctxt *ctxt = userdata;
+    struct net_if *cur = protocol_stack_interface_info_get_by_id(ctxt->rcp_if_id);
+
+
+    uint16_t configuration_u16[51];
+    ws_cfg_t ws_cfg_val;
+    int ret;
+    ws_cfg_settings_get(&ws_cfg_val);
+    //// INFO("general configuration:\n network_size: %d  network_name: %s rpl_parent_candidate_max: 0x%04x rpl_selected_parent_max: 0x%04x\n", ws_cfg_val.gen.network_size, ws_cfg_val.gen.network_name, ws_cfg_val.gen.rpl_parent_candidate_max, ws_cfg_val.gen.rpl_selected_parent_max);
+    //// INFO("phy configuration:\n regulatory_domain: 0x%02x  operating_class: 0x%02x  operating_mode: 0x%02x phy_mode_id: 0x%02x channel_plan_id: 0x%02x\n", ws_cfg_val.phy.regulatory_domain, ws_cfg_val.phy.operating_class, ws_cfg_val.phy.operating_mode, ws_cfg_val.phy.phy_mode_id, ws_cfg_val.phy.channel_plan_id);
+    //// INFO("timing configuration:\n disc_trickle_imin: %d seconds disc_trickle_imax: %d seconds disc_trickle_k: 0x%02x pan_timeout: %d seconds temp_link_min_timeout: %d temp_eapol_min_timeout: %d seconds\n", ws_cfg_val.timing.disc_trickle_imin, ws_cfg_val.timing.disc_trickle_imax, ws_cfg_val.timing.disc_trickle_k, ws_cfg_val.timing.pan_timeout, ws_cfg_val.timing.temp_link_min_timeout, ws_cfg_val.timing.temp_eapol_min_timeout);
+    //// INFO("bbr configuration:\n dio_interval_min: %d ms dio_interval_doublings: %d dio_redundancy_constant: %d dag_max_rank_increase: %d min_hop_rank_increase: %d seconds rpl_default_lifetime: %d seconds\n", ws_cfg_val.bbr.dio_interval_min, ws_cfg_val.bbr.dio_interval_doublings, ws_cfg_val.bbr.dio_redundancy_constant, ws_cfg_val.bbr.dag_max_rank_increase, ws_cfg_val.bbr.min_hop_rank_increase, ws_cfg_val.bbr.rpl_default_lifetime);
+    //// INFO("fhss configuration:\n fhss_uc_dwell_interval: %d ms fhss_bc_dwell_interval: %d ms fhss_bc_interval: %d ms fhss_uc_channel_function: %d fhss_uc_fixed_channel: %d fhss_bc_fixed_channel: %d  fhss_channel_mask: 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x 0x%08x\n", ws_cfg_val.fhss.fhss_uc_dwell_interval, ws_cfg_val.fhss.fhss_bc_dwell_interval, ws_cfg_val.fhss.fhss_bc_interval, ws_cfg_val.fhss.fhss_uc_channel_function, ws_cfg_val.fhss.fhss_uc_fixed_channel, ws_cfg_val.fhss.fhss_bc_fixed_channel, ws_cfg_val.fhss.fhss_channel_mask[0], ws_cfg_val.fhss.fhss_channel_mask[1], ws_cfg_val.fhss.fhss_channel_mask[2], ws_cfg_val.fhss.fhss_channel_mask[3], ws_cfg_val.fhss.fhss_channel_mask[4], ws_cfg_val.fhss.fhss_channel_mask[5], ws_cfg_val.fhss.fhss_channel_mask[6], ws_cfg_val.fhss.fhss_channel_mask[7]);
+    //// INFO("mpl configuration:\n mpl_trickle_imin: %d seconds  mpl_trickle_imax: %d seconds  mpl_trickle_k: %d mpl_trickle_timer_exp: %d seed_set_entry_lifetime: %d seconds\n", ws_cfg_val.mpl.mpl_trickle_imin, ws_cfg_val.mpl.mpl_trickle_imax, ws_cfg_val.mpl.mpl_trickle_k, ws_cfg_val.mpl.mpl_trickle_timer_exp, ws_cfg_val.mpl.seed_set_entry_lifetime);
+    //// INFO("sec_timer configuration:\n gtk_expire_offset: %d minutes  pmk_lifetime: %d minutes  ptk_lifetime: %d minutes gtk_new_act_time: %d minutes\n", ws_cfg_val.sec_timer.gtk_expire_offset, ws_cfg_val.sec_timer.pmk_lifetime, ws_cfg_val.sec_timer.ptk_lifetime, ws_cfg_val.sec_timer.gtk_new_act_time);
+    //// INFO("minutes gtk_new_install_req:\n %d percent of GTK lifetime\n", ws_cfg_val.sec_timer.gtk_new_install_req);
+    configuration_u16[0]   = ws_cfg_val.gen.network_size;
+    configuration_u16[1]   = cur->ws_info.network_pan_id;
+    configuration_u16[2]   = ws_cfg_val.gen.rpl_parent_candidate_max;
+    configuration_u16[3]   = ws_cfg_val.gen.rpl_selected_parent_max;
+ 
+    configuration_u16[4]   = ws_cfg_val.phy.regulatory_domain;
+    configuration_u16[5]   = ws_cfg_val.phy.operating_class;
+    configuration_u16[6]   = ws_cfg_val.phy.operating_mode;
+    configuration_u16[7]   = ws_cfg_val.phy.phy_mode_id;
+    configuration_u16[8]   = ws_cfg_val.phy.channel_plan_id;
+ 
+    configuration_u16[9]   = ws_cfg_val.timing.disc_trickle_imin;
+    configuration_u16[10]  = ws_cfg_val.timing.disc_trickle_imax;
+    configuration_u16[11]  = ws_cfg_val.timing.disc_trickle_k;
+    configuration_u16[12]  = ws_cfg_val.timing.pan_timeout;
+    configuration_u16[13]  = ws_cfg_val.timing.temp_link_min_timeout;
+    configuration_u16[14]  = ws_cfg_val.timing.temp_eapol_min_timeout;
+ 
+    configuration_u16[15]  = ws_cfg_val.bbr.dio_interval_min;
+    configuration_u16[16]  = ws_cfg_val.bbr.dio_interval_doublings;
+    configuration_u16[17]  = ws_cfg_val.bbr.dio_redundancy_constant;
+    configuration_u16[18]  = ws_cfg_val.bbr.dag_max_rank_increase;
+    configuration_u16[19]  = ws_cfg_val.bbr.min_hop_rank_increase;
+    configuration_u16[20]  = (ws_cfg_val.bbr.rpl_default_lifetime & 0x0000ffff);
+    configuration_u16[21]  = ((ws_cfg_val.bbr.rpl_default_lifetime>>16) & 0x0000ffff);
+
+    configuration_u16[22]  = ws_cfg_val.fhss.fhss_uc_dwell_interval;
+    configuration_u16[23]  = ws_cfg_val.fhss.fhss_bc_dwell_interval;
+    configuration_u16[24]  = (ws_cfg_val.fhss.fhss_bc_interval & 0x0000ffff);
+    configuration_u16[25]  = ((ws_cfg_val.fhss.fhss_bc_interval>>16) & 0x0000ffff);
+    configuration_u16[26]  = ws_cfg_val.fhss.fhss_uc_channel_function;
+    configuration_u16[27]  = ws_cfg_val.fhss.fhss_uc_fixed_channel;
+    configuration_u16[28]  = ws_cfg_val.fhss.fhss_bc_fixed_channel;
+    configuration_u16[29]  = ws_cfg_val.fhss.fhss_channel_mask[0];
+    configuration_u16[30]  = ws_cfg_val.fhss.fhss_channel_mask[1];
+    configuration_u16[31]  = ws_cfg_val.fhss.fhss_channel_mask[2];
+    configuration_u16[32]  = ws_cfg_val.fhss.fhss_channel_mask[3];
+    configuration_u16[33]  = ws_cfg_val.fhss.fhss_channel_mask[4];
+    configuration_u16[34]  = ws_cfg_val.fhss.fhss_channel_mask[5];
+    configuration_u16[35]  = ws_cfg_val.fhss.fhss_channel_mask[6];
+    configuration_u16[36]  = ws_cfg_val.fhss.fhss_channel_mask[7];
+
+    configuration_u16[37]  = ws_cfg_val.mpl.mpl_trickle_imin;
+    configuration_u16[38]  = ws_cfg_val.mpl.mpl_trickle_imax;
+    configuration_u16[39]  = ws_cfg_val.mpl.mpl_trickle_k;
+    configuration_u16[40]  = ws_cfg_val.mpl.mpl_trickle_timer_exp;
+    configuration_u16[41]  = ws_cfg_val.mpl.seed_set_entry_lifetime;
+
+    configuration_u16[42]  = (ws_cfg_val.sec_timer.gtk_expire_offset & 0x0000ffff);
+    configuration_u16[43]  = ((ws_cfg_val.sec_timer.gtk_expire_offset>>16) & 0x0000ffff);
+    configuration_u16[44]  = (ws_cfg_val.sec_timer.pmk_lifetime & 0x0000ffff);
+    configuration_u16[45]  = ((ws_cfg_val.sec_timer.pmk_lifetime>>16) & 0x0000ffff);
+    configuration_u16[46]  = (ws_cfg_val.sec_timer.ptk_lifetime & 0x0000ffff);
+    configuration_u16[47]  = ((ws_cfg_val.sec_timer.ptk_lifetime>>16) & 0x0000ffff);
+    configuration_u16[48]  = ws_cfg_val.sec_timer.gtk_new_act_time;
+    configuration_u16[49]  = ws_cfg_val.sec_timer.ffn_revocat_lifetime_reduct;
+    configuration_u16[50]  = ws_cfg_val.sec_timer.gtk_new_install_req;
+
+    ret = sd_bus_message_append_array(reply, 'q', &configuration_u16, 51*2);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    return 0;
+}
+
+
 static const sd_bus_vtable dbus_vtable[] = {
         SD_BUS_VTABLE_START(0),
         SD_BUS_METHOD("startFan10", "ayi", NULL,
@@ -957,6 +1041,8 @@ static const sd_bus_vtable dbus_vtable[] = {
         SD_BUS_PROPERTY("getFhssTimingConfigure", "au", dbus_get_fhss_timing_configure, 0,
                         SD_BUS_VTABLE_PROPERTY_EMITS_CHANGE),
         SD_BUS_PROPERTY("getGtkActiveKeyIndex", "y", dbus_get_gtk_active_key_index, 0,
+                        SD_BUS_VTABLE_PROPERTY_EMITS_CHANGE),
+        SD_BUS_PROPERTY("getWisunCfgSettings", "aq", dbus_get_wisun_cfg_settings, 0,
                         SD_BUS_VTABLE_PROPERTY_EMITS_CHANGE),
         SD_BUS_VTABLE_END
 };

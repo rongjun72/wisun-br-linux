@@ -116,6 +116,7 @@ pub trait ComSilabsWisunBorderRouter {
     fn get_fhss_channel_mask(&self) -> Result<Vec<u32>, dbus::Error>;
     fn get_fhss_timing_configure(&self) -> Result<Vec<u32>, dbus::Error>;
     fn get_gtk_active_key_index(&self) -> Result<u8, dbus::Error>;
+    fn get_wisun_cfg_settings(&self) -> Result<Vec<u16>, dbus::Error>;
     fn set_network_name(&self, arg0: String) -> Result<(), dbus::Error>;
     fn set_wisun_phy_configs(&self, arg0: u8, arg1: u8, arg2: u8) -> Result<(), dbus::Error>;
     fn set_timing_parameters(&self, arg0: u16, arg1: u16, arg2: u8, arg3: u16) -> Result<(), dbus::Error>;
@@ -249,4 +250,8 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsW
         <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(&self, "com.silabs.Wisun.BorderRouter", "getGtkActiveKeyIndex")
     }
 
+    fn get_wisun_cfg_settings(&self) -> Result<Vec<u16>, dbus::Error>
+    {
+        <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(&self, "com.silabs.Wisun.BorderRouter", "getWisunCfgSettings")
+    }
 }

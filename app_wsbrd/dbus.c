@@ -1064,6 +1064,37 @@ int dbus_set_fhss_bc_function(sd_bus_message *m, void *userdata, sd_bus_error *r
     return 0;
 }
 
+int dbus_set_wisun_pan_id(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    struct wsbr_ctxt *ctxt = userdata;
+    int ret;
+    uint16_t pan_id;
+
+    ret = sd_bus_message_read(m, "q", &pan_id);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    ws_bbr_pan_configuration_set(ctxt->rcp_if_id, pan_id);
+
+    return 0;
+}
+
+int dbus_set_wisun_pan_size(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    struct wsbr_ctxt *ctxt = userdata;
+    int ret;
+    uint16_t pan_size;
+
+    ret = sd_bus_message_read(m, "q", &pan_size);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    ctxt->config.pan_size = pan_size;
+    
+    if(ctxt->rcp_if_id) {
+        ws_bootstrap_restart_delayed(ctxt->rcp_if_id);
+    }
+
+    return 0;
+}
+
 static const sd_bus_vtable dbus_vtable[] = {
         SD_BUS_VTABLE_START(0),
         SD_BUS_METHOD("startFan10", "ayi", NULL,
@@ -1159,6 +1190,10 @@ static const sd_bus_vtable dbus_vtable[] = {
                         dbus_set_fhss_uc_function, 0),
         SD_BUS_METHOD("setFhssBCFuntion", "yqyu", NULL,
                         dbus_set_fhss_bc_function, 0),
+        SD_BUS_METHOD("setWisunPanId", "q", NULL,
+                        dbus_set_wisun_pan_id, 0),
+        SD_BUS_METHOD("setWisunPanSize", "q", NULL,
+                        dbus_set_wisun_pan_size, 0),
         SD_BUS_VTABLE_END
 };
 

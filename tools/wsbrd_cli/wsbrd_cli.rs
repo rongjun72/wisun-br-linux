@@ -572,6 +572,39 @@ fn set_fhss_bc_function(dbus_user: bool, arg0: u8, arg1: u16, arg2: u8, arg3: u3
     Ok(())
 }
 
+fn set_wisun_pan_id(dbus_user: bool, arg0: u16) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Set Wi-SUN PAN id: {:#04x}", arg0);
+    let _ret = dbus_proxy.set_wisun_pan_id(arg0);
+
+    Ok(())
+}
+
+fn set_wisun_pan_size(dbus_user: bool, arg0: u16) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Set Wi-SUN PAN size: {:#04x}", arg0);
+    let _ret = dbus_proxy.set_wisun_pan_size(arg0);
+
+    Ok(())
+}
+
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut wisun_nwkname: String   = String::from("Wi-SUN test");
     let mut wisun_domain: u8        = 0;
@@ -581,6 +614,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut trickle_imax: u16       = 0;
     let mut trickle_k: u8           = 0;
     let mut pan_timeout: u16        = 0;
+    let mut pan_id: u16             = 0;
+    let mut pan_size: u16           = 0;
     let mut long_word0: u32         = 0xffffffff;
     let mut long_word1: u32         = 0xffffffff;
     let mut long_word2: u32         = 0xffffffff;
@@ -654,6 +689,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .arg(Arg::with_name("fixed_channel").help("set fhss broadcast channel function: fixed channel").empty_values(false))
             .arg(Arg::with_name("dwell_interval").help("set fhss broadcast channel function: dewell interval").empty_values(false))
             .arg(Arg::with_name("broadcast_interval").help("set fhss broadcast channel function: broadcast interval").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-wisun-pan-id").about("Set wisun pan id")
+            .arg(Arg::with_name("pan_id").help("Set wisun pan id").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-wisun-pan-size").about("Set wisun pan size")
+            .arg(Arg::with_name("pan_size").help("Set wisun pan size").empty_values(false))
         ,)
         .get_matches();
     let dbus_user = matches.is_present("user");
@@ -790,6 +831,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             set_fhss_bc_function(dbus_user, channel_function, fixed_channel, dwell_interval, broadcast_interval)
+        }
+        Some("set-wisun-pan-id")       => {
+            if let Some(subcmd) = matches.subcommand_matches("set-wisun-pan-id") {
+                if let Some(domainval) = subcmd.value_of("pan_id") {
+                    pan_id = domainval.parse::<u16>().unwrap();
+                }
+            }
+            set_wisun_pan_id(dbus_user, pan_id)
+        }
+        Some("set-wisun-pan-size")       => {
+            if let Some(subcmd) = matches.subcommand_matches("set-wisun-pan-size") {
+                if let Some(domainval) = subcmd.value_of("pan_size") {
+                    pan_size = domainval.parse::<u16>().unwrap();
+                }
+            }
+            set_wisun_pan_size(dbus_user, pan_size)
         }
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }

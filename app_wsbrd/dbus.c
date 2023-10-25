@@ -1024,9 +1024,9 @@ int dbus_set_fhss_uc_function(sd_bus_message *m, void *userdata, sd_bus_error *r
     struct wsbr_ctxt *ctxt = userdata;
     int ret;
 
-    uint8_t channel_function;
+    uint8_t  channel_function;
     uint16_t fixed_channel;
-    uint8_t dwell_interval;
+    uint8_t  dwell_interval;
 
     ret = sd_bus_message_read(m, "y", &channel_function);
     WARN_ON(ret < 0, "%s", strerror(-ret));
@@ -1036,6 +1036,30 @@ int dbus_set_fhss_uc_function(sd_bus_message *m, void *userdata, sd_bus_error *r
     WARN_ON(ret < 0, "%s", strerror(-ret));
 
     ws_management_fhss_unicast_channel_function_configure(ctxt->rcp_if_id, channel_function, fixed_channel, dwell_interval);
+
+    return 0;
+}
+
+int dbus_set_fhss_bc_function(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    struct wsbr_ctxt *ctxt = userdata;
+    int ret;
+
+    uint8_t  channel_function;
+    uint16_t fixed_channel;
+    uint8_t  dwell_interval;
+    uint32_t broadcast_interval;
+
+    ret = sd_bus_message_read(m, "y", &channel_function);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    ret = sd_bus_message_read(m, "q", &fixed_channel);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    ret = sd_bus_message_read(m, "y", &dwell_interval);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    ret = sd_bus_message_read(m, "u", &broadcast_interval);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    ws_management_fhss_broadcast_channel_function_configure(ctxt->rcp_if_id, channel_function, fixed_channel, dwell_interval, broadcast_interval);
 
     return 0;
 }
@@ -1131,6 +1155,10 @@ static const sd_bus_vtable dbus_vtable[] = {
                         dbus_set_fhss_ch_mask_l4b, 0),
         SD_BUS_METHOD("setFhssTimingConfig", "yuy", NULL,
                         dbus_set_fhss_timing_configure, 0),
+        SD_BUS_METHOD("setFhssUCFuntion", "yqy", NULL,
+                        dbus_set_fhss_uc_function, 0),
+        SD_BUS_METHOD("setFhssBCFuntion", "yqyu", NULL,
+                        dbus_set_fhss_bc_function, 0),
         SD_BUS_VTABLE_END
 };
 

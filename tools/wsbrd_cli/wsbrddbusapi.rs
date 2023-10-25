@@ -124,6 +124,7 @@ pub trait ComSilabsWisunBorderRouter {
     fn set_fhss_channel_mask_l4b(&self, arg0: u32, arg1: u32, arg2: u32, arg3: u32) -> Result<(), dbus::Error>;
     fn set_fhss_timing_configure(&self, arg0: u8, arg1: u32, arg2: u8) -> Result<(), dbus::Error>;
     fn set_fhss_uc_function(&self, arg0: u8, arg1: u16, arg2: u8) -> Result<(), dbus::Error>;
+    fn set_fhss_bc_function(&self, arg0: u8, arg1: u16, arg2: u8, arg3: u32) -> Result<(), dbus::Error>;
 }
 
 impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsWisunBorderRouter for blocking::Proxy<'a, C> {
@@ -275,4 +276,7 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsW
         self.method_call("com.silabs.Wisun.BorderRouter", "setFhssUCFuntion", (arg0, arg1, arg2, ))
     }
 
+    fn set_fhss_bc_function(&self, arg0: u8, arg1: u16, arg2: u8, arg3: u32) -> Result<(), dbus::Error> {
+        self.method_call("com.silabs.Wisun.BorderRouter", "setFhssBCFuntion", (arg0, arg1, arg2, arg3, ))
+    }
 }

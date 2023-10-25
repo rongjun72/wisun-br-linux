@@ -534,8 +534,24 @@ fn set_fhss_uc_function(dbus_user: bool, arg0: u8, arg1: u16, arg2: u8) -> Resul
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
     println!("--------------------------------------------------------------");
-    println!("Set fhss timing configure: \nchannel_function: {}\nfixed_channel: {}\ndwell_interval: {}", arg0, arg1, arg2);
+    println!("Set fhss unicast configure: \nchannel_function: {}\nfixed_channel: {}\ndwell_interval: {}", arg0, arg1, arg2);
     let _ret = dbus_proxy.set_fhss_uc_function(arg0, arg1, arg2);
+
+    Ok(())
+}
+
+fn set_fhss_bc_function(dbus_user: bool, arg0: u8, arg1: u16, arg2: u8, arg3: u32) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Set fhss broadcast configure: \nchannel_function: {}\nfixed_channel: {}\ndwell_interval: {}\nbroadcast_interval: {}", arg0, arg1, arg2, arg3);
+    let _ret = dbus_proxy.set_fhss_bc_function(arg0, arg1, arg2, arg3);
 
     Ok(())
 }
@@ -616,6 +632,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .arg(Arg::with_name("channel_function").help("set fhss unicast channel function").empty_values(false))
             .arg(Arg::with_name("fixed_channel").help("set fhss unicast channel function: fixed channel").empty_values(false))
             .arg(Arg::with_name("dwell_interval").help("set fhss unicast channel function: dewell interval").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-fhss-bc-function").about("set fhss broadcast channel function")
+            .arg(Arg::with_name("channel_function").help("set fhss broadcast channel function").empty_values(false))
+            .arg(Arg::with_name("fixed_channel").help("set fhss broadcast channel function: fixed channel").empty_values(false))
+            .arg(Arg::with_name("dwell_interval").help("set fhss broadcast channel function: dewell interval").empty_values(false))
+            .arg(Arg::with_name("broadcast_interval").help("set fhss broadcast channel function: broadcast interval").empty_values(false))
         ,)
         .get_matches();
     let dbus_user = matches.is_present("user");
@@ -735,6 +757,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             set_fhss_uc_function(dbus_user, channel_function, fixed_channel, dwell_interval)
+        }
+        Some("set-fhss-bc-function")       => {
+            if let Some(subcmd) = matches.subcommand_matches("set-fhss-bc-function") {
+                if let Some(domainval) = subcmd.value_of("channel_function") {
+                    channel_function = domainval.parse::<u8>().unwrap();
+                }
+                if let Some(domainval) = subcmd.value_of("fixed_channel") {
+                    fixed_channel = domainval.parse::<u16>().unwrap();
+                }
+                if let Some(domainval) = subcmd.value_of("dwell_interval") {
+                    dwell_interval = domainval.parse::<u8>().unwrap();
+                }
+                if let Some(domainval) = subcmd.value_of("broadcast_interval") {
+                    broadcast_interval = domainval.parse::<u32>().unwrap();
+                }
+            }
+            set_fhss_bc_function(dbus_user, channel_function, fixed_channel, dwell_interval, broadcast_interval)
         }
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }

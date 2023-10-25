@@ -81,6 +81,7 @@ fn do_status(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
     }
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
+    println!("--------------------------------------------------------------");
     // Consider that if NetworkName does not exist, the service probably not here.
     match dbus_proxy.wisun_network_name() {
         Ok(val) => println!("network_name: {}", val),
@@ -143,6 +144,7 @@ fn do_stopfan10(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
     }
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
+    println!("--------------------------------------------------------------");
     match dbus_proxy.wisun_network_name() {
         Ok(val) => println!("stop FAN1.0: {}", val),
         Err(e) => return Err(Box::new(e)),
@@ -163,6 +165,7 @@ fn do_startfan10(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
     }
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
+    println!("--------------------------------------------------------------");
     match dbus_proxy.wisun_network_name() {
         Ok(val) => println!("Start FAN1.0: {}", val),
         Err(e) => return Err(Box::new(e)),
@@ -184,6 +187,7 @@ fn get_networkstate(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
     println!("Network state:");
+    println!("--------------------------------------------------------------");
     let network_state = dbus_proxy.get_network_state().unwrap_or(vec![]);
     for (i, g) in network_state.iter().enumerate() {
         let ip_addr = Ipv6Addr::new((g[0] as u16)*256+(g[1] as u16), (g[2] as u16)*256+(g[3] as u16), 
@@ -205,6 +209,7 @@ fn get_networkname(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
     }
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
+    println!("--------------------------------------------------------------");
     match dbus_proxy.wisun_network_name() {
         Ok(val) => println!("Wisun Network Name: {}", val),
         Err(e) => return Err(Box::new(e)),
@@ -227,6 +232,7 @@ fn get_wisun_phy_configs(dbus_user: bool) -> Result<(), Box<dyn std::error::Erro
         2 => println!("fan_version: FAN 1.1"),
         _ => (),
     }
+    println!("--------------------------------------------------------------");
     println!("domain: {}", dbus_proxy.wisun_domain().unwrap_or("[UNKNOWN]".to_string()));
     let mode         = dbus_proxy.wisun_mode().unwrap_or(0);
     let class        = dbus_proxy.wisun_class().unwrap_or(0);
@@ -253,6 +259,7 @@ fn get_timing_parameters(dbus_user: bool) -> Result<(), Box<dyn std::error::Erro
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
     println!("Timing parameters:");
+    println!("--------------------------------------------------------------");
     let timing_parameters = dbus_proxy.get_timing_parameters().unwrap_or(vec![]);
     println!("disc_trickle_imin:\t {}", timing_parameters[0]);
     println!("disc_trickle_imax:\t {}", timing_parameters[1]);
@@ -272,6 +279,7 @@ fn get_fhss_channel_mask(dbus_user: bool) -> Result<(), Box<dyn std::error::Erro
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
     println!("Fhss channel mask:");
+    println!("--------------------------------------------------------------");
     let fhss_channel_mask = dbus_proxy.get_fhss_channel_mask().unwrap_or(vec![]);
     println!("{:#08x?}", fhss_channel_mask);
 
@@ -288,6 +296,7 @@ fn get_fhss_timing_configure(dbus_user: bool) -> Result<(), Box<dyn std::error::
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
     println!("Fhss timing configure:");
+    println!("--------------------------------------------------------------");
     let fhss_timing_configure = dbus_proxy.get_fhss_timing_configure().unwrap_or(vec![]);
     println!("uc_dwell_interval:  {}", fhss_timing_configure[0]);
     println!("broadcast_interval: {}", fhss_timing_configure[1]);
@@ -307,6 +316,7 @@ fn get_wisun_pan_id(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
     }
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
+    println!("--------------------------------------------------------------");
     println!("Wi-SUN PAN id: {:#04x}", dbus_proxy.wisun_pan_id().unwrap_or(0));
 
     Ok(())
@@ -321,6 +331,7 @@ fn get_wisun_pan_size(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>>
     }
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
+    println!("--------------------------------------------------------------");
     println!("Wi-SUN PAN size: {}", dbus_proxy.wisun_size().unwrap_or("[UNKNOWN]".to_string()));
 
     Ok(())
@@ -337,6 +348,7 @@ fn get_wisun_gtks(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
 
     let gtks = dbus_proxy.gtks().unwrap_or(vec![]);
     println!("Wi-SUN GTKs:");
+    println!("--------------------------------------------------------------");
     for (i, g) in gtks.iter().enumerate() {
         println!("GTK[{}]: {}", i, format_byte_array(g));
     }
@@ -353,6 +365,7 @@ fn get_wisun_gtk_active_key_index(dbus_user: bool) -> Result<(), Box<dyn std::er
     }
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
+    println!("--------------------------------------------------------------");
     println!("Wi-SUN GTK active key index: {}", dbus_proxy.get_gtk_active_key_index().unwrap_or(0));
 
     Ok(())
@@ -440,6 +453,7 @@ fn set_networkname(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::err
     }
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
+    println!("--------------------------------------------------------------");
     println!("wisun network name setting: {}", arg0);
     let _ret = dbus_proxy.set_network_name(arg0);
 
@@ -455,6 +469,7 @@ fn set_wisun_phy_configs(dbus_user: bool, arg0: u8, arg1: u8, arg2: u8) -> Resul
     }
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
+    println!("--------------------------------------------------------------");
     println!("Wisun PHY config setting: \nDomain: {}\nClass: {}\nMode: {}", arg0, arg1, arg2);
     let _ret = dbus_proxy.set_wisun_phy_configs(arg0, arg1, arg2);
 
@@ -470,6 +485,7 @@ fn set_timing_parameters(dbus_user: bool, arg0: u16, arg1: u16, arg2: u8, arg3: 
     }
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
+    println!("--------------------------------------------------------------");
     println!("Set new timing parameters: \ntrickle_imin: {}\ntrickle_imax: {}\ntrickle_k: {}\npan_timeout: {}", arg0, arg1, arg2, arg3);
     let _ret = dbus_proxy.set_timing_parameters(arg0, arg1, arg2, arg3);
 

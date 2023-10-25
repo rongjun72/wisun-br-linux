@@ -610,6 +610,49 @@ fn set_wisun_pan_size(dbus_user: bool, arg0: u16) -> Result<(), Box<dyn std::err
     Ok(())
 }
 
+fn set_wisun_gtk_key(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("input GTK kes: {:?}", arg0);
+    let gtk_keys: Vec<u8> = arg0.to_string()
+        .split(":")
+        .map(|s| s.parse().expect("parse error"))
+        .collect();
+
+    let _ret = dbus_proxy.set_wisun_gtk_key(gtk_keys);
+
+    Ok(())
+}
+
+fn set_wisun_gtk_active_key(dbus_user: bool, arg0: u8) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Set Wi-SUN GTK active key: {}", arg0);
+    let gtk_index = arg0;
+    if gtk_index >3 {
+        println!("Invalid GTK active index setting. Valid range is [0, 3]");
+    } else {
+        let _ret = dbus_proxy.set_wisun_gtk_active_key(arg0);
+    }
+
+    Ok(())
+}
+
+
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut wisun_nwkname: String   = String::from("Wi-SUN test");
@@ -633,9 +676,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut uc_dwell_interval: u8   = 0;
     let mut broadcast_interval: u32 = 0;
     let mut bc_dwell_interval:u8    = 0;
-    let mut channel_function        = 0;
-    let mut fixed_channel           = 0;
-    let mut dwell_interval          = 0;
+    let mut channel_function: u8    = 0;
+    let mut fixed_channel: u16      = 0;
+    let mut dwell_interval: u8      = 0;
+    let mut gtk_key: String         = String::from("");
+    let mut gtk_index: u8           = 0;
 
     let matches = App::new("wsbrd_cli")
         .setting(AppSettings::SubcommandRequired)
@@ -701,6 +746,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ,)
         .subcommand(SubCommand::with_name("set-wisun-pan-size").about("Set wisun pan size. 1: small, 8: medium(100~800 device), 15: large(800~1500), 25: extreme large(<2500), 255: auto")
             .arg(Arg::with_name("pan_size").help("Set wisun pan size").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-wisun-gtk-key").about("Set wisun index gtk key. Usage: >wsbrd_cli set-wisun-gtk-key \"k0:k2:k3:...:k15\" ")
+            .arg(Arg::with_name("gtk_key").help("Set wisun index gtk key").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-wisun-gtk-active-key").about("Set wisun gtk active key.")
+            .arg(Arg::with_name("gtk_index").help("Set wisun gtk active key").empty_values(false))
         ,)
         .get_matches();
     let dbus_user = matches.is_present("user");
@@ -853,6 +904,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             set_wisun_pan_size(dbus_user, pan_size)
+        }
+        Some("set-wisun-gtk-key")       => {
+            if let Some(subcmd) = matches.subcommand_matches("set-wisun-gtk-key") {
+                if let Some(tempval) = subcmd.value_of("gtk_key") {
+                    gtk_key = tempval.to_string();
+                }
+            }
+            set_wisun_gtk_key(dbus_user, gtk_key)
+        }
+        Some("set-wisun-gtk-active-key")       => {
+            if let Some(subcmd) = matches.subcommand_matches("set-wisun-gtk-active-key") {
+                if let Some(tempval) = subcmd.value_of("gtk_index") {
+                    gtk_index = tempval.parse::<u8>().unwrap();
+                }
+            }
+            set_wisun_gtk_active_key(dbus_user, gtk_index)
         }
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }

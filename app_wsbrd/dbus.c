@@ -971,6 +971,7 @@ int dbus_set_fhss_ch_mask_f4b(sd_bus_message *m, void *userdata, sd_bus_error *r
     /* get current channel mask settings from stack, than we modify it and set back */
     ws_management_channel_mask_set(ctxt->rcp_if_id, (uint8_t *)Channel_mask);
 
+    sd_bus_reply_method_return(m, NULL);
     return 0;
 }
 
@@ -995,6 +996,7 @@ int dbus_set_fhss_ch_mask_l4b(sd_bus_message *m, void *userdata, sd_bus_error *r
     /* get current channel mask settings from stack, than we modify it and set back */
     ws_management_channel_mask_set(ctxt->rcp_if_id, (uint8_t *)Channel_mask);
 
+    sd_bus_reply_method_return(m, NULL);
     return 0;
 }
 
@@ -1016,6 +1018,7 @@ int dbus_set_fhss_timing_configure(sd_bus_message *m, void *userdata, sd_bus_err
 
     ws_management_fhss_timing_configure_set(ctxt->rcp_if_id, uc_dwell_interval, broadcast_interval, bc_dwell_interval);
 
+    sd_bus_reply_method_return(m, NULL);
     return 0;
 }
 
@@ -1037,6 +1040,7 @@ int dbus_set_fhss_uc_function(sd_bus_message *m, void *userdata, sd_bus_error *r
 
     ws_management_fhss_unicast_channel_function_configure(ctxt->rcp_if_id, channel_function, fixed_channel, dwell_interval);
 
+    sd_bus_reply_method_return(m, NULL);
     return 0;
 }
 
@@ -1061,6 +1065,7 @@ int dbus_set_fhss_bc_function(sd_bus_message *m, void *userdata, sd_bus_error *r
 
     ws_management_fhss_broadcast_channel_function_configure(ctxt->rcp_if_id, channel_function, fixed_channel, dwell_interval, broadcast_interval);
 
+    sd_bus_reply_method_return(m, NULL);
     return 0;
 }
 
@@ -1075,6 +1080,7 @@ int dbus_set_wisun_pan_id(sd_bus_message *m, void *userdata, sd_bus_error *ret_e
 
     ws_bbr_pan_configuration_set(ctxt->rcp_if_id, pan_id);
 
+    sd_bus_reply_method_return(m, NULL);
     return 0;
 }
 
@@ -1092,6 +1098,46 @@ int dbus_set_wisun_pan_size(sd_bus_message *m, void *userdata, sd_bus_error *ret
         ws_bootstrap_restart_delayed(ctxt->rcp_if_id);
     }
 
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
+int dbus_set_wisun_gtk_key(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    struct wsbr_ctxt *ctxt = userdata;
+    const uint8_t *gtk_key;
+    size_t len;
+    int ret;
+
+    ret = sd_bus_message_read_array(m, 'y', (const void **)&gtk_key, &len);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    WARN_ON(len != GTK_LEN, "%s", strerror(EINVAL));
+
+    ws_pae_auth_gtk_install(ctxt->rcp_if_id, gtk_key, false);                                                                            
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
+int dbus_set_wisun_gtk_active_key(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    struct wsbr_ctxt *ctxt = userdata;
+    int ret;
+    uint16_t key_index;
+
+    ret = sd_bus_message_read(m, "y", &key_index);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    
+    if (0 == ws_pae_controller_active_key_update(ctxt->rcp_if_id, key_index))
+    {
+         tr_warn("set wisun gtk active key %d successfully", key_index);
+    }
+    else 
+    {
+        tr_warn("set wisun active key %d fail", key_index);
+    }
+
+    sd_bus_reply_method_return(m, NULL);
     return 0;
 }
 
@@ -1194,6 +1240,10 @@ static const sd_bus_vtable dbus_vtable[] = {
                         dbus_set_wisun_pan_id, 0),
         SD_BUS_METHOD("setWisunPanSize", "q", NULL,
                         dbus_set_wisun_pan_size, 0),
+        SD_BUS_METHOD("setWisunGtkKey", "ay", NULL,
+                        dbus_set_wisun_gtk_key, 0),
+        SD_BUS_METHOD("setWisunGtkActiveKey", "y", NULL,
+                        dbus_set_wisun_gtk_active_key, 0),
         SD_BUS_VTABLE_END
 };
 

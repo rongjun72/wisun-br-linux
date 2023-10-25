@@ -127,6 +127,8 @@ pub trait ComSilabsWisunBorderRouter {
     fn set_fhss_bc_function(&self, arg0: u8, arg1: u16, arg2: u8, arg3: u32) -> Result<(), dbus::Error>;
     fn set_wisun_pan_id(&self, arg0: u16) -> Result<(), dbus::Error>;
     fn set_wisun_pan_size(&self, arg0: u16) -> Result<(), dbus::Error>;
+    fn set_wisun_gtk_key(&self, arg0: Vec<u8>) -> Result<(), dbus::Error>;
+    fn set_wisun_gtk_active_key(&self, arg0: u8) -> Result<(), dbus::Error>;
 }
 
 impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsWisunBorderRouter for blocking::Proxy<'a, C> {
@@ -288,5 +290,13 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsW
 
     fn set_wisun_pan_size(&self, arg0: u16) -> Result<(), dbus::Error> {
         self.method_call("com.silabs.Wisun.BorderRouter", "setWisunPanSize", (arg0, ))
+    }
+
+    fn set_wisun_gtk_key(&self, arg0: Vec<u8>) -> Result<(), dbus::Error> {
+        self.method_call("com.silabs.Wisun.BorderRouter", "setWisunGtkKey", (arg0, ))
+    }
+
+    fn set_wisun_gtk_active_key(&self, arg0: u8) -> Result<(), dbus::Error> {
+        self.method_call("com.silabs.Wisun.BorderRouter", "setWisunGtkActiveKey", (arg0, ))
     }
 }

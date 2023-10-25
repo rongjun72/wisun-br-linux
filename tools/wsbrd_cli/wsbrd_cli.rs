@@ -730,126 +730,126 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Some("set-wisun-phy-configs")       => {
             if let Some(subcmd) = matches.subcommand_matches("set-wisun-phy-configs") {
-                if let Some(domainval) = subcmd.value_of("domain") {
-                    wisun_domain = domainval.parse::<u8>().unwrap();
+                if let Some(tempval) = subcmd.value_of("domain") {
+                    wisun_domain = tempval.parse::<u8>().unwrap();
                 }
-                if let Some(domainval) = subcmd.value_of("class") {
-                    wisun_class = domainval.parse::<u8>().unwrap();
+                if let Some(tempval) = subcmd.value_of("class") {
+                    wisun_class = tempval.parse::<u8>().unwrap();
                 }
-                if let Some(domainval) = subcmd.value_of("mode") {
-                    wisun_mode = domainval.parse::<u8>().unwrap();
+                if let Some(tempval) = subcmd.value_of("mode") {
+                    wisun_mode = tempval.parse::<u8>().unwrap();
                 }
             }
             set_wisun_phy_configs(dbus_user, wisun_domain, wisun_class, wisun_mode)
         }
         Some("set-timing-parameters")       => {
             if let Some(subcmd) = matches.subcommand_matches("set-timing-parameters") {
-                if let Some(domainval) = subcmd.value_of("trickle_imin") {
-                    trickle_imin = domainval.parse::<u16>().unwrap();
+                if let Some(tempval) = subcmd.value_of("trickle_imin") {
+                    trickle_imin = tempval.parse::<u16>().unwrap();
                 }
-                if let Some(domainval) = subcmd.value_of("trickle_imax") {
-                    trickle_imax = domainval.parse::<u16>().unwrap();
+                if let Some(tempval) = subcmd.value_of("trickle_imax") {
+                    trickle_imax = tempval.parse::<u16>().unwrap();
                 }
-                if let Some(domainval) = subcmd.value_of("trickle_k") {
-                    trickle_k = domainval.parse::<u8>().unwrap();
+                if let Some(tempval) = subcmd.value_of("trickle_k") {
+                    trickle_k = tempval.parse::<u8>().unwrap();
                 }
-                if let Some(domainval) = subcmd.value_of("pan_timeout") {
-                    pan_timeout = domainval.parse::<u16>().unwrap();
+                if let Some(tempval) = subcmd.value_of("pan_timeout") {
+                    pan_timeout = tempval.parse::<u16>().unwrap();
                 }
             }
             set_timing_parameters(dbus_user, trickle_imin, trickle_imax, trickle_k, pan_timeout)
         }
         Some("set-fhss-channel-mask-f4b")       => {
             if let Some(subcmd) = matches.subcommand_matches("set-fhss-channel-mask-f4b") {
-                if let Some(domainval) = subcmd.value_of("long_word0") {
-                    long_word0 = domainval.parse::<u32>().unwrap();
+                if let Some(tempval) = subcmd.value_of("long_word0") {
+                    long_word0 = tempval.parse::<u32>().unwrap();
                 }
-                if let Some(domainval) = subcmd.value_of("long_word1") {
-                    long_word1 = domainval.parse::<u32>().unwrap();
+                if let Some(tempval) = subcmd.value_of("long_word1") {
+                    long_word1 = tempval.parse::<u32>().unwrap();
                 }
-                if let Some(domainval) = subcmd.value_of("long_word2") {
-                    long_word2 = domainval.parse::<u32>().unwrap();
+                if let Some(tempval) = subcmd.value_of("long_word2") {
+                    long_word2 = tempval.parse::<u32>().unwrap();
                 }
-                if let Some(domainval) = subcmd.value_of("long_word3") {
-                    long_word3 = domainval.parse::<u32>().unwrap();
+                if let Some(tempval) = subcmd.value_of("long_word3") {
+                    long_word3 = tempval.parse::<u32>().unwrap();
                 }
             }
             set_fhss_channel_mask_f4b(dbus_user, long_word0, long_word1, long_word2, long_word3)
         }
         Some("set-fhss-channel-mask-l4b")       => {
             if let Some(subcmd) = matches.subcommand_matches("set-fhss-channel-mask-l4b") {
-                if let Some(domainval) = subcmd.value_of("long_word4") {
-                    long_word4 = domainval.parse::<u32>().unwrap();
+                if let Some(tempval) = subcmd.value_of("long_word4") {
+                    long_word4 = tempval.parse::<u32>().unwrap();
                 }
-                if let Some(domainval) = subcmd.value_of("long_word5") {
-                    long_word5 = domainval.parse::<u32>().unwrap();
+                if let Some(tempval) = subcmd.value_of("long_word5") {
+                    long_word5 = tempval.parse::<u32>().unwrap();
                 }
-                if let Some(domainval) = subcmd.value_of("long_word6") {
-                    long_word6 = domainval.parse::<u32>().unwrap();
+                if let Some(tempval) = subcmd.value_of("long_word6") {
+                    long_word6 = tempval.parse::<u32>().unwrap();
                 }
-                if let Some(domainval) = subcmd.value_of("long_word7") {
-                    long_word7 = domainval.parse::<u32>().unwrap();
+                if let Some(tempval) = subcmd.value_of("long_word7") {
+                    long_word7 = tempval.parse::<u32>().unwrap();
                 }
             }
             set_fhss_channel_mask_l4b(dbus_user, long_word4, long_word5, long_word6, long_word7)
         }
         Some("set-fhss-timing-configure")       => {
             if let Some(subcmd) = matches.subcommand_matches("set-fhss-timing-configure") {
-                if let Some(domainval) = subcmd.value_of("uc_dwell_interval") {
-                    uc_dwell_interval = domainval.parse::<u8>().unwrap();
+                if let Some(tempval) = subcmd.value_of("uc_dwell_interval") {
+                    uc_dwell_interval = tempval.parse::<u8>().unwrap();
                 }
-                if let Some(domainval) = subcmd.value_of("broadcast_interval") {
-                    broadcast_interval = domainval.parse::<u32>().unwrap();
+                if let Some(tempval) = subcmd.value_of("broadcast_interval") {
+                    broadcast_interval = tempval.parse::<u32>().unwrap();
                 }
-                if let Some(domainval) = subcmd.value_of("bc_dwell_interval") {
-                    bc_dwell_interval = domainval.parse::<u8>().unwrap();
+                if let Some(tempval) = subcmd.value_of("bc_dwell_interval") {
+                    bc_dwell_interval = tempval.parse::<u8>().unwrap();
                 }
             }
             set_fhss_timing_configure(dbus_user, uc_dwell_interval, broadcast_interval, bc_dwell_interval)
         }
         Some("set-fhss-uc-function")       => {
             if let Some(subcmd) = matches.subcommand_matches("set-fhss-uc-function") {
-                if let Some(domainval) = subcmd.value_of("channel_function") {
-                    channel_function = domainval.parse::<u8>().unwrap();
+                if let Some(tempval) = subcmd.value_of("channel_function") {
+                    channel_function = tempval.parse::<u8>().unwrap();
                 }
-                if let Some(domainval) = subcmd.value_of("fixed_channel") {
-                    fixed_channel = domainval.parse::<u16>().unwrap();
+                if let Some(tempval) = subcmd.value_of("fixed_channel") {
+                    fixed_channel = tempval.parse::<u16>().unwrap();
                 }
-                if let Some(domainval) = subcmd.value_of("dwell_interval") {
-                    dwell_interval = domainval.parse::<u8>().unwrap();
+                if let Some(tempval) = subcmd.value_of("dwell_interval") {
+                    dwell_interval = tempval.parse::<u8>().unwrap();
                 }
             }
             set_fhss_uc_function(dbus_user, channel_function, fixed_channel, dwell_interval)
         }
         Some("set-fhss-bc-function")       => {
             if let Some(subcmd) = matches.subcommand_matches("set-fhss-bc-function") {
-                if let Some(domainval) = subcmd.value_of("channel_function") {
-                    channel_function = domainval.parse::<u8>().unwrap();
+                if let Some(tempval) = subcmd.value_of("channel_function") {
+                    channel_function = tempval.parse::<u8>().unwrap();
                 }
-                if let Some(domainval) = subcmd.value_of("fixed_channel") {
-                    fixed_channel = domainval.parse::<u16>().unwrap();
+                if let Some(tempval) = subcmd.value_of("fixed_channel") {
+                    fixed_channel = tempval.parse::<u16>().unwrap();
                 }
-                if let Some(domainval) = subcmd.value_of("dwell_interval") {
-                    dwell_interval = domainval.parse::<u8>().unwrap();
+                if let Some(tempval) = subcmd.value_of("dwell_interval") {
+                    dwell_interval = tempval.parse::<u8>().unwrap();
                 }
-                if let Some(domainval) = subcmd.value_of("broadcast_interval") {
-                    broadcast_interval = domainval.parse::<u32>().unwrap();
+                if let Some(tempval) = subcmd.value_of("broadcast_interval") {
+                    broadcast_interval = tempval.parse::<u32>().unwrap();
                 }
             }
             set_fhss_bc_function(dbus_user, channel_function, fixed_channel, dwell_interval, broadcast_interval)
         }
         Some("set-wisun-pan-id")       => {
             if let Some(subcmd) = matches.subcommand_matches("set-wisun-pan-id") {
-                if let Some(domainval) = subcmd.value_of("pan_id") {
-                    pan_id = domainval.parse::<u16>().unwrap();
+                if let Some(tempval) = subcmd.value_of("pan_id") {
+                    pan_id = tempval.parse::<u16>().unwrap();
                 }
             }
             set_wisun_pan_id(dbus_user, pan_id)
         }
         Some("set-wisun-pan-size")       => {
             if let Some(subcmd) = matches.subcommand_matches("set-wisun-pan-size") {
-                if let Some(domainval) = subcmd.value_of("pan_size") {
-                    pan_size = domainval.parse::<u16>().unwrap();
+                if let Some(tempval) = subcmd.value_of("pan_size") {
+                    pan_size = tempval.parse::<u16>().unwrap();
                 }
             }
             set_wisun_pan_size(dbus_user, pan_size)

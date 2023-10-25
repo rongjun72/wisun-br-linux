@@ -652,6 +652,22 @@ fn set_wisun_gtk_active_key(dbus_user: bool, arg0: u8) -> Result<(), Box<dyn std
     Ok(())
 }
 
+fn set_wisun_key_lifetime(dbus_user: bool, arg0: u32, arg1: u32, arg2: u32) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Set Wi-SUN key lifetime: \ngtk_lifetime: {}\npmk_lifetime: {}\nptk_lifetime: {}", arg0, arg1, arg2);
+    let _ret = dbus_proxy.set_wisun_key_lifetime(arg0, arg1, arg2);
+
+    Ok(())
+}
+
 
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -681,6 +697,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut dwell_interval: u8      = 0;
     let mut gtk_key: String         = String::from("");
     let mut gtk_index: u8           = 0;
+    let mut gtk_lifetime: u32       = 0xffffffff;
+    let mut pmk_lifetime: u32       = 0xffffffff;
+    let mut ptk_lifetime: u32       = 0xffffffff;
 
     let matches = App::new("wsbrd_cli")
         .setting(AppSettings::SubcommandRequired)
@@ -752,6 +771,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ,)
         .subcommand(SubCommand::with_name("set-wisun-gtk-active-key").about("Set wisun gtk active key.")
             .arg(Arg::with_name("gtk_index").help("Set wisun gtk active key").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-wisun-key-lifetime").about("set wisun key lifetime, include GTK, PMK and PTK")
+            .arg(Arg::with_name("gtk_lifetime").help("set wisun GTK lifetime").empty_values(false))
+            .arg(Arg::with_name("pmk_lifetime").help("set wisun PMK lifetime").empty_values(false))
+            .arg(Arg::with_name("ptk_lifetime").help("set wisun PTK lifetime").empty_values(false))
         ,)
         .get_matches();
     let dbus_user = matches.is_present("user");
@@ -920,6 +944,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             set_wisun_gtk_active_key(dbus_user, gtk_index)
+        }
+        Some("set-wisun-key-lifetime")       => {
+            if let Some(subcmd) = matches.subcommand_matches("set-wisun-key-lifetime") {
+                if let Some(tempval) = subcmd.value_of("gtk_lifetime") {
+                    gtk_lifetime = tempval.parse::<u32>().unwrap();
+                }
+                if let Some(tempval) = subcmd.value_of("pmk_lifetime") {
+                    pmk_lifetime = tempval.parse::<u32>().unwrap();
+                }
+                if let Some(tempval) = subcmd.value_of("ptk_lifetime") {
+                    ptk_lifetime = tempval.parse::<u32>().unwrap();
+                }
+            }
+            set_wisun_key_lifetime(dbus_user, gtk_lifetime, pmk_lifetime, ptk_lifetime)
         }
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }

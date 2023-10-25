@@ -1141,6 +1141,52 @@ int dbus_set_wisun_gtk_active_key(sd_bus_message *m, void *userdata, sd_bus_erro
     return 0;
 }
 
+int dbus_set_wisun_key_lifetime(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    struct wsbr_ctxt *ctxt = userdata;
+    int ret;
+
+    uint32_t gtk_lifetime;
+    uint32_t pmk_lifetime;
+    uint32_t ptk_lifetime;
+
+    ret = sd_bus_message_read(m, "u", &gtk_lifetime);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    ret = sd_bus_message_read(m, "u", &pmk_lifetime);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    ret = sd_bus_message_read(m, "u", &ptk_lifetime);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    struct net_if *cur = protocol_stack_interface_info_get_by_id(ctxt->rcp_if_id);
+    if (!cur) {
+        return -1;
+    }
+
+    ws_sec_timer_cfg_t cfg;
+    if (ws_cfg_sec_timer_get(&cfg) < 0) {
+        return -2;
+    }
+
+    if (gtk_lifetime > 0) {
+        cfg.gtk_expire_offset = gtk_lifetime;
+    }
+    if (pmk_lifetime > 0) {
+        cfg.pmk_lifetime = pmk_lifetime;
+    }
+    if (ptk_lifetime > 0) {
+        cfg.ptk_lifetime = ptk_lifetime;
+    }
+
+    if (ws_cfg_sec_timer_set(cur, &cfg, 0x00) < 0) {
+        return -3;
+    }
+
+    tr_info("set wisun key lifetime: gtk_lifetime: %d minutes pmk_lifetime: %d minutes ptk_lifetime: %d minutes\n", gtk_lifetime, pmk_lifetime, ptk_lifetime);
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
 static const sd_bus_vtable dbus_vtable[] = {
         SD_BUS_VTABLE_START(0),
         SD_BUS_METHOD("startFan10", "ayi", NULL,
@@ -1244,6 +1290,8 @@ static const sd_bus_vtable dbus_vtable[] = {
                         dbus_set_wisun_gtk_key, 0),
         SD_BUS_METHOD("setWisunGtkActiveKey", "y", NULL,
                         dbus_set_wisun_gtk_active_key, 0),
+        SD_BUS_METHOD("setWisunKeyLifetime", "y", NULL,
+                        dbus_set_wisun_key_lifetime, 0),
         SD_BUS_VTABLE_END
 };
 

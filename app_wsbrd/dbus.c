@@ -1086,7 +1086,7 @@ int dbus_set_wisun_pan_size(sd_bus_message *m, void *userdata, sd_bus_error *ret
 
     ret = sd_bus_message_read(m, "q", &pan_size);
     WARN_ON(ret < 0, "%s", strerror(-ret));
-    ctxt->config.pan_size = pan_size;
+    ctxt->config.ws_size = pan_size;
     
     if(ctxt->rcp_if_id) {
         ws_bootstrap_restart_delayed(ctxt->rcp_if_id);

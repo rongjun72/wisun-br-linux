@@ -599,7 +599,13 @@ fn set_wisun_pan_size(dbus_user: bool, arg0: u16) -> Result<(), Box<dyn std::err
 
     println!("--------------------------------------------------------------");
     println!("Set Wi-SUN PAN size: {:#04x}", arg0);
-    let _ret = dbus_proxy.set_wisun_pan_size(arg0);
+    let pan_size = arg0;
+    if !(pan_size == 0 || pan_size == 1 || pan_size == 8 || pan_size == 15 || pan_size == 25 || pan_size == 255) {
+        println!("Invalid pan_size setting input");
+        println!("Valid pan_size setting is: \n0:\tNetwork configuration used in Wi-SUN certification\n1:\tsmall, \n8:\tmedium(100~800 devices), \n15:\tlarge(800~1500 devices), \n25:\textreme large(<2500 devices), \n255:\tauto");
+    } else {
+        let _ret = dbus_proxy.set_wisun_pan_size(arg0);
+    }
 
     Ok(())
 }
@@ -693,7 +699,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .subcommand(SubCommand::with_name("set-wisun-pan-id").about("Set wisun pan id")
             .arg(Arg::with_name("pan_id").help("Set wisun pan id").empty_values(false))
         ,)
-        .subcommand(SubCommand::with_name("set-wisun-pan-size").about("Set wisun pan size")
+        .subcommand(SubCommand::with_name("set-wisun-pan-size").about("Set wisun pan size. 1: small, 8: medium(100~800 device), 15: large(800~1500), 25: extreme large(<2500), 255: auto")
             .arg(Arg::with_name("pan_size").help("Set wisun pan size").empty_values(false))
         ,)
         .get_matches();

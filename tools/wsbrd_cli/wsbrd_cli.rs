@@ -684,7 +684,45 @@ fn create_udp_socket(dbus_user: bool, arg0: u16) -> Result<(), Box<dyn std::erro
     Ok(())
 }
 
+fn join_multicast_group(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
+    println!("--------------------------------------------------------------");
+    println!("Join Multicast Group: {:?}", arg0);
+    let arg0: Ipv6Addr = arg0.parse().unwrap();
+    let ipv6_addr: Vec<u8> = arg0.octets().to_vec();
+    //println!("IP address[]: {:?}", ipv6_addr);
+
+    let _ret = dbus_proxy.join_multicast_group(ipv6_addr);
+
+    Ok(())
+}
+
+fn leave_multicast_group(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Remove Multicast Group: {:?}", arg0);
+    let arg0: Ipv6Addr = arg0.parse().unwrap();
+    let ipv6_addr: Vec<u8> = arg0.octets().to_vec();
+    //println!("IP address[]: {:?}", ipv6_addr);
+
+    let _ret = dbus_proxy.leave_multicast_group(ipv6_addr);
+
+    Ok(())
+}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut wisun_nwkname: String   = String::from("Wi-SUN test");
@@ -717,6 +755,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut pmk_lifetime: u32       = 0xffffffff;
     let mut ptk_lifetime: u32       = 0xffffffff;
     let mut udp_port: u16           = 0;
+    let mut ipv6_addr: String       = String::from("");
 
     let matches = App::new("wsbrd_cli")
         .setting(AppSettings::SubcommandRequired)
@@ -796,6 +835,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ,)
         .subcommand(SubCommand::with_name("create-udp-socket").about("Create a UDP socket and indicate port number")
             .arg(Arg::with_name("udp_port").help("UDP port input as a 16bit usigned integer").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("join-multicast-group").about("Join a multicast group")
+            .arg(Arg::with_name("ipv6_addr").help("input multicast group ipv6 addr to join").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("leave-multicast-group").about("Leave a multicast group")
+            .arg(Arg::with_name("ipv6_addr").help("input multicast group ipv6 addr to leave").empty_values(false))
         ,)
         .get_matches();
     let dbus_user = matches.is_present("user");
@@ -986,6 +1031,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             create_udp_socket(dbus_user, udp_port)
+        }
+        Some("join-multicast-group")       => {
+            if let Some(subcmd) = matches.subcommand_matches("join-multicast-group") {
+                if let Some(tempval) = subcmd.value_of("ipv6_addr") {
+                    ipv6_addr = tempval.to_string();
+                }
+            }
+            join_multicast_group(dbus_user, ipv6_addr)
+        }
+        Some("leave-multicast-group")       => {
+            if let Some(subcmd) = matches.subcommand_matches("leave-multicast-group") {
+                if let Some(tempval) = subcmd.value_of("ipv6_addr") {
+                    ipv6_addr = tempval.to_string();
+                }
+            }
+            leave_multicast_group(dbus_user, ipv6_addr)
         }
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }

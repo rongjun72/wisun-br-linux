@@ -151,6 +151,7 @@ int dbus_join_multicast_group(sd_bus_message *m, void *userdata, sd_bus_error *r
     if (len != 16)
         return sd_bus_error_set_errno(ret_error, EINVAL);
 
+
     ret = wsbr_tun_join_mcast_group(ctxt->sock_mcast, ctxt->config.tun_dev, ipv6);
     if (ret < 0)
         return sd_bus_error_set_errno(ret_error, errno);
@@ -1189,7 +1190,7 @@ int dbus_set_wisun_key_lifetime(sd_bus_message *m, void *userdata, sd_bus_error 
 
 int dbus_create_udp_socket(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 {
-    struct wsbr_ctxt *ctxt = userdata;
+//////    struct wsbr_ctxt *ctxt = userdata;
     int ret;
     uint16_t udp_port;
 

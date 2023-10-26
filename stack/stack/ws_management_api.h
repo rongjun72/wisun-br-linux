@@ -830,11 +830,12 @@ int ws_neighbor_info_get(
     uint16_t count);
 
 
-
+/* new added api by jurong */
 int ws_management_fhss_timing_configure_set(
     int8_t interface_id,
     uint8_t fhss_uc_dwell_interval,
     uint32_t fhss_broadcast_interval,
     uint8_t fhss_bc_dwell_interval);
+
 
 #endif

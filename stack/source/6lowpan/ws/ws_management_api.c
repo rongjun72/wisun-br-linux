@@ -918,6 +918,9 @@ int ws_neighbor_info_get(
     return ws_bootstrap_neighbor_info_get(cur, neighbor_ptr, count);
 }
 
+
+
+/* new added api by jurong */
 int ws_management_fhss_timing_configure_set(
     int8_t interface_id,
     uint8_t fhss_uc_dwell_interval,
@@ -965,3 +968,4 @@ int ws_management_fhss_timing_configure_set(
 
     return 0;
 }
+

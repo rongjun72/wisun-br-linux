@@ -130,6 +130,7 @@ pub trait ComSilabsWisunBorderRouter {
     fn set_wisun_gtk_key(&self, arg0: Vec<u8>) -> Result<(), dbus::Error>;
     fn set_wisun_gtk_active_key(&self, arg0: u8) -> Result<(), dbus::Error>;
     fn set_wisun_key_lifetime(&self, arg0: u32, arg1: u32, arg2: u32) -> Result<(), dbus::Error>;
+    fn create_udp_socket(&self, arg0: u16) -> Result<(), dbus::Error>;
 }
 
 impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsWisunBorderRouter for blocking::Proxy<'a, C> {
@@ -303,5 +304,9 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsW
 
     fn set_wisun_key_lifetime(&self, arg0: u32, arg1: u32, arg2: u32) -> Result<(), dbus::Error> {
         self.method_call("com.silabs.Wisun.BorderRouter", "setWisunKeyLifetime", (arg0, arg1, arg2, ))
+    }
+
+    fn create_udp_socket(&self, arg0: u16) -> Result<(), dbus::Error> {
+        self.method_call("com.silabs.Wisun.BorderRouter", "createUdpSocket", (arg0, ))
     }
 }

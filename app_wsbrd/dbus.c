@@ -1181,11 +1181,27 @@ int dbus_set_wisun_key_lifetime(sd_bus_message *m, void *userdata, sd_bus_error 
         return -3;
     }
 
-    tr_info("set wisun key lifetime: gtk_lifetime: %d minutes pmk_lifetime: %d minutes ptk_lifetime: %d minutes\n", gtk_lifetime, pmk_lifetime, ptk_lifetime);
+    WARN("set wisun key lifetime:\n gtk_lifetime: %d minutes\n pmk_lifetime: %d minutes\n ptk_lifetime: %d minutes", gtk_lifetime, pmk_lifetime, ptk_lifetime);
 
     sd_bus_reply_method_return(m, NULL);
     return 0;
 }
+
+int dbus_create_udp_socket(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    struct wsbr_ctxt *ctxt = userdata;
+    int ret;
+    uint16_t udp_port;
+
+    ret = sd_bus_message_read(m, "q", &udp_port);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    WARN("set udp_port: %d ", udp_port);
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
 
 static const sd_bus_vtable dbus_vtable[] = {
         SD_BUS_VTABLE_START(0),
@@ -1290,8 +1306,10 @@ static const sd_bus_vtable dbus_vtable[] = {
                         dbus_set_wisun_gtk_key, 0),
         SD_BUS_METHOD("setWisunGtkActiveKey", "y", NULL,
                         dbus_set_wisun_gtk_active_key, 0),
-        SD_BUS_METHOD("setWisunKeyLifetime", "y", NULL,
+        SD_BUS_METHOD("setWisunKeyLifetime", "uuu", NULL,
                         dbus_set_wisun_key_lifetime, 0),
+        SD_BUS_METHOD("createUdpSocket", "q", NULL,
+                        dbus_create_udp_socket, 0),
         SD_BUS_VTABLE_END
 };
 

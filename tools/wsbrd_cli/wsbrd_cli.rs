@@ -668,6 +668,22 @@ fn set_wisun_key_lifetime(dbus_user: bool, arg0: u32, arg1: u32, arg2: u32) -> R
     Ok(())
 }
 
+fn create_udp_socket(dbus_user: bool, arg0: u16) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Create UDP socket: {:?}", arg0);
+    let _ret = dbus_proxy.create_udp_socket(arg0);
+
+    Ok(())
+}
+
 
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -700,6 +716,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut gtk_lifetime: u32       = 0xffffffff;
     let mut pmk_lifetime: u32       = 0xffffffff;
     let mut ptk_lifetime: u32       = 0xffffffff;
+    let mut udp_port: u16           = 0;
 
     let matches = App::new("wsbrd_cli")
         .setting(AppSettings::SubcommandRequired)
@@ -776,6 +793,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .arg(Arg::with_name("gtk_lifetime").help("set wisun GTK lifetime").empty_values(false))
             .arg(Arg::with_name("pmk_lifetime").help("set wisun PMK lifetime").empty_values(false))
             .arg(Arg::with_name("ptk_lifetime").help("set wisun PTK lifetime").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("create-udp-socket").about("Create a UDP socket and indicate port number")
+            .arg(Arg::with_name("udp_port").help("UDP port input as a 16bit usigned integer").empty_values(false))
         ,)
         .get_matches();
     let dbus_user = matches.is_present("user");
@@ -958,6 +978,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             set_wisun_key_lifetime(dbus_user, gtk_lifetime, pmk_lifetime, ptk_lifetime)
+        }
+        Some("create-udp-socket")       => {
+            if let Some(subcmd) = matches.subcommand_matches("create-udp-socket") {
+                if let Some(tempval) = subcmd.value_of("udp_port") {
+                    udp_port = tempval.parse::<u16>().unwrap();
+                }
+            }
+            create_udp_socket(dbus_user, udp_port)
         }
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }

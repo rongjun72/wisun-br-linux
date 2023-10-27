@@ -1190,7 +1190,7 @@ int dbus_set_wisun_key_lifetime(sd_bus_message *m, void *userdata, sd_bus_error 
 
 int dbus_create_udp_socket(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 {
-//////    struct wsbr_ctxt *ctxt = userdata;
+    // struct wsbr_ctxt *ctxt = userdata;
     int ret;
     uint16_t udp_port;
 
@@ -1204,6 +1204,58 @@ int dbus_create_udp_socket(sd_bus_message *m, void *userdata, sd_bus_error *ret_
     return 0;
 }
 
+int dbus_set_udp_dst_port(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    // struct wsbr_ctxt *ctxt = userdata;
+    int ret;
+    uint16_t udp_port;
+
+    ret = sd_bus_message_read(m, "q", &udp_port);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    WARN("set udp_port: %d ", udp_port);
+    ret = ws_managemnt_set_dst_udp_port(udp_port);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
+int dbus_socket_udp_sent_to(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    //struct wsbr_ctxt *ctxt = userdata;
+    const uint8_t *dest_addr;
+    size_t len;
+    int ret;
+
+    ret = sd_bus_message_read_array(m, 'y', (const void **)&dest_addr, &len);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    WARN_ON(len != 16, "%s", strerror(EINVAL));
+
+    ret = ws_managemnt_udp_sent_to(dest_addr);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
+int dbus_set_multicast_addr(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    //struct wsbr_ctxt *ctxt = userdata;
+    const uint8_t *multicast_addr;
+    size_t len;
+    int ret;
+
+    ret = sd_bus_message_read_array(m, 'y', (const void **)&multicast_addr, &len);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    WARN_ON(len != 16, "%s", strerror(EINVAL));
+
+    ret = ws_managemnt_set_multicast_addr(multicast_addr);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
 
 static const sd_bus_vtable dbus_vtable[] = {
         SD_BUS_VTABLE_START(0),
@@ -1312,6 +1364,12 @@ static const sd_bus_vtable dbus_vtable[] = {
                         dbus_set_wisun_key_lifetime, 0),
         SD_BUS_METHOD("createUdpSocket", "q", NULL,
                         dbus_create_udp_socket, 0),
+        SD_BUS_METHOD("setUdpDstPort", "q", NULL,
+                        dbus_set_udp_dst_port, 0),
+        SD_BUS_METHOD("socketUdpSendTo", "ay", NULL,
+                        dbus_socket_udp_sent_to, 0),
+        SD_BUS_METHOD("setMulticastAddr", "ay", NULL,
+                        dbus_set_multicast_addr, 0),
         SD_BUS_VTABLE_END
 };
 

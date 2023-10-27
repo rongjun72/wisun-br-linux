@@ -972,14 +972,14 @@ int ws_management_fhss_timing_configure_set(
     return 0;
 }
 
-#include <ifaddrs.h>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <net/if.h>
-#include <linux/if.h>
-#include <linux/if_tun.h>
+//#include <ifaddrs.h>
+//#include <string.h>
+//#include <unistd.h>
+//#include <fcntl.h>
+//#include <sys/ioctl.h>
+//#include <net/if.h>
+//#include <linux/if.h>
+//#include <linux/if_tun.h>
 #include <netinet/icmp6.h>
 
 int8_t g_local_udp_sid;
@@ -1038,3 +1038,43 @@ int ws_managemnt_create_udp_socket(uint16_t port_num)
 
     return 0;
 }
+
+int ws_managemnt_set_dst_udp_port(uint16_t dst_port)
+{
+    g_dst_udp_address.identifier = dst_port;
+
+    return 0;
+}
+
+int ws_managemnt_udp_sent_to(const uint8_t *dst_addr)
+{
+    uint8_t *ptr_payload = &udp_payload[0];
+    int ret;
+
+    for (uint8_t i = 0; i < udp_body_uint_repeat_times; i++) {
+        memcpy((ptr_payload+4+(26*i)), udp_body_uint, 26);
+    }
+
+    memcpy((ptr_payload+(26*udp_body_uint_repeat_times)), udp_tail, 10);
+
+    memcpy(g_dst_udp_address.address, dst_addr, 16);
+
+    ret = sendto(g_local_udp_sid, ptr_payload, (26*udp_body_uint_repeat_times)+10, 0, (struct sockaddr *)&g_dst_udp_address, sizeof(struct sockaddr_in6));
+    WARN_ON(ret < 0, "UDP packet sent to \"%s\": %m", __func__);
+
+    return 0;
+}
+
+int ws_managemnt_set_multicast_addr(const uint8_t *multicast_addr)
+{
+    int ret;
+    struct ipv6_mreq mreq;
+    mreq.ipv6mr_interface = 0;
+    memcpy(&mreq.ipv6mr_multiaddr, multi_cast_addr, 16);
+
+    ret = setsockopt(g_local_udp_sid, IPPROTO_IPV6, IPV6_JOIN_GROUP, &mreq, sizeof mreq);
+    WARN_ON(ret < 0, "set multicast address \"%s\": %m", __func__);
+
+    return 0;
+}
+

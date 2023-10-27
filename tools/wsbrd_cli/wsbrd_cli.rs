@@ -684,6 +684,62 @@ fn create_udp_socket(dbus_user: bool, arg0: u16) -> Result<(), Box<dyn std::erro
     Ok(())
 }
 
+fn set_udp_dst_port(dbus_user: bool, arg0: u16) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Set the UDP port number: {:?}", arg0);
+    let _ret = dbus_proxy.set_udp_dst_port(arg0);
+
+    Ok(())
+}
+
+fn socket_udp_sent_to(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Send UDP packet to: {:?}", arg0);
+    let arg0: Ipv6Addr = arg0.parse().unwrap();
+    let ipv6_addr: Vec<u8> = arg0.octets().to_vec();
+    //println!("IP address[]: {:?}", ipv6_addr);
+
+    let _ret = dbus_proxy.socket_udp_sent_to(ipv6_addr);
+
+    Ok(())
+}
+
+fn set_multicast_addr(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Set multicast address: {:?}", arg0);
+    let arg0: Ipv6Addr = arg0.parse().unwrap();
+    let ipv6_addr: Vec<u8> = arg0.octets().to_vec();
+    //println!("IP address[]: {:?}", ipv6_addr);
+
+    let _ret = dbus_proxy.set_multicast_addr(ipv6_addr);
+
+    Ok(())
+}
+
 fn join_multicast_group(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::Error>> {
     let dbus_conn;
     if dbus_user {
@@ -835,6 +891,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ,)
         .subcommand(SubCommand::with_name("create-udp-socket").about("Create a UDP socket and indicate port number")
             .arg(Arg::with_name("udp_port").help("UDP port input as a 16bit usigned integer").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-udp-dst-port").about("Set a UDP destination port number")
+            .arg(Arg::with_name("udp_port").help("UDP destination port number as a 16bit usigned integer").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("socket-udp-sent-to").about("Send UDP packet to destination address")
+            .arg(Arg::with_name("dest_addr").help("input destination ipv6 addr ").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-multicast-addr").about("Set multicast group address")
+            .arg(Arg::with_name("ipv6_addr").help("input multicast group ipv6 address").empty_values(false))
         ,)
         .subcommand(SubCommand::with_name("join-multicast-group").about("Join a multicast group")
             .arg(Arg::with_name("ipv6_addr").help("input multicast group ipv6 addr to join").empty_values(false))
@@ -1031,6 +1096,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             create_udp_socket(dbus_user, udp_port)
+        }
+        Some("set-udp-dst-port")       => {
+            if let Some(subcmd) = matches.subcommand_matches("set-udp-dst-port") {
+                if let Some(tempval) = subcmd.value_of("udp_port") {
+                    udp_port = tempval.parse::<u16>().unwrap();
+                }
+            }
+            set_udp_dst_port(dbus_user, udp_port)
+        }
+        Some("socket-udp-sent-to")       => {
+            let mut dest_addr: String       = String::from("");
+            if let Some(subcmd) = matches.subcommand_matches("socket-udp-sent-to") {
+                if let Some(tempval) = subcmd.value_of("dest_addr") {
+                    dest_addr = tempval.to_string();
+                }
+            }
+            socket_udp_sent_to(dbus_user, dest_addr)
+        }
+        Some("set-multicast-addr")       => {
+            if let Some(subcmd) = matches.subcommand_matches("set-multicast-addr") {
+                if let Some(tempval) = subcmd.value_of("ipv6_addr") {
+                    ipv6_addr = tempval.to_string();
+                }
+            }
+            set_multicast_addr(dbus_user, ipv6_addr)
         }
         Some("join-multicast-group")       => {
             if let Some(subcmd) = matches.subcommand_matches("join-multicast-group") {

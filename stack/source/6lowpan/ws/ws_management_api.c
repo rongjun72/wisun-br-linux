@@ -29,6 +29,9 @@
 #include "6lowpan/ws/ws_bootstrap.h"
 #include "6lowpan/ws/ws_cfg_settings.h"
 
+#include "stack/ns_address.h"
+#include "stack/source/legacy/net_socket.h"
+
 #define TRACE_GROUP "wsmg"
 
 
@@ -969,3 +972,69 @@ int ws_management_fhss_timing_configure_set(
     return 0;
 }
 
+#include <ifaddrs.h>
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <linux/if.h>
+#include <linux/if_tun.h>
+#include <netinet/icmp6.h>
+
+int8_t g_local_udp_sid;
+uint8_t g_test_buf[16] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,
+                          0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f};
+
+// multi cast addr: ff15::810a:64d1;
+uint8_t multi_cast_addr[16] = {0xff,0x15,0x00,0x00,0x00,0x00,0x00,0x00,
+                               0x00,0x00,0x00,0x00,0x81,0x0a,0x64,0xd1};
+
+int16_t multicast_hops = 20;
+
+const uint8_t udp_body_uint[26] = {0x61,0x62,0x63,0x64,0x65,0x66,0x67,0x68,0x69,0x6a,0x6b,0x6c,0x6d,0x6e,0x6f,0x70,
+                                   0x71,0x72,0x73,0x74,0x75,0x76,0x77,0x78,0x79,0x7a};
+
+uint8_t udp_payload[1280] = {0};
+uint16_t udp_body_uint_repeat_times = 1;
+uint8_t udp_tail[10] = {0};
+
+ns_address_t g_dst_udp_address;
+
+//int recv_udp_msg(void* ptr)
+//{
+//    ERROR("recv udp socket msg");
+//    return 0;
+//}
+
+int ws_managemnt_create_udp_socket(uint16_t port_num)
+{
+    struct sockaddr_in6 sockaddr = {
+        .sin6_family = AF_INET6,
+        .sin6_addr = IN6ADDR_ANY_INIT,
+        .sin6_port = port_num,
+    };
+    int ret;
+
+    //cmt_icmpv6_echo_req(cur, dst_addr);
+
+    //init g_dst_udp_address
+    memset(&g_dst_udp_address, 0, sizeof(ns_address_t));
+    g_dst_udp_address.type = ADDRESS_IPV6;
+
+    g_local_udp_sid = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+    ERROR_ON(g_local_udp_sid < 0, "%s: socket: %m", __func__);
+    ret = bind(g_local_udp_sid, (struct sockaddr *) &sockaddr, sizeof(sockaddr));
+    ERROR_ON(ret < 0, "%s: bind: %m", __func__);
+
+    setsockopt(g_local_udp_sid, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, &multicast_hops, sizeof(multicast_hops));
+    
+    struct ipv6_mreq mreq;
+    mreq.ipv6mr_interface = 0;
+    memcpy(&mreq.ipv6mr_multiaddr, multi_cast_addr, 16);
+
+    ret = setsockopt(g_local_udp_sid, IPPROTO_IPV6, IPV6_JOIN_GROUP, &mreq, sizeof mreq);
+    WARN_ON(ret < 0, "ipv6 join group \"%s\": %m", __func__);
+
+    return 0;
+}

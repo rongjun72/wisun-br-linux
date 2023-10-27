@@ -837,5 +837,6 @@ int ws_management_fhss_timing_configure_set(
     uint32_t fhss_broadcast_interval,
     uint8_t fhss_bc_dwell_interval);
 
+int ws_managemnt_create_udp_socket(uint16_t port_num);
 
 #endif

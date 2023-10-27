@@ -1257,6 +1257,41 @@ int dbus_set_multicast_addr(sd_bus_message *m, void *userdata, sd_bus_error *ret
     return 0;
 }
 
+int dbus_set_udp_body_uint_repeat_time(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    // struct wsbr_ctxt *ctxt = userdata;
+    int ret;
+    uint16_t repeat_time;
+
+    ret = sd_bus_message_read(m, "q", &repeat_time);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    WARN("set repeat time: %d ", repeat_time);
+    ret = ws_managemnt_udp_set_repeat_times(repeat_time);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
+int dbus_set_udp_tail(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    // struct wsbr_ctxt *ctxt = userdata;
+    const uint8_t *udp_tails;
+    size_t len;
+    int ret;
+
+    ret = sd_bus_message_read_array(m, 'y', (const void **)&udp_tails, &len);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    WARN_ON(len != 10, "%s", strerror(EINVAL));
+
+    ws_managemnt_set_udp_tail(udp_tails);                                                                            
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
+
 static const sd_bus_vtable dbus_vtable[] = {
         SD_BUS_VTABLE_START(0),
         SD_BUS_METHOD("startFan10", "ayi", NULL,
@@ -1370,6 +1405,10 @@ static const sd_bus_vtable dbus_vtable[] = {
                         dbus_socket_udp_sent_to, 0),
         SD_BUS_METHOD("setMulticastAddr", "ay", NULL,
                         dbus_set_multicast_addr, 0),
+        SD_BUS_METHOD("setUdpBodyUintRepeatTtime", "q", NULL,
+                        dbus_set_udp_body_uint_repeat_time, 0),
+        SD_BUS_METHOD("setUdpTail", "ay", NULL,
+                        dbus_set_udp_tail, 0),
         SD_BUS_VTABLE_END
 };
 

@@ -839,7 +839,10 @@ int ws_management_fhss_timing_configure_set(
 
 int ws_managemnt_create_udp_socket(uint16_t port_num);
 int ws_managemnt_set_dst_udp_port(uint16_t dst_port);
+int ws_managemnt_set_udp_tail(const uint8_t *udp_tail_ptr);
+int ws_managemnt_udp_set_repeat_times(uint16_t repeat_times);
 int ws_managemnt_udp_sent_to(const uint8_t *dst_addr);
 int ws_managemnt_set_multicast_addr(const uint8_t *multicast_addr);
+int ws_managemnt_set_edfe_mode(uint8_t *enable);
 
 #endif

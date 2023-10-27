@@ -1016,8 +1016,6 @@ int ws_managemnt_create_udp_socket(uint16_t port_num)
     };
     int ret;
 
-    //cmt_icmpv6_echo_req(cur, dst_addr);
-
     //init g_dst_udp_address
     memset(&g_dst_udp_address, 0, sizeof(ns_address_t));
     g_dst_udp_address.type = ADDRESS_IPV6;
@@ -1027,7 +1025,8 @@ int ws_managemnt_create_udp_socket(uint16_t port_num)
     ret = bind(g_local_udp_sid, (struct sockaddr *) &sockaddr, sizeof(sockaddr));
     ERROR_ON(ret < 0, "%s: bind: %m", __func__);
 
-    setsockopt(g_local_udp_sid, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, &multicast_hops, sizeof(multicast_hops));
+    ret = setsockopt(g_local_udp_sid, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, &multicast_hops, sizeof(multicast_hops));
+    WARN_ON(ret < 0, "ipv6 multicast hops \"%s\": %m", __func__);
     
     struct ipv6_mreq mreq;
     mreq.ipv6mr_interface = 0;
@@ -1045,6 +1044,19 @@ int ws_managemnt_set_dst_udp_port(uint16_t dst_port)
 
     return 0;
 }
+
+int ws_managemnt_set_udp_tail(const uint8_t *udp_tail_ptr)
+{
+    memcpy(udp_tail, udp_tail_ptr, 10);
+    return 0;
+}
+
+int ws_managemnt_udp_set_repeat_times(uint16_t repeat_times)
+{
+    udp_body_uint_repeat_times = repeat_times;
+    return 0;
+}
+
 
 int ws_managemnt_udp_sent_to(const uint8_t *dst_addr)
 {
@@ -1077,4 +1089,15 @@ int ws_managemnt_set_multicast_addr(const uint8_t *multicast_addr)
 
     return 0;
 }
+
+int ws_managemnt_set_edfe_mode(uint8_t *enable)
+{
+    ////int ret;
+
+    // can not find option: SOCKET_EDFE_MODE
+    //// ret = setsockopt(g_local_udp_sid, IPPROTO_IPV6, SOCKET_EDFE_MODE, (const void *)enable, 1);
+
+    return 0;
+}
+
 

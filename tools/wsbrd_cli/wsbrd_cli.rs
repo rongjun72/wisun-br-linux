@@ -780,25 +780,47 @@ fn leave_multicast_group(dbus_user: bool, arg0: String) -> Result<(), Box<dyn st
     Ok(())
 }
 
+fn set_udp_body_uint_repeat_time(dbus_user: bool, arg0: u8) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Set UDP body uint repeat time: {:?}", arg0);
+    let _ret = dbus_proxy.set_udp_body_uint_repeat_time(arg0);
+
+    Ok(())
+}
+
+fn set_udp_tail(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Set UDP tails: {:?}", arg0);
+    let udp_tails: Vec<u8> = arg0.to_string()
+        .split(":")
+        .map(|s| s.parse().expect("parse error"))
+        .collect();
+
+    let _ret = dbus_proxy.set_udp_tail(udp_tails);
+
+    Ok(())
+}
+
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut wisun_nwkname: String   = String::from("Wi-SUN test");
-    let mut wisun_domain: u8        = 0;
-    let mut wisun_class: u8         = 0;
-    let mut wisun_mode: u8          = 0;
-    let mut trickle_imin: u16       = 0;
-    let mut trickle_imax: u16       = 0;
-    let mut trickle_k: u8           = 0;
-    let mut pan_timeout: u16        = 0;
     let mut pan_id: u16             = 0;
     let mut pan_size: u16           = 0;
-    let mut long_word0: u32         = 0xffffffff;
-    let mut long_word1: u32         = 0xffffffff;
-    let mut long_word2: u32         = 0xffffffff;
-    let mut long_word3: u32         = 0xffffffff;
-    let mut long_word4: u32         = 0xffffffff;
-    let mut long_word5: u32         = 0xffffffff;
-    let mut long_word6: u32         = 0xffffffff;
-    let mut long_word7: u32         = 0xffffffff;
     let mut uc_dwell_interval: u8   = 0;
     let mut broadcast_interval: u32 = 0;
     let mut bc_dwell_interval:u8    = 0;
@@ -907,6 +929,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .subcommand(SubCommand::with_name("leave-multicast-group").about("Leave a multicast group")
             .arg(Arg::with_name("ipv6_addr").help("input multicast group ipv6 addr to leave").empty_values(false))
         ,)
+        .subcommand(SubCommand::with_name("set-udp-body-uint-repeat-time").about("Set UDP packet body unit repeat time")
+            .arg(Arg::with_name("repeat_time").help("UDP packet body unit repeat time uint8_t").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-udp-tail").about("Set UDP tails(10). Usage: >wsbrd_cli set-udp-tail \"tail0:tail1:...:tail9\" ")
+            .arg(Arg::with_name("udp_tails").help("Set UDP tails(10)").empty_values(false))
+        ,)
         .get_matches();
     let dbus_user = matches.is_present("user");
 
@@ -926,6 +954,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("get-wisun-gtk-active-key-index")  => get_wisun_gtk_active_key_index(dbus_user),
         Some("get-wisun-cfg-settings")      => get_wisun_cfg_settings(dbus_user),
         Some("set-network-name")            => {
+            let mut wisun_nwkname: String   = String::from("Wi-SUN test");
             if let Some(subcmd) = matches.subcommand_matches("set-network-name") {
                 if let Some(nwkname) = subcmd.value_of("nwk_name") {
                     wisun_nwkname = nwkname.to_string();
@@ -934,6 +963,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             set_networkname(dbus_user, wisun_nwkname)
         }
         Some("set-wisun-phy-configs")       => {
+            let mut wisun_domain: u8        = 0;
+            let mut wisun_class: u8         = 0;
+            let mut wisun_mode: u8          = 0;
             if let Some(subcmd) = matches.subcommand_matches("set-wisun-phy-configs") {
                 if let Some(tempval) = subcmd.value_of("domain") {
                     wisun_domain = tempval.parse::<u8>().unwrap();
@@ -948,6 +980,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             set_wisun_phy_configs(dbus_user, wisun_domain, wisun_class, wisun_mode)
         }
         Some("set-timing-parameters")       => {
+            let mut trickle_imin: u16       = 0;
+            let mut trickle_imax: u16       = 0;
+            let mut trickle_k: u8           = 0;
+            let mut pan_timeout: u16        = 0;
             if let Some(subcmd) = matches.subcommand_matches("set-timing-parameters") {
                 if let Some(tempval) = subcmd.value_of("trickle_imin") {
                     trickle_imin = tempval.parse::<u16>().unwrap();
@@ -965,6 +1001,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             set_timing_parameters(dbus_user, trickle_imin, trickle_imax, trickle_k, pan_timeout)
         }
         Some("set-fhss-channel-mask-f4b")       => {
+            let mut long_word0: u32         = 0xffffffff;
+            let mut long_word1: u32         = 0xffffffff;
+            let mut long_word2: u32         = 0xffffffff;
+            let mut long_word3: u32         = 0xffffffff;
             if let Some(subcmd) = matches.subcommand_matches("set-fhss-channel-mask-f4b") {
                 if let Some(tempval) = subcmd.value_of("long_word0") {
                     long_word0 = tempval.parse::<u32>().unwrap();
@@ -982,6 +1022,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             set_fhss_channel_mask_f4b(dbus_user, long_word0, long_word1, long_word2, long_word3)
         }
         Some("set-fhss-channel-mask-l4b")       => {
+            let mut long_word4: u32         = 0xffffffff;
+            let mut long_word5: u32         = 0xffffffff;
+            let mut long_word6: u32         = 0xffffffff;
+            let mut long_word7: u32         = 0xffffffff;
             if let Some(subcmd) = matches.subcommand_matches("set-fhss-channel-mask-l4b") {
                 if let Some(tempval) = subcmd.value_of("long_word4") {
                     long_word4 = tempval.parse::<u32>().unwrap();
@@ -1137,6 +1181,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             leave_multicast_group(dbus_user, ipv6_addr)
+        }
+        Some("set-udp-body-uint-repeat-time")  => {
+            let mut repeat_time: u8 = 1;
+            if let Some(subcmd) = matches.subcommand_matches("set-udp-body-uint-repeat-time") {
+                if let Some(tempval) = subcmd.value_of("repeat_time") {
+                    repeat_time = tempval.parse::<u8>().unwrap();
+                }
+            }
+            set_udp_body_uint_repeat_time(dbus_user, repeat_time)
+        }        
+        Some("set-udp-tail")       => {
+            let mut udp_tails: String  = String::from("");
+            if let Some(subcmd) = matches.subcommand_matches("set-udp-tail") {
+                if let Some(tempval) = subcmd.value_of("udp_tails") {
+                    udp_tails = tempval.to_string();
+                }
+            }
+            set_udp_tail(dbus_user, udp_tails)
         }
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }

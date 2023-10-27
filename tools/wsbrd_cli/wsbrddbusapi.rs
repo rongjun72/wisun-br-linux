@@ -134,6 +134,8 @@ pub trait ComSilabsWisunBorderRouter {
     fn set_udp_dst_port(&self, arg0: u16) -> Result<(), dbus::Error>;
     fn socket_udp_sent_to(&self, arg0: Vec<u8>) -> Result<(), dbus::Error>;
     fn set_multicast_addr(&self, arg0: Vec<u8>) -> Result<(), dbus::Error>;
+    fn set_udp_body_uint_repeat_time(&self, arg0: u8) -> Result<(), dbus::Error>;
+    fn set_udp_tail(&self, arg0: Vec<u8>) -> Result<(), dbus::Error>;
 }
 
 impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsWisunBorderRouter for blocking::Proxy<'a, C> {
@@ -323,6 +325,14 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsW
 
     fn set_multicast_addr(&self, arg0: Vec<u8>) -> Result<(), dbus::Error> {
         self.method_call("com.silabs.Wisun.BorderRouter", "setMultcastAddr", (arg0, ))
+    }
+
+    fn set_udp_body_uint_repeat_time(&self, arg0: u8) -> Result<(), dbus::Error> {
+        self.method_call("com.silabs.Wisun.BorderRouter", "setUdpBodyUintRepeatTtime", (arg0, ))
+    }
+
+    fn set_udp_tail(&self, arg0: Vec<u8>) -> Result<(), dbus::Error> {
+        self.method_call("com.silabs.Wisun.BorderRouter", "setUdpTail", (arg0, ))
     }
 
 }

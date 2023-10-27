@@ -1100,4 +1100,38 @@ int ws_managemnt_set_edfe_mode(uint8_t *enable)
     return 0;
 }
 
+int ws_test_gtk_time_settings_set(
+    int8_t interface_id, 
+    uint8_t revocat_lifetime_reduct, 
+    uint8_t new_activation_time, 
+    uint8_t new_install_req, 
+    uint32_t max_mismatch)
+{
+    (void) revocat_lifetime_reduct;
+    (void) max_mismatch;
+    struct net_if *cur;
+
+    cur = protocol_stack_interface_info_get_by_id(interface_id);
+    if (!cur) 
+        return -1;
+
+    ws_sec_timer_cfg_t cfg;
+    if (ws_cfg_sec_timer_get(&cfg) < 0) {
+        return -2;
+    }
+
+    if (new_activation_time > 0) {
+        cfg.gtk_new_act_time = new_activation_time;
+    }
+    if (new_install_req > 0) {
+        cfg.gtk_new_install_req = new_install_req;
+    }
+
+    if (ws_cfg_sec_timer_set(cur, &cfg, 0x00) < 0) {
+        return -3;
+    }
+
+    return 0;
+}
+
 

@@ -1291,6 +1291,32 @@ int dbus_set_udp_tail(sd_bus_message *m, void *userdata, sd_bus_error *ret_error
     return 0;
 }
 
+int dbus_set_wisun_gtk_time_settings(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    struct wsbr_ctxt *ctxt = userdata;
+    int ret;
+    uint8_t revocat_lifetime_reduct;
+    uint8_t new_activation_time;
+    uint8_t new_install_req;
+    uint32_t max_mismatch;
+
+    ret = sd_bus_message_read(m, "y", &revocat_lifetime_reduct);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    ret = sd_bus_message_read(m, "y", &new_activation_time);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    ret = sd_bus_message_read(m, "y", &new_install_req);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    ret = sd_bus_message_read(m, "u", &max_mismatch);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    /* get current channel mask settings from stack, than we modify it and set back */
+    ws_test_gtk_time_settings_set(ctxt->rcp_if_id, revocat_lifetime_reduct, new_activation_time, new_install_req, max_mismatch);
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
+
 
 static const sd_bus_vtable dbus_vtable[] = {
         SD_BUS_VTABLE_START(0),
@@ -1409,6 +1435,8 @@ static const sd_bus_vtable dbus_vtable[] = {
                         dbus_set_udp_body_uint_repeat_time, 0),
         SD_BUS_METHOD("setUdpTail", "ay", NULL,
                         dbus_set_udp_tail, 0),
+        SD_BUS_METHOD("setWisunGtkTimeSettings", "yyyu", NULL,
+                        dbus_set_wisun_gtk_time_settings, 0),
         SD_BUS_VTABLE_END
 };
 

@@ -817,6 +817,22 @@ fn set_udp_tail(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error:
     Ok(())
 }
 
+fn set_wisun_gtk_time_settings(dbus_user: bool, arg0: u8, arg1: u8, arg2: u8, arg3: u32) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Set Wi-SUN GTK time settings: \nrevocat_lifetime_reduct: {}\nnew_activation_time: {}\nCnew_install_req: {}\nmax_mismatch: {}", arg0, arg1, arg2, arg3);
+    let _ret = dbus_proxy.set_wisun_gtk_time_settings(arg0, arg1, arg2, arg3);
+
+    Ok(())
+}
+
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut pan_id: u16             = 0;
@@ -934,6 +950,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ,)
         .subcommand(SubCommand::with_name("set-udp-tail").about("Set UDP tails(10). Usage: >wsbrd_cli set-udp-tail \"tail0:tail1:...:tail9\" ")
             .arg(Arg::with_name("udp_tails").help("Set UDP tails(10)").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-wisun-gtk-time-settings").about("Set wisun gtk time settings")
+            .arg(Arg::with_name("revocat_lifetime_reduct").help("sset wisun gtk time settings: revocat_lifetime_reduct").empty_values(false))
+            .arg(Arg::with_name("new_activation_time").help("set wisun gtk time settings: fnew_activation_time").empty_values(false))
+            .arg(Arg::with_name("new_install_req").help("sset wisun gtk time settings: new_install_req").empty_values(false))
+            .arg(Arg::with_name("max_mismatch").help("set wisun gtk time settings: max_mismatch").empty_values(false))
         ,)
         .get_matches();
     let dbus_user = matches.is_present("user");
@@ -1199,6 +1221,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             set_udp_tail(dbus_user, udp_tails)
+        }
+        Some("set-wisun-gtk-time-settings")       => {
+            let mut revocat_lifetime_reduct: u8 = 0;
+            let mut new_activation_time: u8     = 0;
+            let mut new_install_req: u8         = 0;
+            let mut max_mismatch: u32           = 0;
+            if let Some(subcmd) = matches.subcommand_matches("set-wisun-gtk-time-settings") {
+                if let Some(tempval) = subcmd.value_of("revocat_lifetime_reduct") {
+                    revocat_lifetime_reduct = tempval.parse::<u8>().unwrap();
+                }
+                if let Some(tempval) = subcmd.value_of("new_activation_time") {
+                    new_activation_time = tempval.parse::<u8>().unwrap();
+                }
+                if let Some(tempval) = subcmd.value_of("new_install_req") {
+                    new_install_req = tempval.parse::<u8>().unwrap();
+                }
+                if let Some(tempval) = subcmd.value_of("max_mismatch") {
+                    max_mismatch = tempval.parse::<u32>().unwrap();
+                }
+            }
+            set_wisun_gtk_time_settings(dbus_user, revocat_lifetime_reduct, new_activation_time, new_install_req, max_mismatch)
         }
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }

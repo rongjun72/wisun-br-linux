@@ -845,4 +845,11 @@ int ws_managemnt_udp_sent_to(const uint8_t *dst_addr);
 int ws_managemnt_set_multicast_addr(const uint8_t *multicast_addr);
 int ws_managemnt_set_edfe_mode(uint8_t *enable);
 
+int ws_test_gtk_time_settings_set(
+    int8_t interface_id, 
+    uint8_t revocat_lifetime_reduct, 
+    uint8_t new_activation_time, 
+    uint8_t new_install_req, 
+    uint32_t max_mismatch);
+
 #endif

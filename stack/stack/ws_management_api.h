@@ -847,10 +847,10 @@ int ws_managemnt_set_edfe_mode(uint8_t *enable);
 
 int ws_managemnt_icmpv6_set_id(uint16_t id);
 int ws_managemnt_icmpv6_set_seqnum(uint16_t seqnum);
-int ws_managemnt_icmpv6_set_tail(uint8_t* tail);
+int ws_managemnt_icmpv6_set_tail(const uint8_t* tail);
 int ws_managemnt_icmpv6_set_repeat_times(uint16_t repeat_times);
 int ws_managemnt_icmpv6_set_mtu_size(int8_t interface_id, uint16_t mtu_size);
-int ws_managemnt_icmpv6_build_echo_req(int8_t interface_id, uint8_t *dst_addr);
+int ws_managemnt_icmpv6_build_echo_req(int8_t interface_id, const uint8_t *dst_addr);
 
 int ws_test_gtk_time_settings_set(
     int8_t interface_id, 

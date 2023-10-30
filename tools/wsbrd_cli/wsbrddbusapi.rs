@@ -137,6 +137,12 @@ pub trait ComSilabsWisunBorderRouter {
     fn set_udp_body_uint_repeat_time(&self, arg0: u8) -> Result<(), dbus::Error>;
     fn set_udp_tail(&self, arg0: Vec<u8>) -> Result<(), dbus::Error>;
     fn set_wisun_gtk_time_settings(&self, arg0: u8, arg1: u8, arg2: u8, arg3: u32) -> Result<(), dbus::Error>;
+    fn set_icmpv6_id(&self, arg0: u16) -> Result<(), dbus::Error>;
+    fn set_icmpv6_mtu_size(&self, arg0: u16) -> Result<(), dbus::Error>;
+    fn set_icmpv6_seqnum(&self, arg0: u16) -> Result<(), dbus::Error>;
+    fn set_icmpv6_body_uint_repeat_times(&self, arg0: u16) -> Result<(), dbus::Error>;
+    fn set_icmpv6_tail(&self, arg0: Vec<u8>) -> Result<(), dbus::Error>;
+    fn send_icmpv6_echo_req(&self, arg0: Vec<u8>) -> Result<(), dbus::Error>;
 }
 
 impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsWisunBorderRouter for blocking::Proxy<'a, C> {
@@ -338,5 +344,29 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsW
 
     fn set_wisun_gtk_time_settings(&self, arg0: u8, arg1: u8, arg2: u8, arg3: u32) -> Result<(), dbus::Error> {
         self.method_call("com.silabs.Wisun.BorderRouter", "setWisunGtkTimeSettings", (arg0, arg1, arg2, arg3, ))
+    }
+
+    fn set_icmpv6_id(&self, arg0: u16) -> Result<(), dbus::Error> {
+        self.method_call("com.silabs.Wisun.BorderRouter", "setIcmpv6Id", (arg0, ))
+    }
+
+    fn set_icmpv6_mtu_size(&self, arg0: u16) -> Result<(), dbus::Error> {
+        self.method_call("com.silabs.Wisun.BorderRouter", "setIcmpv6MtuSize", (arg0, ))
+    }
+
+    fn set_icmpv6_seqnum(&self, arg0: u16) -> Result<(), dbus::Error> {
+        self.method_call("com.silabs.Wisun.BorderRouter", "setIcmpv6Seqnum", (arg0, ))
+    }
+
+    fn set_icmpv6_body_uint_repeat_times(&self, arg0: u16) -> Result<(), dbus::Error> {
+        self.method_call("com.silabs.Wisun.BorderRouter", "setIcmpv6BodyUintRepeatTimes", (arg0, ))
+    }
+
+    fn set_icmpv6_tail(&self, arg0: Vec<u8>) -> Result<(), dbus::Error> {
+        self.method_call("com.silabs.Wisun.BorderRouter", "setIcmpv6Tail", (arg0, ))
+    }
+
+    fn send_icmpv6_echo_req(&self, arg0: Vec<u8>) -> Result<(), dbus::Error> {
+        self.method_call("com.silabs.Wisun.BorderRouter", "sendIcmpv6EchoReq", (arg0, ))
     }
 }

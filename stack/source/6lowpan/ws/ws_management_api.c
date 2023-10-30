@@ -1148,7 +1148,7 @@ int ws_managemnt_icmpv6_set_seqnum(uint16_t seqnum)
     return 0;
 }
 
-int ws_managemnt_icmpv6_set_tail(uint8_t* tail)
+int ws_managemnt_icmpv6_set_tail(const uint8_t* tail)
 {
     cmt_set_icmpv6_tail(tail);
     return 0;
@@ -1161,7 +1161,7 @@ int ws_managemnt_icmpv6_set_repeat_times(uint16_t repeat_times)
 }
 
 int ws_managemnt_icmpv6_build_echo_req(int8_t interface_id,
-    uint8_t *dst_addr)
+    const uint8_t *dst_addr)
 {
     struct net_if *cur;
     cur = protocol_stack_interface_info_get_by_id(interface_id);

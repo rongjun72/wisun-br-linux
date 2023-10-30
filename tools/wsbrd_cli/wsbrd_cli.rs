@@ -833,6 +833,110 @@ fn set_wisun_gtk_time_settings(dbus_user: bool, arg0: u8, arg1: u8, arg2: u8, ar
     Ok(())
 }
 
+fn set_icmpv6_id(dbus_user: bool, arg0: u16) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Set ICMPV6 echo request packet id: {:?}", arg0);
+    let _ret = dbus_proxy.set_icmpv6_id(arg0);
+
+    Ok(())
+}
+
+fn set_icmpv6_mtu_size(dbus_user: bool, arg0: u16) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Set ICMPV6 echo request packet MTU size: {:?}", arg0);
+    let _ret = dbus_proxy.set_icmpv6_mtu_size(arg0);
+
+    Ok(())
+}
+
+fn set_icmpv6_seqnum(dbus_user: bool, arg0: u16) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Set ICMPV6 echo request packet squence number: {:?}", arg0);
+    let _ret = dbus_proxy.set_icmpv6_seqnum(arg0);
+
+    Ok(())
+}
+
+fn set_icmpv6_body_uint_repeat_times(dbus_user: bool, arg0: u16) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Set ICMPV6 echo request packet body unit repeat time: {:?}", arg0);
+    let _ret = dbus_proxy.set_icmpv6_body_uint_repeat_times(arg0);
+
+    Ok(())
+}
+
+fn set_icmpv6_tail(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Set ICMPv6 tails: {:?}", arg0);
+    let icmpv6_tails: Vec<u8> = arg0.to_string()
+        .split(":")
+        .map(|s| s.parse().expect("parse error"))
+        .collect();
+
+    let _ret = dbus_proxy.set_icmpv6_tail(icmpv6_tails);
+
+    Ok(())
+}
+
+fn send_icmpv6_echo_req(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Send icmpv6 packet to destination: {:?}", arg0);
+    let arg0: Ipv6Addr = arg0.parse().unwrap();
+    let ipv6_addr: Vec<u8> = arg0.octets().to_vec();
+    //println!("IP address[]: {:?}", ipv6_addr);
+
+    let _ret = dbus_proxy.send_icmpv6_echo_req(ipv6_addr);
+
+    Ok(())
+}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut pan_id: u16             = 0;
@@ -849,7 +953,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut pmk_lifetime: u32       = 0xffffffff;
     let mut ptk_lifetime: u32       = 0xffffffff;
     let mut udp_port: u16           = 0;
-    let mut ipv6_addr: String       = String::from("");
 
     let matches = App::new("wsbrd_cli")
         .setting(AppSettings::SubcommandRequired)
@@ -956,6 +1059,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .arg(Arg::with_name("new_activation_time").help("set wisun gtk time settings: fnew_activation_time").empty_values(false))
             .arg(Arg::with_name("new_install_req").help("sset wisun gtk time settings: new_install_req").empty_values(false))
             .arg(Arg::with_name("max_mismatch").help("set wisun gtk time settings: max_mismatch").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-icmpv6-id").about("Set icmpv6 echo request packet id")
+            .arg(Arg::with_name("icmpv6_id").help("icmpv6 echo request packet id in uint16_t").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-icmpv6-mtu-size").about("Set icmpv6 echo request packet mtu size")
+            .arg(Arg::with_name("icmpv6_mtu").help("icmpv6 echo request packet mtu size in uint16_t").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-icmpv6-seqnum").about("Set icmpv6 echo request packet sequence number")
+            .arg(Arg::with_name("icmpv6_seqnum").help("icmpv6 echo request packet sequence number in uint16_t").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-icmpv6-body-uint-repeat-times").about("Set icmpv6 echo request packet body unit repeat_times")
+            .arg(Arg::with_name("icmpv6_repeat_times").help("icmpv6 echo request packet body unit repeat_times in uint16_t").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-icmpv6-tail").about("Set icmpv6 echo request packet tails(10). Usage: >wsbrd_cli set-icmpv6-tail \"tail0:tail1:...:tail9\" ")
+            .arg(Arg::with_name("icmpv6_tail").help("Set icmpv6 tails(10)").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("send-icmpv6-echo-req").about("Send icmpv6 echo request to destination address")
+            .arg(Arg::with_name("ipv6_addr").help("destination address to send icmpv6 echo request").empty_values(false))
         ,)
         .get_matches();
     let dbus_user = matches.is_present("user");
@@ -1181,6 +1302,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             socket_udp_sent_to(dbus_user, dest_addr)
         }
         Some("set-multicast-addr")       => {
+            let mut ipv6_addr: String = String::from("");
             if let Some(subcmd) = matches.subcommand_matches("set-multicast-addr") {
                 if let Some(tempval) = subcmd.value_of("ipv6_addr") {
                     ipv6_addr = tempval.to_string();
@@ -1189,6 +1311,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             set_multicast_addr(dbus_user, ipv6_addr)
         }
         Some("join-multicast-group")       => {
+            let mut ipv6_addr: String = String::from("");
             if let Some(subcmd) = matches.subcommand_matches("join-multicast-group") {
                 if let Some(tempval) = subcmd.value_of("ipv6_addr") {
                     ipv6_addr = tempval.to_string();
@@ -1197,6 +1320,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             join_multicast_group(dbus_user, ipv6_addr)
         }
         Some("leave-multicast-group")       => {
+            let mut ipv6_addr: String = String::from("");
             if let Some(subcmd) = matches.subcommand_matches("leave-multicast-group") {
                 if let Some(tempval) = subcmd.value_of("ipv6_addr") {
                     ipv6_addr = tempval.to_string();
@@ -1242,6 +1366,60 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             set_wisun_gtk_time_settings(dbus_user, revocat_lifetime_reduct, new_activation_time, new_install_req, max_mismatch)
+        }
+        Some("set-icmpv6-id")  => {
+            let mut icmpv6_id: u16 = 1;
+            if let Some(subcmd) = matches.subcommand_matches("set-icmpv6-id") {
+                if let Some(tempval) = subcmd.value_of("icmpv6_id") {
+                    icmpv6_id = tempval.parse::<u16>().unwrap();
+                }
+            }
+            set_icmpv6_id(dbus_user, icmpv6_id)
+        }        
+        Some("set-icmpv6-mtu-size")  => {
+            let mut icmpv6_mtu: u16 = 1;
+            if let Some(subcmd) = matches.subcommand_matches("set-icmpv6-mtu-size") {
+                if let Some(tempval) = subcmd.value_of("icmpv6_mtu") {
+                    icmpv6_mtu = tempval.parse::<u16>().unwrap();
+                }
+            }
+            set_icmpv6_mtu_size(dbus_user, icmpv6_mtu)
+        }        
+        Some("set-icmpv6-seqnum")  => {
+            let mut icmpv6_seqnum: u16 = 1;
+            if let Some(subcmd) = matches.subcommand_matches("set-icmpv6-seqnum") {
+                if let Some(tempval) = subcmd.value_of("icmpv6_seqnum") {
+                    icmpv6_seqnum = tempval.parse::<u16>().unwrap();
+                }
+            }
+            set_icmpv6_seqnum(dbus_user, icmpv6_seqnum)
+        }        
+        Some("set-icmpv6-body-uint-repeat-times")  => {
+            let mut icmpv6_repeat_times: u16 = 1;
+            if let Some(subcmd) = matches.subcommand_matches("set-icmpv6-body-uint-repeat-times") {
+                if let Some(tempval) = subcmd.value_of("icmpv6_repeat_times") {
+                    icmpv6_repeat_times = tempval.parse::<u16>().unwrap();
+                }
+            }
+            set_icmpv6_body_uint_repeat_times(dbus_user, icmpv6_repeat_times)
+        }        
+        Some("set-icmpv6-tail")       => {
+            let mut icmpv6_tail: String  = String::from("");
+            if let Some(subcmd) = matches.subcommand_matches("set-icmpv6-tail") {
+                if let Some(tempval) = subcmd.value_of("icmpv6_tail") {
+                    icmpv6_tail = tempval.to_string();
+                }
+            }
+            set_icmpv6_tail(dbus_user, icmpv6_tail)
+        }
+        Some("send-icmpv6-echo-req")       => {
+            let mut ipv6_addr: String = String::from("");
+            if let Some(subcmd) = matches.subcommand_matches("send-icmpv6-echo-req") {
+                if let Some(tempval) = subcmd.value_of("ipv6_addr") {
+                    ipv6_addr = tempval.to_string();
+                }
+            }
+            send_icmpv6_echo_req(dbus_user, ipv6_addr)
         }
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }

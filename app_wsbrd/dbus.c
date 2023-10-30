@@ -1316,6 +1316,108 @@ int dbus_set_wisun_gtk_time_settings(sd_bus_message *m, void *userdata, sd_bus_e
     return 0;
 }
 
+int dbus_set_icmpv6_id(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    // struct wsbr_ctxt *ctxt = userdata;
+    int ret;
+    uint16_t icmpv6_id;
+
+    ret = sd_bus_message_read(m, "q", &icmpv6_id);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    WARN("set icmpv6 id: %d ", icmpv6_id);
+    ret = ws_managemnt_icmpv6_set_id(icmpv6_id);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
+int dbus_set_icmpv6_mtu_size(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    // struct wsbr_ctxt *ctxt = userdata;
+    int ret;
+    uint16_t icmpv6_mtu;
+
+    ret = sd_bus_message_read(m, "q", &icmpv6_mtu);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    WARN("set icmpv6 MTU size: %d ", icmpv6_mtu);
+    //ret = ws_managemnt_icmpv6_set_mtu_size(ctxt->rcp_if_id, icmpv6_mtu);
+    //WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
+int dbus_set_icmpv6_seqnum(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    // struct wsbr_ctxt *ctxt = userdata;
+    int ret;
+    uint16_t icmpv6_seqnum;
+
+    ret = sd_bus_message_read(m, "q", &icmpv6_seqnum);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    WARN("set icmpv6 packet squence number: %d ", icmpv6_seqnum);
+    ret = ws_managemnt_icmpv6_set_seqnum(icmpv6_seqnum);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
+int dbus_set_icmpv6_body_uint_repeat_times(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    // struct wsbr_ctxt *ctxt = userdata;
+    int ret;
+    uint16_t icmpv6_repeat_times;
+
+    ret = sd_bus_message_read(m, "q", &icmpv6_repeat_times);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    WARN("set icmpv6 repeat times: %d ", icmpv6_repeat_times);
+    ret = ws_managemnt_icmpv6_set_repeat_times(icmpv6_repeat_times);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
+int dbus_set_icmpv6_tail(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    // struct wsbr_ctxt *ctxt = userdata;
+    const uint8_t *icmpv6_tails;
+    size_t len;
+    int ret;
+
+    ret = sd_bus_message_read_array(m, 'y', (const void **)&icmpv6_tails, &len);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    WARN_ON(len != 10, "%s", strerror(EINVAL));
+
+    ws_managemnt_icmpv6_set_tail(icmpv6_tails);                                                                            
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
+int dbus_send_icmpv6_echo_req(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    struct wsbr_ctxt *ctxt = userdata;
+    const uint8_t *dest_addr;
+    size_t len;
+    int ret;
+
+    ret = sd_bus_message_read_array(m, 'y', (const void **)&dest_addr, &len);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    WARN_ON(len != 16, "%s", strerror(EINVAL));
+
+    ret = ws_managemnt_icmpv6_build_echo_req(ctxt->rcp_if_id, dest_addr);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
 
 
 static const sd_bus_vtable dbus_vtable[] = {
@@ -1437,6 +1539,18 @@ static const sd_bus_vtable dbus_vtable[] = {
                         dbus_set_udp_tail, 0),
         SD_BUS_METHOD("setWisunGtkTimeSettings", "yyyu", NULL,
                         dbus_set_wisun_gtk_time_settings, 0),
+        SD_BUS_METHOD("setIcmpv6Id", "q", NULL,
+                        dbus_set_icmpv6_id, 0),
+        SD_BUS_METHOD("setIcmpv6MtuSize", "q", NULL,
+                        dbus_set_icmpv6_mtu_size, 0),
+        SD_BUS_METHOD("setIcmpv6Seqnum", "q", NULL,
+                        dbus_set_icmpv6_seqnum, 0),
+        SD_BUS_METHOD("setIcmpv6BodyUintRepeatTimes", "q", NULL,
+                        dbus_set_icmpv6_body_uint_repeat_times, 0),
+        SD_BUS_METHOD("setIcmpv6Tail", "ay", NULL,
+                        dbus_set_icmpv6_tail, 0),
+        SD_BUS_METHOD("sendIcmpv6EchoReq", "ay", NULL,
+                        dbus_send_icmpv6_echo_req, 0),
         SD_BUS_VTABLE_END
 };
 

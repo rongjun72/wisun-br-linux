@@ -1419,6 +1419,22 @@ int dbus_send_icmpv6_echo_req(sd_bus_message *m, void *userdata, sd_bus_error *r
     return 0;
 }
 
+int dbus_set_edfe_mode(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    // struct wsbr_ctxt *ctxt = userdata;
+    int ret;
+    uint8_t edfe_mode;
+
+    ret = sd_bus_message_read(m, "y", &edfe_mode);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    WARN("set edfe mode: %d ", edfe_mode);
+    ret = ws_managemnt_set_edfe_mode(&edfe_mode);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
 
 static const sd_bus_vtable dbus_vtable[] = {
         SD_BUS_VTABLE_START(0),
@@ -1551,6 +1567,8 @@ static const sd_bus_vtable dbus_vtable[] = {
                         dbus_set_icmpv6_tail, 0),
         SD_BUS_METHOD("sendIcmpv6EchoReq", "ay", NULL,
                         dbus_send_icmpv6_echo_req, 0),
+        SD_BUS_METHOD("setEdfeMode", "y", NULL,
+                        dbus_set_edfe_mode, 0),
         SD_BUS_VTABLE_END
 };
 

@@ -938,6 +938,23 @@ fn send_icmpv6_echo_req(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std
     Ok(())
 }
 
+fn set_edfe_mode(dbus_user: bool, arg0: u8) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Set EDFE mode enable(1)/disable(0): {:?}", arg0);
+    let _ret = dbus_proxy.set_edfe_mode(arg0);
+
+    Ok(())
+}
+
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut pan_id: u16             = 0;
     let mut pan_size: u16           = 0;
@@ -947,13 +964,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut channel_function: u8    = 0;
     let mut fixed_channel: u16      = 0;
     let mut dwell_interval: u8      = 0;
-    let mut gtk_key: String         = String::from("");
-    let mut gtk_index: u8           = 0;
-    let mut gtk_lifetime: u32       = 0xffffffff;
-    let mut pmk_lifetime: u32       = 0xffffffff;
-    let mut ptk_lifetime: u32       = 0xffffffff;
-    let mut udp_port: u16           = 0;
-
+    
     let matches = App::new("wsbrd_cli")
         .setting(AppSettings::SubcommandRequired)
         .args_from_usage("--user 'Use user bus instead of system bus'")
@@ -1077,6 +1088,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ,)
         .subcommand(SubCommand::with_name("send-icmpv6-echo-req").about("Send icmpv6 echo request to destination address")
             .arg(Arg::with_name("ipv6_addr").help("destination address to send icmpv6 echo request").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-edfe-mode").about("Set EDFE mode enable(1)/disable(0)")
+            .arg(Arg::with_name("edfe_mode").help("EDFE mode enable(1)/disable(0)").empty_values(false))
         ,)
         .get_matches();
     let dbus_user = matches.is_present("user");
@@ -1247,6 +1261,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             set_wisun_pan_size(dbus_user, pan_size)
         }
         Some("set-wisun-gtk-key")       => {
+            let mut gtk_key: String = String::from("");
             if let Some(subcmd) = matches.subcommand_matches("set-wisun-gtk-key") {
                 if let Some(tempval) = subcmd.value_of("gtk_key") {
                     gtk_key = tempval.to_string();
@@ -1255,6 +1270,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             set_wisun_gtk_key(dbus_user, gtk_key)
         }
         Some("set-wisun-gtk-active-key")       => {
+            let mut gtk_index: u8 = 0;
             if let Some(subcmd) = matches.subcommand_matches("set-wisun-gtk-active-key") {
                 if let Some(tempval) = subcmd.value_of("gtk_index") {
                     gtk_index = tempval.parse::<u8>().unwrap();
@@ -1263,6 +1279,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             set_wisun_gtk_active_key(dbus_user, gtk_index)
         }
         Some("set-wisun-key-lifetime")       => {
+            let mut gtk_lifetime: u32       = 0xffffffff;
+            let mut pmk_lifetime: u32       = 0xffffffff;
+            let mut ptk_lifetime: u32       = 0xffffffff;
             if let Some(subcmd) = matches.subcommand_matches("set-wisun-key-lifetime") {
                 if let Some(tempval) = subcmd.value_of("gtk_lifetime") {
                     gtk_lifetime = tempval.parse::<u32>().unwrap();
@@ -1277,6 +1296,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             set_wisun_key_lifetime(dbus_user, gtk_lifetime, pmk_lifetime, ptk_lifetime)
         }
         Some("create-udp-socket")       => {
+            let mut udp_port: u16 = 0;
             if let Some(subcmd) = matches.subcommand_matches("create-udp-socket") {
                 if let Some(tempval) = subcmd.value_of("udp_port") {
                     udp_port = tempval.parse::<u16>().unwrap();
@@ -1285,6 +1305,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             create_udp_socket(dbus_user, udp_port)
         }
         Some("set-udp-dst-port")       => {
+            let mut udp_port: u16 = 0;
             if let Some(subcmd) = matches.subcommand_matches("set-udp-dst-port") {
                 if let Some(tempval) = subcmd.value_of("udp_port") {
                     udp_port = tempval.parse::<u16>().unwrap();
@@ -1421,6 +1442,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             send_icmpv6_echo_req(dbus_user, ipv6_addr)
         }
+        Some("set-edfe-mode")  => {
+            let mut edfe_mode: u8 = 1;
+            if let Some(subcmd) = matches.subcommand_matches("set-edfe-mode") {
+                if let Some(tempval) = subcmd.value_of("edfe_mode") {
+                    edfe_mode = tempval.parse::<u8>().unwrap();
+                }
+            }
+            set_edfe_mode(dbus_user, edfe_mode)
+        }        
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }
 

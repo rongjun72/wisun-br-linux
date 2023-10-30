@@ -143,6 +143,7 @@ pub trait ComSilabsWisunBorderRouter {
     fn set_icmpv6_body_uint_repeat_times(&self, arg0: u16) -> Result<(), dbus::Error>;
     fn set_icmpv6_tail(&self, arg0: Vec<u8>) -> Result<(), dbus::Error>;
     fn send_icmpv6_echo_req(&self, arg0: Vec<u8>) -> Result<(), dbus::Error>;
+    fn set_edfe_mode(&self, arg0: u8) -> Result<(), dbus::Error>;
 }
 
 impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsWisunBorderRouter for blocking::Proxy<'a, C> {
@@ -368,5 +369,9 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsW
 
     fn send_icmpv6_echo_req(&self, arg0: Vec<u8>) -> Result<(), dbus::Error> {
         self.method_call("com.silabs.Wisun.BorderRouter", "sendIcmpv6EchoReq", (arg0, ))
+    }
+
+    fn set_edfe_mode(&self, arg0: u8) -> Result<(), dbus::Error> {
+        self.method_call("com.silabs.Wisun.BorderRouter", "setEdfeMode", (arg0, ))
     }
 }

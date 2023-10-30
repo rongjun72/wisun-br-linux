@@ -163,4 +163,11 @@ struct if_address_entry *icmpv6_slaac_address_add(struct net_if *cur, const uint
  */
 uint8_t *icmpv6_write_icmp_lla(struct net_if *cur, uint8_t *dptr, uint8_t icmp_opt, bool must, const uint8_t *ip_addr);
 
+void cmt_icmpv6_echo_req(struct net_if *cur, const uint8_t target_addr[16]);
+void cmt_set_icmpv6_id(uint16_t id);
+void cmt_set_icmpv6_seqnum(uint16_t seqnum);
+void cmt_set_icmpv6_tail(const uint8_t tail[10]);
+void cmt_set_icmpv6_repeat_times(uint16_t repeat_times);
+
+
 #endif /* _ICMPV6_H */

@@ -1417,3 +1417,84 @@ const uint8_t *icmpv6_find_option_in_buffer(const buffer_t *buf, uint_fast16_t o
     else
         return res.data;
 }
+
+
+
+/* new added api by jurong */
+uint16_t icmp_id = 0;
+uint16_t icmp_seq_num = 0;
+uint16_t icmp_body_uint_repeat_times = 1;
+const uint8_t icmp_body_uint[26] = {0x61,0x62,0x63,0x64,0x65,0x66,0x67,0x68,0x69,0x6a,0x6b,0x6c,0x6d,0x6e,0x6f,0x70,
+                              0x71,0x72,0x73,0x74,0x75,0x76,0x77,0x78,0x79,0x7a};
+uint8_t icmp_tail[10] = {0};
+
+void cmt_set_icmpv6_id(uint16_t id)
+{
+    icmp_id = id;
+}
+
+void cmt_set_icmpv6_seqnum(uint16_t seqnum)
+{
+    icmp_seq_num = seqnum;
+}
+
+void cmt_set_icmpv6_tail(const uint8_t tail[10])
+{
+    memcpy(icmp_tail, tail, 10);
+}
+
+void cmt_set_icmpv6_repeat_times(uint16_t repeat_times)
+{
+    icmp_body_uint_repeat_times = repeat_times;
+}
+
+void cmt_icmpv6_echo_req(struct net_if *cur, const uint8_t target_addr[16])
+{
+    uint8_t i;
+    const uint8_t *src;
+    buffer_t *buf = buffer_get(2048);
+    if (!buf) {
+        return;
+    }
+
+    buf->options.type = ICMPV6_TYPE_INFO_ECHO_REQUEST;
+    buf->options.code = 0;
+    buf->options.hop_limit = 255;
+
+    uint8_t *ptr = buffer_data_pointer(buf);
+
+    //memcpy(ptr, target_addr, 16);
+    //ptr += 16;
+
+    ptr[0] = (uint8_t)(icmp_id >> 8);
+    ptr[1] = (uint8_t)icmp_id;
+    ptr[2] = (uint8_t)(icmp_seq_num >> 8);
+    ptr[3] = (uint8_t)icmp_seq_num;
+
+
+    for (i = 0; i < icmp_body_uint_repeat_times; i++)
+    {
+        memcpy((ptr+4+(26*i)), icmp_body_uint, 26);
+    }
+
+    memcpy((ptr+4+(26*icmp_body_uint_repeat_times)), icmp_tail, 10);
+
+    ptr += (4+(26*icmp_body_uint_repeat_times)+10);
+
+    memcpy(buf->dst_sa.address, target_addr, 16);
+    buf->dst_sa.addr_type = ADDR_IPV6;
+    //Select Address By Destination
+    src = addr_select_source(cur, buf->dst_sa.address, 0);
+    if (src) {
+        memcpy(buf->src_sa.address, src, 16);
+    } else {
+        tr_debug("No address for NS");
+        buffer_free(buf);
+        return;
+    }
+    buf->src_sa.addr_type = ADDR_IPV6;
+    buffer_data_end_set(buf, ptr);
+    buf->interface = cur;
+    buf->info = (buffer_info_t)(B_FROM_ICMP | B_TO_ICMP | B_DIR_DOWN);
+    protocol_push(buf);
+}

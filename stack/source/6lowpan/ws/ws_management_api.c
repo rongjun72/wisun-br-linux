@@ -31,6 +31,7 @@
 
 #include "stack/ns_address.h"
 #include "stack/source/legacy/net_socket.h"
+#include "stack/source/common_protocols/icmpv6.h"
 
 #define TRACE_GROUP "wsmg"
 
@@ -1135,3 +1136,41 @@ int ws_test_gtk_time_settings_set(
 }
 
 
+int ws_managemnt_icmpv6_set_id(uint16_t id)
+{
+    cmt_set_icmpv6_id(id);
+    return 0;
+}
+
+int ws_managemnt_icmpv6_set_seqnum(uint16_t seqnum)
+{
+    cmt_set_icmpv6_seqnum(seqnum);
+    return 0;
+}
+
+int ws_managemnt_icmpv6_set_tail(uint8_t* tail)
+{
+    cmt_set_icmpv6_tail(tail);
+    return 0;
+}
+
+int ws_managemnt_icmpv6_set_repeat_times(uint16_t repeat_times)
+{
+    cmt_set_icmpv6_repeat_times(repeat_times);
+    return 0;
+}
+
+int ws_managemnt_icmpv6_build_echo_req(int8_t interface_id,
+    uint8_t *dst_addr)
+{
+    struct net_if *cur;
+    cur = protocol_stack_interface_info_get_by_id(interface_id);
+
+    if (interface_id >= 0 && (!cur)) {
+        return -1;
+    }
+
+    cmt_icmpv6_echo_req(cur, dst_addr);
+
+    return 0;
+}

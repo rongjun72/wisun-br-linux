@@ -1197,7 +1197,7 @@ int dbus_create_udp_socket(sd_bus_message *m, void *userdata, sd_bus_error *ret_
     ret = sd_bus_message_read(m, "q", &udp_port);
     WARN_ON(ret < 0, "%s", strerror(-ret));
 
-    WARN("set udp_port: %d ", udp_port);
+    WARN("created UDP socket with port number: %d ", udp_port);
     ws_managemnt_create_udp_socket(udp_port);
 
     sd_bus_reply_method_return(m, NULL);
@@ -1234,6 +1234,7 @@ int dbus_socket_udp_sent_to(sd_bus_message *m, void *userdata, sd_bus_error *ret
 
     ret = ws_managemnt_udp_sent_to(dest_addr);
     WARN_ON(ret < 0, "%s", strerror(-ret));
+    WARN("socket UDP send to: %s ", tr_ipv6(dest_addr));
 
     sd_bus_reply_method_return(m, NULL);
     return 0;

@@ -991,7 +991,7 @@ uint8_t g_test_buf[16] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,
 uint8_t multi_cast_addr[16] = {0xff,0x15,0x00,0x00,0x00,0x00,0x00,0x00,
                                0x00,0x00,0x00,0x00,0x81,0x0a,0x64,0xd1};
 
-int16_t multicast_hops = 20;
+int32_t multicast_hops = 20;
 
 const uint8_t udp_body_uint[26] = {0x61,0x62,0x63,0x64,0x65,0x66,0x67,0x68,0x69,0x6a,0x6b,0x6c,0x6d,0x6e,0x6f,0x70,
                                    0x71,0x72,0x73,0x74,0x75,0x76,0x77,0x78,0x79,0x7a};
@@ -1000,7 +1000,7 @@ uint8_t udp_payload[1280] = {0};
 uint16_t udp_body_uint_repeat_times = 1;
 uint8_t udp_tail[10] = {0};
 
-ns_address_t g_dst_udp_address;
+struct sockaddr_in6 g_dst_udp_address;
 
 //int recv_udp_msg(void* ptr)
 //{
@@ -1010,23 +1010,20 @@ ns_address_t g_dst_udp_address;
 
 int ws_managemnt_create_udp_socket(uint16_t port_num)
 {
-    struct sockaddr_in6 sockaddr = {
-        .sin6_family = AF_INET6,
-        .sin6_addr = IN6ADDR_ANY_INIT,
-        .sin6_port = port_num,
-    };
     int ret;
 
     //init g_dst_udp_address
-    memset(&g_dst_udp_address, 0, sizeof(ns_address_t));
-    g_dst_udp_address.type = ADDRESS_IPV6;
+    memset(&g_dst_udp_address, 0, sizeof(struct sockaddr_in6));
+    g_dst_udp_address.sin6_family = AF_INET6;
+    g_dst_udp_address.sin6_port = port_num;
 
     g_local_udp_sid = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
     ERROR_ON(g_local_udp_sid < 0, "%s: socket: %m", __func__);
-    ret = bind(g_local_udp_sid, (struct sockaddr *) &sockaddr, sizeof(sockaddr));
+    ////tr_warn("----created socket with sid: %d", g_local_udp_sid);
+    ret = bind(g_local_udp_sid, (struct sockaddr *) &g_dst_udp_address, sizeof(g_dst_udp_address));
     ERROR_ON(ret < 0, "%s: bind: %m", __func__);
 
-    ret = setsockopt(g_local_udp_sid, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, &multicast_hops, sizeof(multicast_hops));
+    ret = setsockopt(g_local_udp_sid, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, (char *)&multicast_hops, sizeof(multicast_hops));
     WARN_ON(ret < 0, "ipv6 multicast hops \"%s\": %m", __func__);
     
     struct ipv6_mreq mreq;
@@ -1041,7 +1038,7 @@ int ws_managemnt_create_udp_socket(uint16_t port_num)
 
 int ws_managemnt_set_dst_udp_port(uint16_t dst_port)
 {
-    g_dst_udp_address.identifier = dst_port;
+    g_dst_udp_address.sin6_port = dst_port;
 
     return 0;
 }
@@ -1070,9 +1067,11 @@ int ws_managemnt_udp_sent_to(const uint8_t *dst_addr)
 
     memcpy((ptr_payload+(26*udp_body_uint_repeat_times)), udp_tail, 10);
 
-    memcpy(g_dst_udp_address.address, dst_addr, 16);
+    memcpy(&g_dst_udp_address.sin6_addr, dst_addr, 16);
 
-    ret = sendto(g_local_udp_sid, ptr_payload, (26*udp_body_uint_repeat_times)+10, 0, (struct sockaddr *)&g_dst_udp_address, sizeof(struct sockaddr_in6));
+    ////tr_warn("----Send UDP packet to destination: %s", tr_ipv6(g_dst_udp_address.sin6_addr.s6_addr));
+    ret = sendto(g_local_udp_sid, ptr_payload, (26*udp_body_uint_repeat_times)+10, 0, 
+                    (struct sockaddr *)&g_dst_udp_address, sizeof(struct sockaddr_in6));
     WARN_ON(ret < 0, "UDP packet sent to \"%s\": %m", __func__);
 
     return 0;

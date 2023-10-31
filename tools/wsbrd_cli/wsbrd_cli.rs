@@ -949,6 +949,7 @@ fn set_edfe_mode(dbus_user: bool, arg0: u8) -> Result<(), Box<dyn std::error::Er
 
     println!("--------------------------------------------------------------");
     println!("Set EDFE mode enable(1)/disable(0): {:?}", arg0);
+    println!("This command has not been implemented yet...");
     let _ret = dbus_proxy.set_edfe_mode(arg0);
 
     Ok(())

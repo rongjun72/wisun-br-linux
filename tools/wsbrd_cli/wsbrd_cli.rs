@@ -807,12 +807,35 @@ fn set_udp_tail(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error:
 
     println!("--------------------------------------------------------------");
     println!("Set UDP tails: {:?}", arg0);
-    let udp_tails: Vec<u8> = arg0.to_string()
-        .split(":")
-        .map(|s| s.parse().expect("parse error"))
-        .collect();
+    let temp: Vec<String> = arg0.to_string().split(":").map(|s| s.parse().expect("parse error")).collect();
+    let udp_tails: Vec<u8> = temp.iter().map(|x| u8::from_str_radix(x.as_str(), 16).unwrap()).collect();
+    if udp_tails.len() != 10 {
+        println!("Expected length of UDP tails is 10 but input: {}", udp_tails.len());
+    }
 
     let _ret = dbus_proxy.set_udp_tail(udp_tails);
+
+    Ok(())
+}
+
+fn set_udp_body_unit(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Set UDP tails: {:?}", arg0);
+    let temp: Vec<String> = arg0.to_string().split(":").map(|s| s.parse().expect("parse error")).collect();
+    let udp_body_unit: Vec<u8> = temp.iter().map(|x| u8::from_str_radix(x.as_str(), 16).unwrap()).collect();
+    if udp_body_unit.len() != 26 {
+        println!("Expected length of UDP body unit is 26 but input: {}", udp_body_unit.len());
+    }
+
+    let _ret = dbus_proxy.set_udp_body_unit(udp_body_unit);
 
     Ok(())
 }
@@ -908,12 +931,35 @@ fn set_icmpv6_tail(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::err
 
     println!("--------------------------------------------------------------");
     println!("Set ICMPv6 tails: {:?}", arg0);
-    let icmpv6_tails: Vec<u8> = arg0.to_string()
-        .split(":")
-        .map(|s| s.parse().expect("parse error"))
-        .collect();
+    let temp: Vec<String> = arg0.to_string().split(":").map(|s| s.parse().expect("parse error")).collect();
+    let icmpv6_tails: Vec<u8> = temp.iter().map(|x| u8::from_str_radix(x.as_str(), 16).unwrap()).collect();
+    if icmpv6_tails.len() != 10 {
+        println!("Expected length of ICMPv6 tails is 10 but input: {}", icmpv6_tails.len());
+    }
 
     let _ret = dbus_proxy.set_icmpv6_tail(icmpv6_tails);
+
+    Ok(())
+}
+
+fn set_icmpv6_body_unit(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Set ICMPv6 body: {:?}", arg0);
+    let temp: Vec<String> = arg0.to_string().split(":").map(|s| s.parse().expect("parse error")).collect();
+    let icmpv6_body_unit: Vec<u8> = temp.iter().map(|x| u8::from_str_radix(x.as_str(), 16).unwrap()).collect();
+    if icmpv6_body_unit.len() != 26 {
+        println!("Expected length of ICMPv6 body unit is 26 but input: {}", icmpv6_body_unit.len());
+    }
+
+    let _ret = dbus_proxy.set_icmpv6_body_unit(icmpv6_body_unit);
 
     Ok(())
 }
@@ -1066,6 +1112,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .subcommand(SubCommand::with_name("set-udp-tail").about("Set UDP tails(10). Usage: >wsbrd_cli set-udp-tail \"tail0:tail1:...:tail9\" ")
             .arg(Arg::with_name("udp_tails").help("Set UDP tails(10)").empty_values(false))
         ,)
+        .subcommand(SubCommand::with_name("set-udp-body-unit").about("Set UDP body unit(26). Usage: >wsbrd_cli set-udp-body-unit \"body0:body1:...:body25\" ")
+            .arg(Arg::with_name("udp_body_unit").help("Set UDP body unit(26)").empty_values(false))
+        ,)
         .subcommand(SubCommand::with_name("set-wisun-gtk-time-settings").about("Set wisun gtk time settings")
             .arg(Arg::with_name("revocat_lifetime_reduct").help("sset wisun gtk time settings: revocat_lifetime_reduct").empty_values(false))
             .arg(Arg::with_name("new_activation_time").help("set wisun gtk time settings: fnew_activation_time").empty_values(false))
@@ -1086,6 +1135,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ,)
         .subcommand(SubCommand::with_name("set-icmpv6-tail").about("Set icmpv6 echo request packet tails(10). Usage: >wsbrd_cli set-icmpv6-tail \"tail0:tail1:...:tail9\" ")
             .arg(Arg::with_name("icmpv6_tail").help("Set icmpv6 tails(10)").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("set-icmpv6-body-unit").about("Set icmpv6 26-byte body unit of echo request packet(in hex number). Usage: >wsbrd_cli set-icmpv6-body-unit \"body0:body1:...:body25\" ")
+            .arg(Arg::with_name("icmpv6_body_unit").help("Set icmpv6 body unit(26)").empty_values(false))
         ,)
         .subcommand(SubCommand::with_name("send-icmpv6-echo-req").about("Send icmpv6 echo request to destination address")
             .arg(Arg::with_name("ipv6_addr").help("destination address to send icmpv6 echo request").empty_values(false))
@@ -1368,6 +1420,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             set_udp_tail(dbus_user, udp_tails)
         }
+        Some("set-udp-body-unit")       => {
+            let mut udp_body_unit: String  = String::from("");
+            if let Some(subcmd) = matches.subcommand_matches("set-udp-body-unit") {
+                if let Some(tempval) = subcmd.value_of("udp_body_unit") {
+                    udp_body_unit = tempval.to_string();
+                }
+            }
+            set_udp_body_unit(dbus_user, udp_body_unit)
+        }
         Some("set-wisun-gtk-time-settings")       => {
             let mut revocat_lifetime_reduct: u8 = 0;
             let mut new_activation_time: u8     = 0;
@@ -1433,6 +1494,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             set_icmpv6_tail(dbus_user, icmpv6_tail)
+        }
+        Some("set-icmpv6-body-unit")       => {
+            let mut icmpv6_body_unit: String  = String::from("");
+            if let Some(subcmd) = matches.subcommand_matches("set-icmpv6-body-unit") {
+                if let Some(tempval) = subcmd.value_of("icmpv6_body_unit") {
+                    icmpv6_body_unit = tempval.to_string();
+                }
+            }
+            set_icmpv6_body_unit(dbus_user, icmpv6_body_unit)
         }
         Some("send-icmpv6-echo-req")       => {
             let mut ipv6_addr: String = String::from("");

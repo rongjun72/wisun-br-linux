@@ -993,7 +993,7 @@ uint8_t multi_cast_addr[16] = {0xff,0x15,0x00,0x00,0x00,0x00,0x00,0x00,
 
 int32_t multicast_hops = 20;
 
-const uint8_t udp_body_uint[26] = {0x61,0x62,0x63,0x64,0x65,0x66,0x67,0x68,0x69,0x6a,0x6b,0x6c,0x6d,0x6e,0x6f,0x70,
+uint8_t udp_body_uint[26] = {0x61,0x62,0x63,0x64,0x65,0x66,0x67,0x68,0x69,0x6a,0x6b,0x6c,0x6d,0x6e,0x6f,0x70,
                                    0x71,0x72,0x73,0x74,0x75,0x76,0x77,0x78,0x79,0x7a};
 
 uint8_t udp_payload[1280] = {0};
@@ -1046,6 +1046,12 @@ int ws_managemnt_set_dst_udp_port(uint16_t dst_port)
 int ws_managemnt_set_udp_tail(const uint8_t *udp_tail_ptr)
 {
     memcpy(udp_tail, udp_tail_ptr, 10);
+    return 0;
+}
+
+int ws_managemnt_set_udp_body_unit(const uint8_t *udp_body_ptr)
+{
+    memcpy(udp_body_uint, udp_body_ptr, 26);
     return 0;
 }
 
@@ -1152,6 +1158,13 @@ int ws_managemnt_icmpv6_set_tail(const uint8_t* tail)
     cmt_set_icmpv6_tail(tail);
     return 0;
 }
+
+int ws_managemnt_icmpv6_set_body_unit(const uint8_t* body)
+{
+    cmt_set_icmpv6_body_unit(body);
+    return 0;
+}
+
 
 int ws_managemnt_icmpv6_set_repeat_times(uint16_t repeat_times)
 {

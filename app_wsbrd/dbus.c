@@ -1286,7 +1286,26 @@ int dbus_set_udp_tail(sd_bus_message *m, void *userdata, sd_bus_error *ret_error
     WARN_ON(ret < 0, "%s", strerror(-ret));
     WARN_ON(len != 10, "%s", strerror(EINVAL));
 
+    tr_warn("set udp tail: %s", tr_bytes(udp_tails, len, NULL, 128, DELIM_SPACE | ELLIPSIS_STAR));
     ws_managemnt_set_udp_tail(udp_tails);                                                                            
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
+int dbus_set_udp_body_unit(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    // struct wsbr_ctxt *ctxt = userdata;
+    const uint8_t *udp_body_unit;
+    size_t len;
+    int ret;
+
+    ret = sd_bus_message_read_array(m, 'y', (const void **)&udp_body_unit, &len);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    WARN_ON(len != 26, "%s", strerror(EINVAL));
+
+    tr_warn("set UDP body unit: %s", tr_bytes(udp_body_unit, len, NULL, 128, DELIM_SPACE | ELLIPSIS_STAR));
+    ws_managemnt_set_udp_body_unit(udp_body_unit);                                                                            
 
     sd_bus_reply_method_return(m, NULL);
     return 0;
@@ -1396,7 +1415,28 @@ int dbus_set_icmpv6_tail(sd_bus_message *m, void *userdata, sd_bus_error *ret_er
     WARN_ON(ret < 0, "%s", strerror(-ret));
     WARN_ON(len != 10, "%s", strerror(EINVAL));
 
+    tr_warn("icmpv6 tail: %s", tr_bytes(icmpv6_tails, len, NULL, 128, DELIM_SPACE | ELLIPSIS_STAR));
+
     ws_managemnt_icmpv6_set_tail(icmpv6_tails);                                                                            
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
+int dbus_set_icmpv6_body_unit(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    // struct wsbr_ctxt *ctxt = userdata;
+    const uint8_t *icmpv6_body_unit;
+    size_t len;
+    int ret;
+
+    ret = sd_bus_message_read_array(m, 'y', (const void **)&icmpv6_body_unit, &len);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    WARN_ON(len != 26, "%s", strerror(EINVAL));
+
+    tr_warn("icmpv6 body unit: %s", tr_bytes(icmpv6_body_unit, len, NULL, 128, DELIM_SPACE | ELLIPSIS_STAR));
+
+    ws_managemnt_icmpv6_set_body_unit(icmpv6_body_unit);                                                                            
 
     sd_bus_reply_method_return(m, NULL);
     return 0;
@@ -1566,6 +1606,8 @@ static const sd_bus_vtable dbus_vtable[] = {
                         dbus_set_icmpv6_body_uint_repeat_times, 0),
         SD_BUS_METHOD("setIcmpv6Tail", "ay", NULL,
                         dbus_set_icmpv6_tail, 0),
+        SD_BUS_METHOD("setIcmpv6BodyUnit", "ay", NULL,
+                        dbus_set_icmpv6_body_unit, 0),
         SD_BUS_METHOD("sendIcmpv6EchoReq", "ay", NULL,
                         dbus_send_icmpv6_echo_req, 0),
         SD_BUS_METHOD("setEdfeMode", "y", NULL,

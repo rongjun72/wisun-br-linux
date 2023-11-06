@@ -1594,6 +1594,8 @@ static const sd_bus_vtable dbus_vtable[] = {
                         dbus_set_udp_body_uint_repeat_time, 0),
         SD_BUS_METHOD("setUdpTail", "ay", NULL,
                         dbus_set_udp_tail, 0),
+        SD_BUS_METHOD("setUdpBodyUnit", "ay", NULL,
+                        dbus_set_udp_body_unit, 0),
         SD_BUS_METHOD("setWisunGtkTimeSettings", "yyyu", NULL,
                         dbus_set_wisun_gtk_time_settings, 0),
         SD_BUS_METHOD("setIcmpv6Id", "q", NULL,

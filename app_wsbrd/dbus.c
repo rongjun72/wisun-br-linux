@@ -1355,7 +1355,7 @@ int dbus_set_icmpv6_id(sd_bus_message *m, void *userdata, sd_bus_error *ret_erro
 
 int dbus_set_icmpv6_mtu_size(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 {
-    // struct wsbr_ctxt *ctxt = userdata;
+    struct wsbr_ctxt *ctxt = userdata;
     int ret;
     uint16_t icmpv6_mtu;
 
@@ -1363,8 +1363,11 @@ int dbus_set_icmpv6_mtu_size(sd_bus_message *m, void *userdata, sd_bus_error *re
     WARN_ON(ret < 0, "%s", strerror(-ret));
 
     WARN("set icmpv6 MTU size: %d ", icmpv6_mtu);
-    //ret = ws_managemnt_icmpv6_set_mtu_size(ctxt->rcp_if_id, icmpv6_mtu);
-    //WARN_ON(ret < 0, "%s", strerror(-ret));
+    ctxt->config.lowpan_mtu = icmpv6_mtu;
+
+    if(ctxt->rcp_if_id) {
+        ws_bootstrap_restart_delayed(ctxt->rcp_if_id);
+    }
 
     sd_bus_reply_method_return(m, NULL);
     return 0;

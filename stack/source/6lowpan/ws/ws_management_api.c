@@ -1015,7 +1015,7 @@ int ws_managemnt_create_udp_socket(uint16_t port_num)
     //init g_dst_udp_address
     memset(&g_dst_udp_address, 0, sizeof(struct sockaddr_in6));
     g_dst_udp_address.sin6_family = AF_INET6;
-    g_dst_udp_address.sin6_port = port_num;
+    g_dst_udp_address.sin6_port = htons(port_num);
 
     g_local_udp_sid = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
     ERROR_ON(g_local_udp_sid < 0, "%s: socket: %m", __func__);
@@ -1038,7 +1038,7 @@ int ws_managemnt_create_udp_socket(uint16_t port_num)
 
 int ws_managemnt_set_dst_udp_port(uint16_t dst_port)
 {
-    g_dst_udp_address.sin6_port = dst_port;
+    g_dst_udp_address.sin6_port = htons(dst_port);
 
     return 0;
 }

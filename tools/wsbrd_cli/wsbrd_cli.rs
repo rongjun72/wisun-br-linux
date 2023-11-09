@@ -780,7 +780,7 @@ fn leave_multicast_group(dbus_user: bool, arg0: String) -> Result<(), Box<dyn st
     Ok(())
 }
 
-fn set_udp_body_uint_repeat_time(dbus_user: bool, arg0: u8) -> Result<(), Box<dyn std::error::Error>> {
+fn set_udp_body_uint_repeat_time(dbus_user: bool, arg0: u16) -> Result<(), Box<dyn std::error::Error>> {
     let dbus_conn;
     if dbus_user {
         dbus_conn = Connection::new_session()?;
@@ -1403,10 +1403,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             leave_multicast_group(dbus_user, ipv6_addr)
         }
         Some("set-udp-body-uint-repeat-time")  => {
-            let mut repeat_time: u8 = 1;
+            let mut repeat_time: u16 = 1;
             if let Some(subcmd) = matches.subcommand_matches("set-udp-body-uint-repeat-time") {
                 if let Some(tempval) = subcmd.value_of("repeat_time") {
-                    repeat_time = tempval.parse::<u8>().unwrap();
+                    repeat_time = tempval.parse::<u16>().unwrap();
                 }
             }
             set_udp_body_uint_repeat_time(dbus_user, repeat_time)

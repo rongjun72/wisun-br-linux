@@ -146,6 +146,7 @@ pub trait ComSilabsWisunBorderRouter {
     fn set_icmpv6_body_unit(&self, arg0: Vec<u8>) -> Result<(), dbus::Error>;
     fn send_icmpv6_echo_req(&self, arg0: Vec<u8>) -> Result<(), dbus::Error>;
     fn set_edfe_mode(&self, arg0: u8) -> Result<(), dbus::Error>;
+    fn rcp_fw_update(&self, arg0: String) -> Result<(), dbus::Error>;
 }
 
 impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsWisunBorderRouter for blocking::Proxy<'a, C> {
@@ -383,5 +384,9 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsW
 
     fn set_edfe_mode(&self, arg0: u8) -> Result<(), dbus::Error> {
         self.method_call("com.silabs.Wisun.BorderRouter", "setEdfeMode", (arg0, ))
+    }
+
+    fn rcp_fw_update(&self, arg0: String) -> Result<(), dbus::Error> {
+        self.method_call("com.silabs.Wisun.BorderRouter", "rcpFwUpdate", (arg0, ))
     }
 }

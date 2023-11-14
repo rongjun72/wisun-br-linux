@@ -1480,6 +1480,22 @@ int dbus_set_edfe_mode(sd_bus_message *m, void *userdata, sd_bus_error *ret_erro
     return 0;
 }
 
+int dbus_rcp_fw_update(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    //struct wsbr_ctxt *ctxt = userdata;
+    //int interface_id = ctxt->rcp_if_id;
+    char *fw_image_name;
+    int ret;
+
+    ret = sd_bus_message_read_basic(m, 's', (void **)&fw_image_name);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    WARN("RCP firmware update: %s", fw_image_name);
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
+
 static const sd_bus_vtable dbus_vtable[] = {
         SD_BUS_VTABLE_START(0),
         SD_BUS_METHOD("startFan10", "ayi", NULL,
@@ -1617,6 +1633,8 @@ static const sd_bus_vtable dbus_vtable[] = {
                         dbus_send_icmpv6_echo_req, 0),
         SD_BUS_METHOD("setEdfeMode", "y", NULL,
                         dbus_set_edfe_mode, 0),
+        SD_BUS_METHOD("rcpFwUpdate", "s", NULL,
+                        dbus_rcp_fw_update, 0),
         SD_BUS_VTABLE_END
 };
 

@@ -1001,6 +1001,21 @@ fn set_edfe_mode(dbus_user: bool, arg0: u8) -> Result<(), Box<dyn std::error::Er
     Ok(())
 }
 
+fn rcp_fw_update(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("RCP firmware update: {:?}", arg0);
+    let _ret = dbus_proxy.rcp_fw_update(arg0);
+
+    Ok(())
+}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut pan_id: u16             = 0;
@@ -1144,6 +1159,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ,)
         .subcommand(SubCommand::with_name("set-edfe-mode").about("Set EDFE mode enable(1)/disable(0)")
             .arg(Arg::with_name("edfe_mode").help("EDFE mode enable(1)/disable(0)").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("rcp-fw-update").about("Start RCP firmware update. Usage: >wsbrd_cli rcp-fw-update rcp_bin_filename")
+            .arg(Arg::with_name("fw_image").help("rcp-fw-update rcp_bin_filename").empty_values(false))
         ,)
         .get_matches();
     let dbus_user = matches.is_present("user");
@@ -1522,6 +1540,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             set_edfe_mode(dbus_user, edfe_mode)
         }        
+        Some("rcp-fw-update")       => {
+            let mut fw_image: String  = String::from("");
+            if let Some(subcmd) = matches.subcommand_matches("rcp-fw-update") {
+                if let Some(tempval) = subcmd.value_of("fw_image") {
+                    fw_image = tempval.to_string();
+                }
+            }
+            rcp_fw_update(dbus_user, fw_image)
+        }
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }
 

@@ -553,12 +553,11 @@ int wsbr_main(int argc, char *argv[])
 
     wsbr_common_timer_init(ctxt);
 
-    if (net_init_core())
-        BUG("net_init_core");
+    BUG_ON(net_init_core(), "net_init_core");
 
     ctxt->rcp_if_id = arm_nwk_interface_lowpan_init(&ctxt->rcp, ctxt->config.lowpan_mtu, "ws0");
-    if (ctxt->rcp_if_id < 0)
-        BUG("arm_nwk_interface_lowpan_init: %d", ctxt->rcp_if_id);
+    BUG_ON(ctxt->rcp_if_id < 0, "arm_nwk_interface_lowpan_init: %d", ctxt->rcp_if_id);
+
     wsbr_network_init(ctxt);
     event_scheduler_run_until_idle();
 
@@ -586,13 +585,10 @@ int wsbr_restart(struct wsbr_ctxt *ctxt)
     rcp_reset();
     wsbr_rcp_init(ctxt);
 
-    if (net_init_core())
-        BUG("net_init_core");
+    BUG_ON(net_init_core(), "net_init_core");
 
     ctxt->rcp_if_id = arm_nwk_interface_lowpan_init(&ctxt->rcp, ctxt->config.lowpan_mtu, "ws0");
-
-    if (ctxt->rcp_if_id < 0)
-        BUG("arm_nwk_interface_lowpan_init: %d", ctxt->rcp_if_id);
+    BUG_ON(ctxt->rcp_if_id < 0, "arm_nwk_interface_lowpan_init: %d", ctxt->rcp_if_id);
 
     wsbr_network_init(ctxt);
 

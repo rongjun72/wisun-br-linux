@@ -18,6 +18,13 @@
 #include <stdint.h>
 #include "os_types.h"
 
+typedef enum {
+    CONTINUE      = 1,
+    START_ACK     = 2,
+    GET_BLK       = 3,
+    RECV_OK       = 4  
+} ota_host_cmd_t;
+
 void *rcp_firmware_update(void *arg);
 
 #endif

@@ -15,6 +15,7 @@
 #include <termios.h>
 #include <sys/file.h>
 #include <time.h>
+#include <limits.h>
 #include <semaphore.h>
 
 #include "crc.h"
@@ -29,18 +30,32 @@
 #include "rcp_fw_update.h"
 #include "app_wsbrd/wsbr.h"
 
-// struct os_ctxt *ctxt,
-// char *fw_image_name)
 void *rcp_firmware_update(void *arg)
 {
     int ret;
+    int size = 0;
+    char filename[PATH_MAX];
 
     struct wsbr_ctxt *ctxt = (struct wsbr_ctxt *)arg;
 
-    //WARN("---------------");
-    //WARN("&ctxt->filename = %s", ctxt->fw_upt_filename);
+    WARN("&ctxt->filename = %s", ctxt->fw_upt_filename);
+    snprintf(filename, sizeof(filename), "%s", ctxt->fw_upt_filename);
+    FILE *fp = fopen(filename, "r");
+    FATAL_ON(!fp, 2, "fopen: %m");
+    if (fp) {
+        fseek(fp, 0, SEEK_END);
+        size = ftell(fp);
+        fclose(fp);
+        WARN("successfully opened bin file, its size = %d", size);
+    }
 
     rcp_firmware_update_start();
+    ret = sem_wait(&ctxt->os_ctxt->fwupd_reply_semid);
+    FATAL_ON(ret < 0, 2, "poll: %m");
+    if (ctxt->os_ctxt->fwupd_reply_cmd != START_ACK)
+        return ((void *)0);
+    WARN("receive RCP update start ACK...");
+
     rcp_firmware_send_block();
     //sleep(1);
 

@@ -11,6 +11,7 @@
  * [1]: https://www.silabs.com/about-us/legal/master-software-license-agreement
  */
 #include <time.h>
+#include <semaphore.h>
 #include "stack/mac/mlme.h"
 #include "stack/mac/channel_list.h"
 #include "stack/mac/fhss_ws_extension.h"
@@ -21,6 +22,7 @@
 #include "common/iobuf.h"
 #include "common/utils.h"
 #include "common/endian.h"
+#include "common/os_types.h"
 #include "common/spinel_defs.h"
 #include "common/spinel_buffer.h"
 #include "6lowpan/ws/ws_config.h"
@@ -649,6 +651,27 @@ void rcp_abort_edfe()
     rcp_set_bool(SPINEL_PROP_WS_EDFE_FORCE_STOP, false);
 }
 
+void rcp_firmware_update_start()
+{
+    struct wsbr_ctxt *ctxt = &g_ctxt;
+    struct iobuf_write buf = { };
+
+    spinel_push_u8(&buf, rcp_get_spinel_hdr());
+    spinel_push_uint(&buf, SPINEL_CMD_BOOTLOADER_UPDATE);
+    rcp_tx(ctxt, &buf);
+    iobuf_free(&buf);
+}
+
+void rcp_firmware_send_block()
+{
+    struct wsbr_ctxt *ctxt = &g_ctxt;
+    struct iobuf_write buf = { };
+
+    spinel_push_hdr_set_prop(&buf, SPINEL_PROP_RCP_FIRWARE_BLOCK);
+    rcp_tx(ctxt, &buf);
+    iobuf_free(&buf);
+}
+
 void rcp_tx_req_legacy(const struct mcps_data_req *tx_req,
                        const struct iovec *header_ie,
                        const struct iovec *payload_ie,
@@ -916,6 +939,18 @@ static void rcp_rx_hwaddr(struct wsbr_ctxt *ctxt, uint32_t prop, struct iobuf_re
     ctxt->rcp.init_state |= RCP_HAS_HWADDR;
 }
 
+static void rcp_rx_fwupd_reply(struct wsbr_ctxt *ctxt, uint32_t prop, struct iobuf_read *buf)
+{
+    ctxt->os_ctxt->fwupd_reply_cmd   = spinel_pop_u8(buf);
+    ctxt->os_ctxt->fwupd_reply_param = spinel_pop_u16(buf);
+    if (!spinel_prop_is_valid(buf, prop))
+        return;
+    
+    sem_post(&ctxt->os_ctxt->fwupd_reply_semid);
+    WARN("----received firmware update reply: replycmd = 0x%x\treplyparam = 0x%x", 
+                    ctxt->os_ctxt->fwupd_reply_cmd, ctxt->os_ctxt->fwupd_reply_param);
+}
+
 static void rcp_rx_frame_counter(struct wsbr_ctxt *ctxt, uint32_t prop, struct iobuf_read *buf)
 {
     uint32_t value;
@@ -1017,6 +1052,7 @@ struct rcp_rx_cmds rx_cmds[] = {
     { SPINEL_CMD_PROP_IS,          SPINEL_PROP_WS_RF_CONFIGURATION_LEGACY, rcp_rx_rf_config_status },
     { SPINEL_CMD_PROP_IS,          SPINEL_PROP_LAST_STATUS,              rcp_rx_no_op },
     { SPINEL_CMD_PROP_IS,          SPINEL_PROP_WS_RCP_CRC_ERR,           rcp_rx_crc_err },
+    { SPINEL_CMD_PROP_IS,          SPINEL_PROP_RCP_FIRWARE_REPLY,        rcp_rx_fwupd_reply },
     { SPINEL_CMD_RESET,            (uint32_t)-1,                         rcp_rx_reset },
     { SPINEL_CMD_REPLAY_TIMERS,    (uint32_t)-1,                         rcp_rx_no_op },
     { SPINEL_CMD_REPLAY_INTERFACE, (uint32_t)-1,                         rcp_rx_no_op },

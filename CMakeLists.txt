@@ -135,6 +135,7 @@ add_library(libwsbrd STATIC
     common/ws_regdb.c
     common/key_value_storage.c
     common/ieee802154_ie.c
+    common/rcp_fw_update.c
     stack/source/timers.c
     stack/source/6lowpan/adaptation_interface.c
     stack/source/6lowpan/bootstraps/protocol_6lowpan.c

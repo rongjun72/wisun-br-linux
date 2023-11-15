@@ -15,6 +15,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <semaphore.h>
 #ifdef HAVE_LIBCPC
 #include <sl_cpc.h>
 #endif
@@ -41,6 +42,9 @@ struct os_ctxt {
 #ifdef HAVE_LIBCPC
     cpc_endpoint_t cpc_ep;
 #endif
+    sem_t    fwupd_reply_semid;
+    uint8_t  fwupd_reply_cmd;
+    uint16_t fwupd_reply_param;
 
     // For retransmission in case of crc error on the rcp
     // FIXME: rename this and the structure / naive circular buffer : rearch

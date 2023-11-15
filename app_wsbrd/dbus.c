@@ -12,6 +12,7 @@
  */
 #include <errno.h>
 #include <limits.h>
+#include <pthread.h>
 #include <arpa/inet.h>
 #include <systemd/sd-bus.h>
 #include "app_wsbrd/tun.h"
@@ -20,6 +21,7 @@
 #include "common/log.h"
 #include "stack/ws_bbr_api.h"
 #include "common/log_legacy.h"
+#include "common/rcp_fw_update.h"
 
 #include "stack/source/6lowpan/ws/ws_common.h"
 #include "stack/source/6lowpan/ws/ws_pae_controller.h"
@@ -1482,14 +1484,18 @@ int dbus_set_edfe_mode(sd_bus_message *m, void *userdata, sd_bus_error *ret_erro
 
 int dbus_rcp_fw_update(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 {
-    //struct wsbr_ctxt *ctxt = userdata;
-    //int interface_id = ctxt->rcp_if_id;
+    struct wsbr_ctxt *ctxt = userdata;
     char *fw_image_name;
     int ret;
+    pthread_t fw_upt_id;
 
     ret = sd_bus_message_read_basic(m, 's', (void **)&fw_image_name);
     WARN_ON(ret < 0, "%s", strerror(-ret));
-    WARN("RCP firmware update: %s", fw_image_name);
+    WARN("RCP firmware update from file: %s", fw_image_name);
+
+    ctxt->fw_upt_filename = fw_image_name;
+    /* create a thread impliment RCP firmware update */
+    pthread_create(&fw_upt_id,NULL,rcp_firmware_update, ctxt);
 
     sd_bus_reply_method_return(m, NULL);
     return 0;

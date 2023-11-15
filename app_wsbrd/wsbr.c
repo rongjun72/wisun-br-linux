@@ -13,6 +13,7 @@
 #include <poll.h>
 #include <unistd.h>
 #include <signal.h>
+#include <semaphore.h>
 #include "common/bus_uart.h"
 #include "common/bus_cpc.h"
 #include "common/dhcp_server.h"
@@ -435,6 +436,9 @@ static void wsbr_rcp_init(struct wsbr_ctxt *ctxt)
         rail_print_config_list(ctxt);
         exit(0);
     }
+
+    sem_init(&ctxt->os_ctxt->fwupd_reply_semid, 0, 0);
+    WARN("-----first semaphore");
 }
 
 static void wsbr_fds_init(struct wsbr_ctxt *ctxt, struct pollfd *fds)

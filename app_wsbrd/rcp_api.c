@@ -651,17 +651,6 @@ void rcp_abort_edfe()
     rcp_set_bool(SPINEL_PROP_WS_EDFE_FORCE_STOP, false);
 }
 
-void rcp_firmware_update_start()
-{
-    struct wsbr_ctxt *ctxt = &g_ctxt;
-    struct iobuf_write buf = { };
-
-    spinel_push_u8(&buf, rcp_get_spinel_hdr());
-    spinel_push_uint(&buf, SPINEL_CMD_BOOTLOADER_UPDATE);
-    rcp_tx(ctxt, &buf);
-    iobuf_free(&buf);
-}
-
 void rcp_firmware_send_block()
 {
     struct wsbr_ctxt *ctxt = &g_ctxt;
@@ -942,13 +931,13 @@ static void rcp_rx_hwaddr(struct wsbr_ctxt *ctxt, uint32_t prop, struct iobuf_re
 static void rcp_rx_fwupd_reply(struct wsbr_ctxt *ctxt, uint32_t prop, struct iobuf_read *buf)
 {
     ctxt->os_ctxt->fwupd_reply_cmd   = spinel_pop_u8(buf);
-    ctxt->os_ctxt->fwupd_reply_param = spinel_pop_u16(buf);
+    ctxt->os_ctxt->fwupd_reply_param = spinel_pop_u32(buf);
     if (!spinel_prop_is_valid(buf, prop))
         return;
     
     sem_post(&ctxt->os_ctxt->fwupd_reply_semid);
-    WARN("----received firmware update reply: replycmd = 0x%x\treplyparam = 0x%x", 
-                    ctxt->os_ctxt->fwupd_reply_cmd, ctxt->os_ctxt->fwupd_reply_param);
+    //WARN("-received firmware update reply: replycmd = 0x%x\treplyparam = 0x%x", 
+    //                ctxt->os_ctxt->fwupd_reply_cmd, ctxt->os_ctxt->fwupd_reply_param);
 }
 
 static void rcp_rx_frame_counter(struct wsbr_ctxt *ctxt, uint32_t prop, struct iobuf_read *buf)

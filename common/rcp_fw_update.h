@@ -25,7 +25,15 @@ typedef enum {
     RECV_OK       = 4  
 } ota_host_cmd_t;
 
-void *rcp_firmware_update(void *arg);
+typedef struct rcp_fwupt_attr {
+    uint8_t  force_upt;
+    uint32_t fw_len;
+    uint16_t block_size;
+    uint16_t block_num;
+} rcp_fwupd_attr_t;
+
+void rcp_firmware_update_start(rcp_fwupd_attr_t* params);
+void *rcp_firmware_update_thread(void *arg);
 
 #endif
 

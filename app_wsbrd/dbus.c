@@ -1491,11 +1491,11 @@ int dbus_rcp_fw_update(sd_bus_message *m, void *userdata, sd_bus_error *ret_erro
 
     ret = sd_bus_message_read_basic(m, 's', (void **)&fw_image_name);
     WARN_ON(ret < 0, "%s", strerror(-ret));
-    WARN("RCP firmware update from file: %s", fw_image_name);
+    //WARN("RCP firmware update from file: %s", fw_image_name);
 
     ctxt->fw_upt_filename = fw_image_name;
     /* create a thread impliment RCP firmware update */
-    pthread_create(&fw_upt_id,NULL,rcp_firmware_update, ctxt);
+    pthread_create(&fw_upt_id,NULL,rcp_firmware_update_thread, ctxt);
 
     sd_bus_reply_method_return(m, NULL);
     return 0;

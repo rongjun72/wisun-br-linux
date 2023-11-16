@@ -437,8 +437,8 @@ static void wsbr_rcp_init(struct wsbr_ctxt *ctxt)
         exit(0);
     }
 
+    /* initialize a semaphore for firmware update synchronization */
     sem_init(&ctxt->os_ctxt->fwupd_reply_semid, 0, 0);
-    WARN("-----first semaphore");
 }
 
 static void wsbr_fds_init(struct wsbr_ctxt *ctxt, struct pollfd *fds)

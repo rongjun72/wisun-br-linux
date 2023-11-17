@@ -31,7 +31,7 @@
 #include "rcp_fw_update.h"
 #include "app_wsbrd/wsbr.h"
 
-void rcp_firmware_update_start(rcp_fwupd_attr_t* params)
+void rcp_send_fwupd_request(rcp_fwupd_attr_t* params)
 {
     struct wsbr_ctxt *ctxt = &g_ctxt;
     struct iobuf_write buf = { };
@@ -39,7 +39,10 @@ void rcp_firmware_update_start(rcp_fwupd_attr_t* params)
     spinel_push_u8(&buf, rcp_get_spinel_hdr());
     spinel_push_uint(&buf, SPINEL_CMD_BOOTLOADER_UPDATE);
     spinel_push_u8(&buf, params->force_upt);
-    spinel_push_u32(&buf, params->fw_len);
+    spinel_push_u8(&buf, params->firmware_major_ver);
+    spinel_push_u8(&buf, params->firmware_minor_ver);
+    spinel_push_u8(&buf, params->firmware_patch_ver);
+    spinel_push_u32(&buf, params->firmware_len);
     spinel_push_u16(&buf, params->block_size);
     spinel_push_u16(&buf, params->block_num);
     rcp_tx(ctxt, &buf);
@@ -76,15 +79,70 @@ void *rcp_firmware_update_thread(void *arg)
 
     fseek(fp, 0, SEEK_END);
     bin_size = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+    /* search firmware version in the bin file */
+    /* There is constant build info structure start with a string "Build_#*&^12", 
+     * search for it to know the location of following build date/time(15+10 byte)
+     * and RCP firmware version */
+    uint8_t match_array[] = {0x42, 0x75, 0x69, 0x6C, 0x64, 0x5F, 0x23, 0x2A, 0x26, 0x5E, 0x31, 0x32, 0x00, 0x00, 0x00};
+    uint8_t *rcp_bin_array = malloc(bin_size);
+    ret = fread(rcp_bin_array, sizeof(uint8_t), bin_size, fp);
+    WARN("read bin file stream %d bytes", ret);
+
+    uint8_t  match_count = 0;
+    uint32_t match_location = 0;
+    uint32_t search_num= bin_size+1-sizeof(match_array);
+    for (uint32_t idx=0; idx<search_num; idx++) {
+        //WARN("rcp_bin_array[%d]= 0x%02x", idx, rcp_bin_array[idx]);
+        uint16_t code_distance = 0;
+        for (uint8_t iidx=0; iidx<sizeof(match_array); iidx++) {
+            code_distance += abs((int16_t)rcp_bin_array[idx+iidx]-(int16_t)match_array[iidx]);
+        }
+        
+        if (code_distance==0) {
+            match_count++;
+            match_location = idx;
+            //WARN("match at loc : %d", idx);
+        }
+    }
+    
+    if (match_count == 0) {
+        WARN("No firmware build version segment found in bin file...");
+    } else if (match_count == 1) {
+        params.firmware_major_ver = rcp_bin_array[match_location+15+15+10];
+        params.firmware_minor_ver = rcp_bin_array[match_location+15+15+10+1];
+        params.firmware_patch_ver = rcp_bin_array[match_location+15+15+10+2];
+        params.firmware_len       = bin_size;
+        params.block_size         = 1024;
+        uint16_t temp_blocks      = bin_size/params.block_size;
+        params.block_num          = (bin_size%params.block_size==0)? temp_blocks : temp_blocks+1;
+        WARN("firmware_version is: %d.%d.%d", params.firmware_major_ver, params.firmware_minor_ver, 
+                                    params.firmware_patch_ver);
+        WARN("Firmware image will be send to RCP in %d blocks(%d-byte each)", params.block_num, params.block_size);
+    } else {
+        WARN("Found multiple(%d) build info tag, this invalid case...", match_count);
+    }
     fclose(fp);
     WARN("-successfully opened bin file, its size = %d", bin_size);
 
-    rcp_firmware_update_start(&params);
+
+
+
+    free(rcp_bin_array);
+
+    rcp_send_fwupd_request(&params);
     ret = sem_wait(&ctxt->os_ctxt->fwupd_reply_semid);
     FATAL_ON(ret < 0, 2, "wait semaphore: %m");
-    if (ctxt->os_ctxt->fwupd_reply_cmd != START_ACK)
-        return ((void *)0);
-    WARN("-receive RCP update start ACK...");
+    if (ctxt->os_ctxt->fwupd_reply_cmd == FWUPD_ACCEPT) {
+        WARN("-receive RCP update ACCEPT, start the process...");
+    } else if (ctxt->os_ctxt->fwupd_reply_cmd == FWUPD_REFUSE) {
+        WARN("-RCP refused firmware update, give up this time");
+        pthread_exit(NULL);
+    } else {
+        ERROR("-RCP replied unexpected reponse, give up firmware update");
+        pthread_exit(NULL);
+    }
+    
 
 
 

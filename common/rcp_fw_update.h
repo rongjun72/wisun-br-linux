@@ -20,19 +20,23 @@
 
 typedef enum {
     CONTINUE      = 1,
-    START_ACK     = 2,
-    GET_BLK       = 3,
-    RECV_OK       = 4  
+    FWUPD_ACCEPT  = 2,
+    FWUPD_REFUSE  = 3,
+    GET_BLK       = 4,
+    RECV_OK       = 5  
 } ota_host_cmd_t;
 
 typedef struct rcp_fwupt_attr {
     uint8_t  force_upt;
-    uint32_t fw_len;
+    uint8_t  firmware_major_ver;
+    uint8_t  firmware_minor_ver;
+    uint8_t  firmware_patch_ver;
+    uint32_t firmware_len;
     uint16_t block_size;
     uint16_t block_num;
 } rcp_fwupd_attr_t;
 
-void rcp_firmware_update_start(rcp_fwupd_attr_t* params);
+void rcp_send_fwupd_request(rcp_fwupd_attr_t* params);
 void *rcp_firmware_update_thread(void *arg);
 
 #endif

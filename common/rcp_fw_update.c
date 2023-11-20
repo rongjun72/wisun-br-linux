@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <termios.h>
 #include <sys/file.h>
+#include <errno.h>
 #include <time.h>
 #include <limits.h>
 #include <pthread.h>
@@ -128,7 +129,7 @@ void *rcp_firmware_update_thread(void *arg)
 
 
 
-    free(rcp_bin_array);
+    
 
     rcp_send_fwupd_request(&params);
     ret = sem_wait(&ctxt->os_ctxt->fwupd_reply_semid);
@@ -137,23 +138,48 @@ void *rcp_firmware_update_thread(void *arg)
         WARN("-receive RCP update ACCEPT, start the process...");
     } else if (ctxt->os_ctxt->fwupd_reply_cmd == FWUPD_REFUSE) {
         WARN("-RCP refused firmware update, give up this time");
+        free(rcp_bin_array);
         pthread_exit(NULL);
     } else {
         ERROR("-RCP replied unexpected reponse, give up firmware update");
+        free(rcp_bin_array);
         pthread_exit(NULL);
     }
     
-
-
-
-    rcp_firmware_send_block();
+    uint16_t block_idx=0;
+    while (block_idx<params.block_num) {
+        uint8_t *pblock = &rcp_bin_array[block_idx*params.block_size];
+        uint16_t block_size = params.block_size;
+        /* for the last block, block size equals to bin_size%params.block_size */ 
+        if (block_idx==params.block_num-1) {
+            if (bin_size%params.block_size!=0) 
+                block_size = bin_size%params.block_size;
+        }
+        WARN("-Send blcok[%d] - block size : %d", block_idx, block_size);
+        rcp_firmware_send_block(block_idx, block_size, pblock);
+        struct timespec ts;
+        clock_gettime(CLOCK_REALTIME, &ts);
+        ts.tv_sec += 1;
+        ret = sem_timedwait(&ctxt->os_ctxt->fwupd_reply_semid, &ts);
+        if (ret == 0) {
+            if (ctxt->os_ctxt->fwupd_reply_cmd == RECV_OK)
+                WARN("--receive RCP block RECV_OK...");
+            FATAL_ON(ret < 0, 2, "wait semaphore: %m");
+            block_idx++;
+        } else if (ret == -1 && errno == ETIMEDOUT) {
+            WARN("wait for RCP response timeout, re-transmitt this block...");
+            continue;
+        } else {
+            WARN("unknown error ");
+        }
+    }
+    
     //sleep(1);
 
-    ret = sem_wait(&ctxt->os_ctxt->fwupd_reply_semid);
-    FATAL_ON(ret < 0, 2, "wait semaphore: %m");
     //WARN("-fwupd_reply semaphore released");
     //WARN("-reply_cmd = %d\t reply_param = %d" ,ctxt->os_ctxt->fwupd_reply_cmd, ctxt->os_ctxt->fwupd_reply_param);
 
     /* end up this thread, release all resouce */
+    free(rcp_bin_array);
     pthread_exit(NULL);
 }

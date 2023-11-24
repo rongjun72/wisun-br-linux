@@ -136,7 +136,7 @@ void rcp_add_mac_filter_entry(uint8_t mac64[8], bool forward);
 void rcp_clear_mac_filters(void);
 
 void rcp_abort_edfe(void);
-void rcp_firmware_send_block(uint16_t sequence_num, uint16_t block_size, uint8_t *pblock);
+void rcp_firmware_send_block(uint16_t sequence_num, uint16_t block_size, uint8_t *pblock, uint16_t crc);
 void rcp_tx_req_legacy(const struct mcps_data_req *tx_req,
                        const struct iovec *header_ie,
                        const struct iovec *payload_ie,

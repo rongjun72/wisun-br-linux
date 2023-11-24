@@ -651,7 +651,7 @@ void rcp_abort_edfe()
     rcp_set_bool(SPINEL_PROP_WS_EDFE_FORCE_STOP, false);
 }
 
-void rcp_firmware_send_block(uint16_t sequence_num, uint16_t block_size, uint8_t *pblock)
+void rcp_firmware_send_block(uint16_t sequence_num, uint16_t block_size, uint8_t *pblock, uint16_t crc)
 {
     struct wsbr_ctxt *ctxt = &g_ctxt;
     struct iobuf_write buf = { };
@@ -659,7 +659,9 @@ void rcp_firmware_send_block(uint16_t sequence_num, uint16_t block_size, uint8_t
     spinel_push_hdr_set_prop(&buf, SPINEL_PROP_RCP_FIRWARE_BLOCK);
     spinel_push_u16(&buf, sequence_num);
     spinel_push_u16(&buf, block_size);
-    spinel_push_raw(&buf, pblock, block_size);
+    spinel_push_u16(&buf, crc);
+    if (block_size != 0)
+        spinel_push_raw(&buf, pblock, block_size);
     rcp_tx(ctxt, &buf);
     iobuf_free(&buf);
 }

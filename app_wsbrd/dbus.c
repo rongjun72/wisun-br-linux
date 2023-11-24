@@ -70,7 +70,7 @@ int dbus_set_mode_switch(sd_bus_message *m, void *userdata, sd_bus_error *ret_er
     struct wsbr_ctxt *ctxt = userdata;
     int ret;
     uint8_t *eui64;
-    size_t eui64_len;
+    size_t eui64_len;   
     int phy_mode_id;
 
     tr_warn("---------dbus_set_mode_switch()");
@@ -1491,7 +1491,7 @@ int dbus_rcp_fw_update(sd_bus_message *m, void *userdata, sd_bus_error *ret_erro
 
     ret = sd_bus_message_read_basic(m, 's', (void **)&fw_image_name);
     WARN_ON(ret < 0, "%s", strerror(-ret));
-    //WARN("RCP firmware update from file: %s", fw_image_name);
+    WARN("RCP firmware update from file: %s", fw_image_name);
 
     ctxt->fw_upt_filename = fw_image_name;
     /* create a thread impliment RCP firmware update */

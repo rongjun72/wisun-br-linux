@@ -17,6 +17,7 @@
 #include <stdint.h>
 
 uint16_t crc16(const uint8_t *data, int len);
+uint32_t block_crc32(uint32_t crc32, uint8_t *buffer, uint32_t size);
 bool crc_check(const uint8_t *data, int len, uint16_t expected_crc);
 
 #endif

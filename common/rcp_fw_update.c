@@ -32,16 +32,6 @@
 #include "rcp_fw_update.h"
 #include "app_wsbrd/wsbr.h"
 
-static uint32_t block_crc32(uint32_t crc, uint8_t *buffer, uint32_t size)
-{
-    crc = crc ^ 0xffffffff;
-    for(uint32_t idx=0; idx<size; idx++)
-    {
-        crc = crc32_tab[(crc ^ buffer[idx]) & 0xFF] ^ (crc >> 8);   
-    }
-    return crc ^ 0xffffffff;
-}
-
 void rcp_send_fwupd_request(rcp_fwupd_attr_t* params)
 {
     struct wsbr_ctxt *ctxt = &g_ctxt;

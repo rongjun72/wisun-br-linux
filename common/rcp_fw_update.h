@@ -70,7 +70,7 @@ typedef struct block_header {
 
 typedef struct node_ota_attr {
     uint16_t ota_port_num;
-    uint16_t ota_multicast_hops;
+    int32_t ota_multicast_hops;
     struct sockaddr_in6 ota_dst_addr;
     struct sockaddr_in6 ota_src_addr;
     uint8_t recv_image_flg;

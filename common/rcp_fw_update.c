@@ -377,8 +377,10 @@ static int init_ota_socket(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_att
 
     node_ota_attr->ota_sid = socket(node_ota_attr->ota_dst_addr.sin6_family, SOCK_DGRAM, IPPROTO_UDP);
     ERROR_ON(node_ota_attr->ota_sid < 0, "%s: socket: %m", __func__);
+    WARN("Created and opened ipv6 UDP socket with socket_id:%d", node_ota_attr->ota_sid);
     ret = bind(node_ota_attr->ota_sid, (struct sockaddr *) &node_ota_attr->ota_dst_addr, sizeof(struct sockaddr_in6));
     ERROR_ON(ret < 0, "%s: bind: %m", __func__);
+    WARN("Bind multicast address: %s for OTA transactions", tr_ipv6(&ctxt->node_ota_address[0]));
 
     ret = setsockopt(node_ota_attr->ota_sid, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, (char *)&node_ota_attr->ota_multicast_hops, sizeof(node_ota_attr->ota_multicast_hops));
     WARN_ON(ret < 0, "ipv6 multicast hops \"%s\": %m", __func__);
@@ -412,10 +414,12 @@ uint8_t *read_ota_file(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr)
 
     fseek(fp, 0, SEEK_END);
     node_ota_attr->image_size = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+    WARN("OTA bin file size is: %d", node_ota_attr->image_size);
     uint8_t *ota_upgrade_array = malloc(node_ota_attr->image_size);
     ERROR_ON(ota_upgrade_array == NULL, "Failed to malloc...");
     ret = fread(ota_upgrade_array, sizeof(uint8_t), node_ota_attr->image_size, fp);
-    ERROR_ON(ret != node_ota_attr->image_size, "Failed to read bin file...");
+    ERROR_ON(ret != node_ota_attr->image_size, "Failed to read bin file, ret = %d, target size:%d", ret, node_ota_attr->image_size);
     WARN("read bin file stream %d bytes", ret);
 
     uint32_t image_crc = 0x00000000;

@@ -1027,14 +1027,13 @@ fn node_fw_ota(dbus_user: bool, arg0: String, arg1: String) -> Result<(), Box<dy
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
     println!("--------------------------------------------------------------");
-    //println!("OTA Multicast Group: {:?}", arg0);
+    println!("OTA Multicast Group: {:?}", arg0);
     let arg0: Ipv6Addr = arg0.parse().unwrap();
     let ipv6_addr: Vec<u8> = arg0.octets().to_vec();
-    println!("OTA Multicast address: {:?}", ipv6_addr);
-
+    //println!("OTA Multicast address: {:?}", ipv6_addr);
 
     println!("Node firmware OTA: {:?}", arg1);
-    let _ret = dbus_proxy.node_fw_ota(arg1);
+    let _ret = dbus_proxy.node_fw_ota(ipv6_addr, arg1);
 
     Ok(())
 }
@@ -1186,8 +1185,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .arg(Arg::with_name("fw_image").help("rcp-fw-update rcp_bin_filename").empty_values(false))
         ,)
         .subcommand(SubCommand::with_name("node-fw-ota").about("Start node firmware OTA. Usage: >wsbrd_cli node-fw-ota ota_multicast_addr ota_filename")
-            .arg(Arg::with_name("ota_image").help("node-fw-ota ota_filename").empty_values(false))
             .arg(Arg::with_name("ota_multicast_addr").help("input ota multicast group ipv6 addr").empty_values(false))
+            .arg(Arg::with_name("ota_image").help("node-fw-ota ota_filename").empty_values(false))
         ,)
         .get_matches();
     let dbus_user = matches.is_present("user");

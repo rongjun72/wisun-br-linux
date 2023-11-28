@@ -1506,8 +1506,14 @@ int dbus_node_fw_ota(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
     struct wsbr_ctxt *ctxt = userdata;
     char *ota_image_name;
     int ret;
+    size_t len;
     pthread_t node_ota_id;
+    const uint8_t *ota_multicast_addr;
 
+    ret = sd_bus_message_read_array(m, 'y', (const void **)&ota_multicast_addr, &len);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    WARN_ON(len != 16, "%s", strerror(EINVAL));    
+    WARN("OTA multicast address is: (%s)", tr_ipv6(ota_multicast_addr));
     ret = sd_bus_message_read_basic(m, 's', (void **)&ota_image_name);
     WARN_ON(ret < 0, "%s", strerror(-ret));
     WARN("Node firmware OTA from file: %s", ota_image_name);
@@ -1661,7 +1667,7 @@ static const sd_bus_vtable dbus_vtable[] = {
                         dbus_set_edfe_mode, 0),
         SD_BUS_METHOD("rcpFwUpdate", "s", NULL,
                         dbus_rcp_fw_update, 0),
-        SD_BUS_METHOD("nodeFwOTA", "s", NULL,
+        SD_BUS_METHOD("nodeFwOTA", "ays", NULL,
                         dbus_node_fw_ota, 0),
         SD_BUS_VTABLE_END
 };

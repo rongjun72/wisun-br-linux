@@ -1017,7 +1017,7 @@ fn rcp_fw_update(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error
     Ok(())
 }
 
-fn node_fw_ota(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::Error>> {
+fn node_fw_ota(dbus_user: bool, arg0: String, arg1: String) -> Result<(), Box<dyn std::error::Error>> {
     let dbus_conn;
     if dbus_user {
         dbus_conn = Connection::new_session()?;
@@ -1027,8 +1027,14 @@ fn node_fw_ota(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
     println!("--------------------------------------------------------------");
-    println!("Node firmware OTA: {:?}", arg0);
-    let _ret = dbus_proxy.node_fw_ota(arg0);
+    //println!("OTA Multicast Group: {:?}", arg0);
+    let arg0: Ipv6Addr = arg0.parse().unwrap();
+    let ipv6_addr: Vec<u8> = arg0.octets().to_vec();
+    println!("OTA Multicast address: {:?}", ipv6_addr);
+
+
+    println!("Node firmware OTA: {:?}", arg1);
+    let _ret = dbus_proxy.node_fw_ota(arg1);
 
     Ok(())
 }
@@ -1179,8 +1185,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .subcommand(SubCommand::with_name("rcp-fw-update").about("Start RCP firmware update. Usage: >wsbrd_cli rcp-fw-update rcp_bin_filename")
             .arg(Arg::with_name("fw_image").help("rcp-fw-update rcp_bin_filename").empty_values(false))
         ,)
-        .subcommand(SubCommand::with_name("node-fw-ota").about("Start node firmware OTA. Usage: >wsbrd_cli node-fw-ota ota_filename")
+        .subcommand(SubCommand::with_name("node-fw-ota").about("Start node firmware OTA. Usage: >wsbrd_cli node-fw-ota ota_multicast_addr ota_filename")
             .arg(Arg::with_name("ota_image").help("node-fw-ota ota_filename").empty_values(false))
+            .arg(Arg::with_name("ota_multicast_addr").help("input ota multicast group ipv6 addr").empty_values(false))
         ,)
         .get_matches();
     let dbus_user = matches.is_present("user");
@@ -1570,12 +1577,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Some("node-fw-ota")       => {
             let mut ota_image: String  = String::from("");
+            let mut ota_multicast_addr: String = String::from("");
             if let Some(subcmd) = matches.subcommand_matches("node-fw-ota") {
                 if let Some(tempval) = subcmd.value_of("ota_image") {
                     ota_image = tempval.to_string();
                 }
+                if let Some(tempval) = subcmd.value_of("ota_multicast_addr") {
+                    ota_multicast_addr = tempval.to_string();
+                }
             }
-            node_fw_ota(dbus_user, ota_image)
+            node_fw_ota(dbus_user, ota_multicast_addr, ota_image)
         }
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }

@@ -254,10 +254,254 @@ void *rcp_firmware_update_thread(void *arg)
 /***************************************************************************************/
 // below code should be moved to ota specific file after debug
 /***************************************************************************************/
+static uint16_t cal_checksum(struct block_header* ptr)
+{
+    uint32_t sum = 0;
+    uint16_t carry_val = 0;
+    
+    uint16_t image_crc[2] = {0};
+    
+    image_crc[0] = (ptr->image_crc >> 16);
+    image_crc[1] = ptr->image_crc & 0x0000ffff;
+    
+    //sum = ptr->control_cmd + ptr->ver_num + ptr->pkt_crc + ptr->image_crc + ptr->block_seq_num + ptr->block_total_num + ptr->pkt_len;
+    sum = ptr->control_cmd + ptr->ver_num + ptr->pkt_crc + image_crc[0] + image_crc[1] + ptr->block_seq_num + ptr->block_total_num + ptr->pkt_len;
+    
+    carry_val = sum >> 16;
+    
+    while(carry_val > 0)
+    {
+        sum &= 0x0000ffff;
+        sum += carry_val;
+        carry_val = sum >> 16;
+    }
+    
+    return (uint16_t)~sum;
+}
+
+void recv_ota_msg(node_ota_attr_t *node_ota_attr)
+{
+    INFO("recv udp socket msg.\n");
+    
+    memset(node_ota_attr->tmp_buffer, 0x00, sizeof(node_ota_attr->tmp_buffer));
+    /* get received content and source address, thread will blocked here untill received from socket */
+    socklen_t src_addr_len = sizeof(struct sockaddr_in6);
+    int len = recvfrom(node_ota_attr->ota_sid, (void *)node_ota_attr->tmp_buffer, sizeof(node_ota_attr->tmp_buffer), 
+                        0, (struct sockaddr *) &node_ota_attr->ota_src_addr, &src_addr_len);
+    
+    if (len > 0){
+        INFO("socket received len is %d.\n",len);
+
+        /* clear fwupgrade header, then copy received header */
+        memset((char *)&node_ota_attr->recv_fwupgrade_hdr, 0x00, node_ota_attr->block_hdr_size);
+        memcpy((char *)&node_ota_attr->recv_fwupgrade_hdr, node_ota_attr->tmp_buffer, node_ota_attr->block_hdr_size);
+        
+        /* move forward only if we got correct checksum calculation */
+        if(node_ota_attr->recv_fwupgrade_hdr.checksum == cal_checksum(&node_ota_attr->recv_fwupgrade_hdr)){
+            INFO("hdr checksum is ok.");
+            
+            /* switch according to received control command */
+            switch(node_ota_attr->recv_fwupgrade_hdr.control_cmd){
+                case GET_BLOCK:{
+                    uint16_t block_size = 0x0000;
+                    
+                    /* compare received ver_num and sequence number, version should match 
+                     * and seq_num should be less than total_block_num */
+                    if((node_ota_attr->recv_fwupgrade_hdr.ver_num != node_ota_attr->upgrading_ver_num) && 
+                        (node_ota_attr->recv_fwupgrade_hdr.block_seq_num >= node_ota_attr->upgrading_total_block_num)){
+                        ERROR("ver num not match or sequence number exceed.");
+                        break;
+                    }
+                    
+                    if(node_ota_attr->recv_fwupgrade_hdr.block_seq_num == (node_ota_attr->upgrading_total_block_num-1)){
+                        block_size = node_ota_attr->upgrading_last_block_size;
+                    }else{
+                        block_size = node_ota_attr->upgrading_block_size;
+                    }
+    
+                    uint32_t read_addr = (node_ota_attr->recv_fwupgrade_hdr.block_seq_num*node_ota_attr->upgrading_block_size);
+                    
+                    memset(node_ota_attr->ota_buffer, 0x00, sizeof(node_ota_attr->ota_buffer));
+                    memcpy(&node_ota_attr->ota_buffer[node_ota_attr->block_hdr_size], &node_ota_attr->ota_upgrade_array[read_addr], block_size);
+                    
+                    /* clear and copy received header */
+                    memset((char *)&node_ota_attr->tran_fwupgrade_hdr, 0x00, node_ota_attr->block_hdr_size);
+                    node_ota_attr->tran_fwupgrade_hdr.control_cmd   = PUT_BLOCK;
+                    node_ota_attr->tran_fwupgrade_hdr.block_seq_num = node_ota_attr->recv_fwupgrade_hdr.block_seq_num;
+                    node_ota_attr->tran_fwupgrade_hdr.ver_num = node_ota_attr->upgrading_ver_num;
+                    node_ota_attr->tran_fwupgrade_hdr.pkt_len = block_size + node_ota_attr->block_hdr_size;
+                    node_ota_attr->tran_fwupgrade_hdr.pkt_crc = crc16(&node_ota_attr->ota_buffer[node_ota_attr->block_hdr_size], block_size);
+                    node_ota_attr->tran_fwupgrade_hdr.checksum = cal_checksum(&node_ota_attr->tran_fwupgrade_hdr);
+                                    
+                    
+                    memcpy(&node_ota_attr->ota_buffer[0], (char *)&node_ota_attr->tran_fwupgrade_hdr, node_ota_attr->block_hdr_size);
+                    
+                    /* send back block to source address */
+                    sendto(node_ota_attr->ota_sid, &node_ota_attr->ota_buffer[0], (node_ota_attr->block_hdr_size+block_size), 0, 
+                                    (struct sockaddr *) &node_ota_attr->ota_src_addr, sizeof(struct sockaddr_in6));                                
+                    break;
+                }
+                
+                default:
+                    break;
+            }
+        }else{
+            ERROR("pkt checksum error !!!");
+        }
+    }
+
+}
+
+static int init_ota_socket(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr)
+{
+    int  ret;
+
+    node_ota_attr->ota_port_num = 0x1234;
+    node_ota_attr->ota_multicast_hops = 20;
+    node_ota_attr->recv_image_flg = true;
+    node_ota_attr->ota_dst_addr.sin6_family = AF_INET6;
+    node_ota_attr->ota_dst_addr.sin6_port = htons(node_ota_attr->ota_port_num);
+    memcpy((void*)&node_ota_attr->ota_dst_addr.sin6_addr, ctxt->node_ota_address, 16);
+
+    node_ota_attr->block_seq = 0;
+    node_ota_attr->image_size = 0;
+    node_ota_attr->upgrading_flg = 0;
+    node_ota_attr->upgrading_ver_num = 0x0616;
+    node_ota_attr->upgrading_image_crc = 0;
+    node_ota_attr->upgrading_total_block_num = 0;
+    node_ota_attr->upgrading_block_size = 0x400;
+    node_ota_attr->upgrading_total_byte = 0;
+    node_ota_attr->upgrading_last_block_size = 0;
+    node_ota_attr->upgrading_total_pkt_size = 0;
+    node_ota_attr->block_hdr_size = 0;
+
+    node_ota_attr->ota_sid = socket(node_ota_attr->ota_dst_addr.sin6_family, SOCK_DGRAM, IPPROTO_UDP);
+    ERROR_ON(node_ota_attr->ota_sid < 0, "%s: socket: %m", __func__);
+    ret = bind(node_ota_attr->ota_sid, (struct sockaddr *) &node_ota_attr->ota_dst_addr, sizeof(struct sockaddr_in6));
+    ERROR_ON(ret < 0, "%s: bind: %m", __func__);
+
+    ret = setsockopt(node_ota_attr->ota_sid, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, (char *)&node_ota_attr->ota_multicast_hops, sizeof(node_ota_attr->ota_multicast_hops));
+    WARN_ON(ret < 0, "ipv6 multicast hops \"%s\": %m", __func__);
+    
+    return ret;
+}
+
+void fragment_info_init(uint32_t image_size, uint16_t block_unit, node_ota_attr_t *node_ota_attr)
+{
+    uint16_t remainder = image_size % block_unit;
+    uint16_t quotient  = image_size / block_unit;
+    
+    if (remainder == 0) {
+        node_ota_attr->upgrading_total_block_num = quotient;
+        node_ota_attr->upgrading_last_block_size = block_unit;
+    } else {
+        node_ota_attr->upgrading_total_block_num = quotient + 1;
+        node_ota_attr->upgrading_last_block_size = remainder;
+    }
+}
+
+uint8_t *read_ota_file(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr)
+{
+    int ret;
+    char filename[PATH_MAX];
+    snprintf(filename, sizeof(filename), "%s", ctxt->node_ota_filename);
+    FILE *fp = fopen(filename, "r");
+    if (!fp) {
+        return NULL;
+    }
+
+    fseek(fp, 0, SEEK_END);
+    node_ota_attr->image_size = ftell(fp);
+    uint8_t *ota_upgrade_array = malloc(node_ota_attr->image_size);
+    ERROR_ON(ota_upgrade_array == NULL, "Failed to malloc...");
+    ret = fread(ota_upgrade_array, sizeof(uint8_t), node_ota_attr->image_size, fp);
+    ERROR_ON(ret != node_ota_attr->image_size, "Failed to read bin file...");
+    WARN("read bin file stream %d bytes", ret);
+
+    uint32_t image_crc = 0x00000000;
+    image_crc|= ota_upgrade_array[4];
+    image_crc<<=8; image_crc|= ota_upgrade_array[5];
+    image_crc<<=8; image_crc|= ota_upgrade_array[6];
+    image_crc<<=8; image_crc|= ota_upgrade_array[7];
+    node_ota_attr->upgrading_image_crc = image_crc;
+
+    return ota_upgrade_array;
+}
+
+void send_ota_data(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr, uint16_t block_seq, uint16_t len)
+{
+    struct block_header* hdr = &node_ota_attr->tran_fwupgrade_hdr;
+    
+    if(block_seq == 0){
+        hdr->control_cmd = OTA_START;
+    }else if(block_seq == (node_ota_attr->upgrading_total_block_num-1)){
+        hdr->control_cmd = OTA_END;
+    }else{
+        hdr->control_cmd = OTA_INTERNAL;
+    }
+    
+    hdr->block_seq_num = block_seq;
+    hdr->pkt_len       = len + sizeof(struct block_header);
+    hdr->checksum      = cal_checksum(hdr);
+    
+    memcpy(node_ota_attr->ota_buffer, (char*)hdr, sizeof(struct block_header));
+    //memcpy((void*)&node_ota_attr->ota_dst_addr.sin6_addr, ctxt->node_ota_address, 16);
+
+    sendto(node_ota_attr->ota_sid, node_ota_attr->ota_buffer, (len+sizeof(struct block_header)), 0, 
+                    (struct sockaddr *) &node_ota_attr->ota_dst_addr, sizeof(struct sockaddr_in6));                                
+}
+
+void init_fwupgrade_hdr(node_ota_attr_t *node_ota_attr)
+{
+    memset((char*)&node_ota_attr->tran_fwupgrade_hdr, 0x00, sizeof(struct block_header));
+    node_ota_attr->tran_fwupgrade_hdr.ver_num         = node_ota_attr->upgrading_ver_num;
+    node_ota_attr->tran_fwupgrade_hdr.image_crc       = node_ota_attr->upgrading_image_crc;
+    node_ota_attr->tran_fwupgrade_hdr.block_total_num = node_ota_attr->upgrading_total_block_num;
+}
+
+void ota_upgrade_start(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr)
+{
+    node_ota_attr->block_hdr_size = sizeof(struct block_header);
+
+    // image size got when read ota file 
+    //node_ota_attr->image_size = get_firmware_length();
+
+    // 从外部flash获取固件版本号
+//    upgrading_ver_num = get_firmware_version();
+//    ota_info.update_soft_vevsion[0] = upgrading_ver_num >> 8;
+//    ota_info.update_soft_vevsion[1] = upgrading_ver_num & 0x00ff;
+
+    fragment_info_init(node_ota_attr->image_size, node_ota_attr->upgrading_block_size, node_ota_attr);  // 因为有8个字节的头,所以整个image字节数要+8
+
+    // image CRC32 got when read ota file
+
+    init_fwupgrade_hdr(node_ota_attr);
+
+    for(node_ota_attr->block_seq = 0; node_ota_attr->block_seq < node_ota_attr->upgrading_total_block_num; node_ota_attr->block_seq++)
+    {
+        uint32_t read_addr = node_ota_attr->block_seq*node_ota_attr->upgrading_block_size;
+        memset(node_ota_attr->ota_buffer, 0x00, sizeof(node_ota_attr->ota_buffer));
+
+        if(node_ota_attr->block_seq == (node_ota_attr->upgrading_total_block_num - 1)){
+            memcpy(&node_ota_attr->ota_buffer[node_ota_attr->block_hdr_size], 
+                   &node_ota_attr->ota_upgrade_array[read_addr], node_ota_attr->upgrading_last_block_size);
+            send_ota_data(ctxt, node_ota_attr, node_ota_attr->block_seq, node_ota_attr->upgrading_last_block_size);
+            /* wait for ota response from node */
+            recv_ota_msg(node_ota_attr);
+        }
+        else{
+            memcpy(&node_ota_attr->ota_buffer[node_ota_attr->block_hdr_size], 
+               &node_ota_attr->ota_upgrade_array[read_addr], node_ota_attr->upgrading_block_size);
+            send_ota_data(ctxt, node_ota_attr, node_ota_attr->block_seq, node_ota_attr->upgrading_block_size);
+            /* wait for ota response from node */
+            recv_ota_msg(node_ota_attr);
+        }
+    }
+}
+
 void *node_firmware_ota_thread(void *arg)
 {
     int  ret;
-    //struct sockaddr_in6 dst_udp_address;
 
     WARN("-----------------------------------------------");
     /* automatically detach current thread.
@@ -267,9 +511,21 @@ void *node_firmware_ota_thread(void *arg)
        BUG("pthread_detach error: %m");
        return NULL;
     }
-    //struct wsbr_ctxt *ctxt = (struct wsbr_ctxt *)arg;
+
+    struct wsbr_ctxt *ctxt = (struct wsbr_ctxt *)arg;
+    node_ota_attr_t *node_ota_attr = malloc(sizeof(node_ota_attr_t));
+    memset((void*)node_ota_attr, 0, sizeof(node_ota_attr_t));
+
+
+    init_ota_socket(ctxt, node_ota_attr);
+    uint8_t *ota_upgrade_array = read_ota_file(ctxt, node_ota_attr);
+    node_ota_attr->ota_upgrade_array = ota_upgrade_array;
+    
 
 
 
+
+    free(ota_upgrade_array);
+    free(node_ota_attr);
     pthread_exit(NULL);
 }

@@ -1519,7 +1519,7 @@ int dbus_node_fw_ota(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
     WARN("Node firmware OTA from file: %s", ota_image_name);
 
     ctxt->node_ota_filename = ota_image_name;
-    //memcpy(ctxt->node_ota_address, xxx, 16);
+    memcpy(ctxt->node_ota_address, ota_multicast_addr, len);
     /* create a thread impliment handle node OTA process */
     pthread_create(&node_ota_id, NULL, node_firmware_ota_thread, ctxt);
 

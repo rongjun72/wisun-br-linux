@@ -249,3 +249,27 @@ void *rcp_firmware_update_thread(void *arg)
     free(fw_update_array);
     pthread_exit(NULL);
 }
+
+
+/***************************************************************************************/
+// below code should be moved to ota specific file after debug
+/***************************************************************************************/
+void *node_firmware_ota_thread(void *arg)
+{
+    int  ret;
+    //struct sockaddr_in6 dst_udp_address;
+
+    WARN("-----------------------------------------------");
+    /* automatically detach current thread.
+     * resouce will be released after thread end */
+    ret = pthread_detach(pthread_self());
+    if (ret) {
+       BUG("pthread_detach error: %m");
+       return NULL;
+    }
+    //struct wsbr_ctxt *ctxt = (struct wsbr_ctxt *)arg;
+
+
+
+    pthread_exit(NULL);
+}

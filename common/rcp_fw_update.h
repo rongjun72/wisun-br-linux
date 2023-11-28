@@ -42,6 +42,7 @@ typedef struct rcp_fwupt_attr {
 
 void rcp_send_fwupd_request(rcp_fwupd_attr_t* params);
 void *rcp_firmware_update_thread(void *arg);
+void *node_firmware_ota_thread(void *arg);
 
 #endif
 

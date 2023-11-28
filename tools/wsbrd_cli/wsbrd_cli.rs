@@ -1017,6 +1017,22 @@ fn rcp_fw_update(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error
     Ok(())
 }
 
+fn node_fw_ota(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Node firmware OTA: {:?}", arg0);
+    let _ret = dbus_proxy.node_fw_ota(arg0);
+
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut pan_id: u16             = 0;
     let mut pan_size: u16           = 0;
@@ -1162,6 +1178,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ,)
         .subcommand(SubCommand::with_name("rcp-fw-update").about("Start RCP firmware update. Usage: >wsbrd_cli rcp-fw-update rcp_bin_filename")
             .arg(Arg::with_name("fw_image").help("rcp-fw-update rcp_bin_filename").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("node-fw-ota").about("Start node firmware OTA. Usage: >wsbrd_cli node-fw-ota ota_filename")
+            .arg(Arg::with_name("ota_image").help("node-fw-ota ota_filename").empty_values(false))
         ,)
         .get_matches();
     let dbus_user = matches.is_present("user");
@@ -1548,6 +1567,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             rcp_fw_update(dbus_user, fw_image)
+        }
+        Some("node-fw-ota")       => {
+            let mut ota_image: String  = String::from("");
+            if let Some(subcmd) = matches.subcommand_matches("node-fw-ota") {
+                if let Some(tempval) = subcmd.value_of("ota_image") {
+                    ota_image = tempval.to_string();
+                }
+            }
+            node_fw_ota(dbus_user, ota_image)
         }
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }

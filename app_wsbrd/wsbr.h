@@ -59,6 +59,8 @@ struct wsbr_ctxt {
     int dhcp_leases_len;
 
     char *fw_upt_filename;
+    char *node_ota_filename;
+    uint8_t node_ota_address[16];
 };
 
 // This global variable is necessary for various API of nanostack. Beside this

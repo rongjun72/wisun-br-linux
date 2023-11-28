@@ -1495,7 +1495,27 @@ int dbus_rcp_fw_update(sd_bus_message *m, void *userdata, sd_bus_error *ret_erro
 
     ctxt->fw_upt_filename = fw_image_name;
     /* create a thread impliment RCP firmware update */
-    pthread_create(&fw_upt_id,NULL,rcp_firmware_update_thread, ctxt);
+    pthread_create(&fw_upt_id, NULL, rcp_firmware_update_thread, ctxt);
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
+int dbus_node_fw_ota(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    struct wsbr_ctxt *ctxt = userdata;
+    char *ota_image_name;
+    int ret;
+    pthread_t node_ota_id;
+
+    ret = sd_bus_message_read_basic(m, 's', (void **)&ota_image_name);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    WARN("Node firmware OTA from file: %s", ota_image_name);
+
+    ctxt->node_ota_filename = ota_image_name;
+    //memcpy(ctxt->node_ota_address, xxx, 16);
+    /* create a thread impliment handle node OTA process */
+    pthread_create(&node_ota_id, NULL, node_firmware_ota_thread, ctxt);
 
     sd_bus_reply_method_return(m, NULL);
     return 0;
@@ -1641,6 +1661,8 @@ static const sd_bus_vtable dbus_vtable[] = {
                         dbus_set_edfe_mode, 0),
         SD_BUS_METHOD("rcpFwUpdate", "s", NULL,
                         dbus_rcp_fw_update, 0),
+        SD_BUS_METHOD("nodeFwOTA", "s", NULL,
+                        dbus_node_fw_ota, 0),
         SD_BUS_VTABLE_END
 };
 

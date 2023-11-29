@@ -279,15 +279,17 @@ static uint16_t cal_checksum(struct block_header* ptr)
     return (uint16_t)~sum;
 }
 
-void recv_ota_msg(node_ota_attr_t *node_ota_attr)
+int recv_ota_msg(node_ota_attr_t *node_ota_attr)
 {
-    INFO("recv udp socket msg.\n");
-    
     memset(node_ota_attr->tmp_buffer, 0x00, sizeof(node_ota_attr->tmp_buffer));
     /* get received content and source address, thread will blocked here untill received from socket */
     socklen_t src_addr_len = sizeof(struct sockaddr_in6);
     int len = recvfrom(node_ota_attr->ota_sid, (void *)node_ota_attr->tmp_buffer, sizeof(node_ota_attr->tmp_buffer), 
                         0, (struct sockaddr *) &node_ota_attr->ota_src_addr, &src_addr_len);
+    ERROR_ON(len < 0, "%s: recvfrom: %m", __func__);
+    if (len <= 0)
+        return SOCKET_RECV_TIMEO_ERR;
+    WARN("Received UDP socket message from : %s", tr_ipv6(&node_ota_attr->ota_src_addr.sin6_addr.__in6_u.__u6_addr8[0]));
     
     if (len > 0){
         INFO("socket received len is %d.\n",len);
@@ -350,14 +352,15 @@ void recv_ota_msg(node_ota_attr_t *node_ota_attr)
         }
     }
 
+    return 0;
 }
 
 static int init_ota_socket(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr)
 {
     int  ret;
 
-    node_ota_attr->ota_port_num = 0x1234;
-    node_ota_attr->ota_multicast_hops = 20;
+    node_ota_attr->ota_port_num = OTA_SOCKET_PORT;
+    node_ota_attr->ota_multicast_hops = OTA_MULTCAST_HOPS;
     node_ota_attr->recv_image_flg = true;
     node_ota_attr->ota_dst_addr.sin6_family = AF_INET6;
     node_ota_attr->ota_dst_addr.sin6_port = htons(node_ota_attr->ota_port_num);
@@ -377,15 +380,24 @@ static int init_ota_socket(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_att
 
     node_ota_attr->ota_sid = socket(node_ota_attr->ota_dst_addr.sin6_family, SOCK_DGRAM, IPPROTO_UDP);
     ERROR_ON(node_ota_attr->ota_sid < 0, "%s: socket: %m", __func__);
+    if (node_ota_attr->ota_sid < 0)
+        return SOCKET_OPEN_ERR;
     WARN("Created and opened ipv6 UDP socket with socket_id:%d", node_ota_attr->ota_sid);
     ret = bind(node_ota_attr->ota_sid, (struct sockaddr *) &node_ota_attr->ota_dst_addr, sizeof(struct sockaddr_in6));
     ERROR_ON(ret < 0, "%s: bind: %m", __func__);
+    if (node_ota_attr->ota_sid < 0)
+        return SOCKET_BIND_ERR;
     WARN("Bind multicast address: %s for OTA transactions", tr_ipv6(&ctxt->node_ota_address[0]));
 
     ret = setsockopt(node_ota_attr->ota_sid, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, (char *)&node_ota_attr->ota_multicast_hops, sizeof(node_ota_attr->ota_multicast_hops));
-    WARN_ON(ret < 0, "ipv6 multicast hops \"%s\": %m", __func__);
+    ERROR_ON(ret < 0, "ipv6 multicast hops \"%s\": %m", __func__);
+    if (node_ota_attr->ota_sid < 0)
+        return SOCKET_SET_MHOPS_ERR;
     
-    return ret;
+    struct timespec read_timeout;
+    read_timeout.tv_sec = SOCKET_RECV_TIMEOUT;
+    ret = setsockopt(node_ota_attr->ota_sid, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof read_timeout);
+    return 0;
 }
 
 void fragment_info_init(uint32_t image_size, uint16_t block_unit, node_ota_attr_t *node_ota_attr)
@@ -428,6 +440,7 @@ uint8_t *read_ota_file(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr)
     image_crc<<=8; image_crc|= ota_upgrade_array[6];
     image_crc<<=8; image_crc|= ota_upgrade_array[7];
     node_ota_attr->upgrading_image_crc = image_crc;
+    WARN("read CRC32 from bin file : 0x%08x", node_ota_attr->upgrading_image_crc);
 
     return ota_upgrade_array;
 }
@@ -450,7 +463,7 @@ void send_ota_data(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr, uint1
     
     memcpy(node_ota_attr->ota_buffer, (char*)hdr, sizeof(struct block_header));
     //memcpy((void*)&node_ota_attr->ota_dst_addr.sin6_addr, ctxt->node_ota_address, 16);
-
+    WARN("Send OTA upgrade packet: %d/%d", block_seq, node_ota_attr->upgrading_total_block_num);
     sendto(node_ota_attr->ota_sid, node_ota_attr->ota_buffer, (len+sizeof(struct block_header)), 0, 
                     (struct sockaddr *) &node_ota_attr->ota_dst_addr, sizeof(struct sockaddr_in6));                                
 }
@@ -463,8 +476,9 @@ void init_fwupgrade_hdr(node_ota_attr_t *node_ota_attr)
     node_ota_attr->tran_fwupgrade_hdr.block_total_num = node_ota_attr->upgrading_total_block_num;
 }
 
-void ota_upgrade_start(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr)
+int ota_upgrade_start(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr)
 {
+    int ret;
     node_ota_attr->block_hdr_size = sizeof(struct block_header);
 
     // image size got when read ota file 
@@ -491,16 +505,21 @@ void ota_upgrade_start(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr)
                    &node_ota_attr->ota_upgrade_array[read_addr], node_ota_attr->upgrading_last_block_size);
             send_ota_data(ctxt, node_ota_attr, node_ota_attr->block_seq, node_ota_attr->upgrading_last_block_size);
             /* wait for ota response from node */
-            recv_ota_msg(node_ota_attr);
+            ret = recv_ota_msg(node_ota_attr);
+            if (ret < 0)
+                return ret;
         }
         else{
             memcpy(&node_ota_attr->ota_buffer[node_ota_attr->block_hdr_size], 
                &node_ota_attr->ota_upgrade_array[read_addr], node_ota_attr->upgrading_block_size);
             send_ota_data(ctxt, node_ota_attr, node_ota_attr->block_seq, node_ota_attr->upgrading_block_size);
             /* wait for ota response from node */
-            recv_ota_msg(node_ota_attr);
+            ret = recv_ota_msg(node_ota_attr);
+            if (ret < 0)
+                return ret;
         }
     }
+    return 0;
 }
 
 void *node_firmware_ota_thread(void *arg)
@@ -521,14 +540,21 @@ void *node_firmware_ota_thread(void *arg)
     memset((void*)node_ota_attr, 0, sizeof(node_ota_attr_t));
 
 
-    init_ota_socket(ctxt, node_ota_attr);
+    ret = init_ota_socket(ctxt, node_ota_attr);
+    if (ret < 0)
+        goto end_thread;
+
     uint8_t *ota_upgrade_array = read_ota_file(ctxt, node_ota_attr);
+    if (ota_upgrade_array == NULL)
+        goto end_thread;
     node_ota_attr->ota_upgrade_array = ota_upgrade_array;
+
+    ota_upgrade_start(ctxt, node_ota_attr);
     
 
 
-
-
+end_thread:
+    WARN("OTA upgrade thread ended here...");
     free(ota_upgrade_array);
     free(node_ota_attr);
     pthread_exit(NULL);

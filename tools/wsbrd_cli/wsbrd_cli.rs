@@ -621,10 +621,11 @@ fn set_wisun_gtk_key(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::e
 
     println!("--------------------------------------------------------------");
     println!("input GTK kes: {:?}", arg0);
-    let gtk_keys: Vec<u8> = arg0.to_string()
-        .split(":")
-        .map(|s| s.parse().expect("parse error"))
-        .collect();
+    let temp: Vec<String> = arg0.to_string().split(":").map(|s| s.parse().expect("parse error")).collect();
+    let gtk_keys: Vec<u8> = temp.iter().map(|x| u8::from_str_radix(x.as_str(), 16).unwrap()).collect();
+    if gtk_keys.len() != 16 {
+        println!("Expected length of UDP tails is 10 but input: {}", gtk_keys.len());
+    }
 
     let _ret = dbus_proxy.set_wisun_gtk_key(gtk_keys);
 
@@ -667,6 +668,33 @@ fn set_wisun_key_lifetime(dbus_user: bool, arg0: u32, arg1: u32, arg2: u32) -> R
 
     Ok(())
 }
+
+fn revoke_group_keys(dbus_user: bool, arg0: String, arg1: String) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Revoke and start GTK/LGDK key: \n{:?}\n{:?}", arg0, arg1);
+    let temp: Vec<String> = arg0.to_string().split(":").map(|s| s.parse().expect("parse error")).collect();
+    let gtk_keys: Vec<u8> = temp.iter().map(|x| u8::from_str_radix(x.as_str(), 16).unwrap()).collect();
+    if gtk_keys.len() != 16 {
+        println!("Expected length of UDP tails is 10 but input: {}", gtk_keys.len());
+    }
+
+    let temp: Vec<String> = arg1.to_string().split(":").map(|s| s.parse().expect("parse error")).collect();
+    let lgtk_keys: Vec<u8> = temp.iter().map(|x| u8::from_str_radix(x.as_str(), 16).unwrap()).collect();
+    if lgtk_keys.len() != 16 {
+        println!("Expected length of UDP tails is 10 but input: {}", lgtk_keys.len());
+    }
+
+    let _ret = dbus_proxy.revoke_group_keys(gtk_keys, lgtk_keys);
+
+    Ok(())}
 
 fn create_udp_socket(dbus_user: bool, arg0: u16) -> Result<(), Box<dyn std::error::Error>> {
     let dbus_conn;
@@ -1116,6 +1144,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .subcommand(SubCommand::with_name("set-wisun-gtk-key").about("Set wisun index gtk key. Usage: >wsbrd_cli set-wisun-gtk-key \"k0:k2:k3:...:k15\" ")
             .arg(Arg::with_name("gtk_key").help("Set wisun index gtk key").empty_values(false))
         ,)
+        .subcommand(SubCommand::with_name("set-wisun-gtk-key").about("Set wisun index gtk key. Usage: >wsbrd_cli set-wisun-gtk-key \"k0:k2:k3:...:k15\" ")
+            .arg(Arg::with_name("gtk_key").help("Set gtk key, \"k0:k2:k3:...:k15\"").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("revoke-group-keys").about("revoke group keys insert new key then start. Usage: >wsbrd_cli revoke-group-keys \"k0:k2:k3:...:k15\" \"k0:k2:k3:...:k15\"")
+            .arg(Arg::with_name("gtk_key").help("Set gtk key, \"k0:k2:k3:...:k15\"").empty_values(false))
+            .arg(Arg::with_name("lgtk_key").help("Set lgtk key, \"k0:k2:k3:...:k15\"").empty_values(false))
+        ,)
         .subcommand(SubCommand::with_name("set-wisun-gtk-active-key").about("Set wisun gtk active key.")
             .arg(Arg::with_name("gtk_index").help("Set wisun gtk active key").empty_values(false))
         ,)
@@ -1364,6 +1399,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             set_wisun_gtk_key(dbus_user, gtk_key)
+        }
+        Some("revoke-group-keys")       => {
+            let mut gtk_key: String  = String::from("");
+            let mut lgtk_key: String = String::from("");
+            if let Some(subcmd) = matches.subcommand_matches("revoke-group-keys") {
+                if let Some(tempval) = subcmd.value_of("gtk_key") {
+                    gtk_key = tempval.to_string();
+                }
+                if let Some(tempval) = subcmd.value_of("lgtk_key") {
+                    lgtk_key = tempval.to_string();
+                }
+            }
+            revoke_group_keys(dbus_user, gtk_key, lgtk_key)
         }
         Some("set-wisun-gtk-active-key")       => {
             let mut gtk_index: u8 = 0;

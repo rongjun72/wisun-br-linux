@@ -342,7 +342,7 @@ int recv_ota_msg(node_ota_attr_t *node_ota_attr)
                     node_ota_attr->tran_fwupgrade_hdr.block_seq_num = node_ota_attr->recv_fwupgrade_hdr.block_seq_num;
                     node_ota_attr->tran_fwupgrade_hdr.ver_num = node_ota_attr->upgrading_ver_num;
                     node_ota_attr->tran_fwupgrade_hdr.pkt_len = block_size + node_ota_attr->block_hdr_size;
-                    node_ota_attr->tran_fwupgrade_hdr.pkt_crc = crc16(&node_ota_attr->ota_buffer[node_ota_attr->block_hdr_size], block_size);
+                    node_ota_attr->tran_fwupgrade_hdr.pkt_crc = pkt_crc16(&node_ota_attr->ota_buffer[node_ota_attr->block_hdr_size], block_size);
                     node_ota_attr->tran_fwupgrade_hdr.checksum = cal_checksum(&node_ota_attr->tran_fwupgrade_hdr);
                                     
                     
@@ -480,19 +480,21 @@ void send_ota_data(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr, uint1
         hdr->control_cmd = OTA_INTERNAL;
     }
     
+    uint16_t hdr_len = (uint16_t)sizeof(struct block_header);
+    hdr->pkt_crc = pkt_crc16(&node_ota_attr->ota_buffer[hdr_len], len);
     hdr->block_seq_num = block_seq;
-    hdr->pkt_len       = len + sizeof(struct block_header);
+    hdr->pkt_len       = len + hdr_len;
     hdr->checksum      = cal_checksum(hdr);
     WARN("cal_checksum() = 0x%04x", hdr->checksum);
     
-    memcpy(&node_ota_attr->ota_buffer[0], (char*)hdr, sizeof(struct block_header));
-    WARN("header[%d] = %s", (int)sizeof(struct block_header), tr_bytes((void*)hdr, 
-                        sizeof(struct block_header), NULL, 128, DELIM_SPACE | ELLIPSIS_STAR));
+    memcpy(&node_ota_attr->ota_buffer[0], (char*)hdr, hdr_len);
+    WARN("header[%d] = %s", hdr_len, tr_bytes((void*)hdr, hdr_len, NULL, 128, DELIM_SPACE | ELLIPSIS_STAR));
     //memcpy((void*)&node_ota_attr->ota_dst_addr.sin6_addr, ctxt->node_ota_address, 16);
-    sendto(node_ota_attr->ota_sid, &node_ota_attr->ota_buffer[0], (10+sizeof(struct block_header)), 0, 
+    sendto(node_ota_attr->ota_sid, &node_ota_attr->ota_buffer[0], (len+hdr_len), 0, 
                     (struct sockaddr *) &node_ota_attr->ota_dst_addr, sizeof(struct sockaddr_in6));                                
-    WARN("Send OTA upgrade packet: %d/%d to: %s", block_seq, node_ota_attr->upgrading_total_block_num,
-                                    tr_ipv6(node_ota_attr->ota_dst_addr.sin6_addr.s6_addr));
+    WARN("Send OTA upgrade packet: %d/%d to: %s\tpkt_crc = 0x%04x", block_seq, node_ota_attr->upgrading_total_block_num,
+                                    tr_ipv6(node_ota_attr->ota_dst_addr.sin6_addr.s6_addr), hdr->pkt_crc);
+    WARN("Send OTA upgrade packet: [%d] = %s", len, tr_bytes(&node_ota_attr->ota_buffer[hdr_len], 16, NULL, 128, DELIM_SPACE | ELLIPSIS_STAR));
 }
 
 void init_fwupgrade_hdr(node_ota_attr_t *node_ota_attr)
@@ -515,6 +517,7 @@ int ota_upgrade_start(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr)
 //    upgrading_ver_num = get_firmware_version();
 //    ota_info.update_soft_vevsion[0] = upgrading_ver_num >> 8;
 //    ota_info.update_soft_vevsion[1] = upgrading_ver_num & 0x00ff;
+    node_ota_attr->upgrading_ver_num = 0x1616;
 
     fragment_info_init(node_ota_attr->image_size, node_ota_attr->upgrading_block_size, node_ota_attr);  // 因为有8个字节的头,所以整个image字节数要+8
 

@@ -47,7 +47,10 @@ void rcp_send_fwupd_request(rcp_fwupd_attr_t* params);
 void *rcp_firmware_update_thread(void *arg);
 void *node_firmware_ota_thread(void *arg);
 
-#define ota_buffer_size (1050)
+#define ota_buffer_size     (1050)
+#define SOCKET_RECV_TIMEOUT 5
+#define OTA_SOCKET_PORT     0x1234
+#define OTA_MULTCAST_HOPS   20
 
 typedef enum {
     OTA_START     = 0,
@@ -56,6 +59,14 @@ typedef enum {
     GET_BLOCK     = 3,
     PUT_BLOCK     = 4   
 } ota_ctl_cmd_t;
+
+typedef enum {
+    SOCKET_OPEN_ERR         = -10,
+    SOCKET_BIND_ERR         = -11,
+    SOCKET_SET_MHOPS_ERR    = -12,
+    SOCKET_RECV_TIMEO_ERR   = -13,
+} ota_error_t;
+
 
 typedef struct block_header {
     uint16_t control_cmd;              
@@ -66,7 +77,7 @@ typedef struct block_header {
 	uint16_t block_total_num;
     uint16_t pkt_len;
     uint16_t checksum;
-} block_header_t;
+} __attribute__((packed)) block_header_t;
 
 typedef struct node_ota_attr {
     uint16_t ota_port_num;

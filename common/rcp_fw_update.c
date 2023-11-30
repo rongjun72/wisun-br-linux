@@ -25,12 +25,15 @@
 #include "common/bus_uart.h"
 #include "utils.h"
 #include "os_types.h"
+#include "common/log_legacy.h"
 #include "common/iobuf.h"
 #include "common/spinel_defs.h"
 #include "common/spinel_buffer.h"
 #include "app_wsbrd/rcp_api.h"
 #include "rcp_fw_update.h"
 #include "app_wsbrd/wsbr.h"
+
+#define TRACE_GROUP "upd"
 
 void rcp_send_fwupd_request(rcp_fwupd_attr_t* params)
 {
@@ -281,11 +284,18 @@ static uint16_t cal_checksum(struct block_header* ptr)
 
 int recv_ota_msg(node_ota_attr_t *node_ota_attr)
 {
-    memset(node_ota_attr->tmp_buffer, 0x00, sizeof(node_ota_attr->tmp_buffer));
+    int ret;
     /* get received content and source address, thread will blocked here untill received from socket */
+    struct timespec read_timeout;
+    read_timeout.tv_sec = SOCKET_RECV_TIMEOUT;
+    ret = setsockopt(node_ota_attr->ota_sid, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout));
+
+    memset(node_ota_attr->tmp_buffer, 0x00, sizeof(node_ota_attr->tmp_buffer));
     socklen_t src_addr_len = sizeof(struct sockaddr_in6);
+    tr_warn("start recvfrom()....");
     int len = recvfrom(node_ota_attr->ota_sid, (void *)node_ota_attr->tmp_buffer, sizeof(node_ota_attr->tmp_buffer), 
                         0, (struct sockaddr *) &node_ota_attr->ota_src_addr, &src_addr_len);
+    tr_warn("get through recvfrom().");
     ERROR_ON(len < 0, "%s: recvfrom: %m", __func__);
     if (len <= 0)
         return SOCKET_RECV_TIMEO_ERR;
@@ -347,12 +357,12 @@ int recv_ota_msg(node_ota_attr_t *node_ota_attr)
                 default:
                     break;
             }
-        }else{
+        } else {
             ERROR("pkt checksum error !!!");
         }
     }
 
-    return 0;
+    return ret;
 }
 
 static int init_ota_socket(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr)
@@ -364,7 +374,7 @@ static int init_ota_socket(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_att
     node_ota_attr->recv_image_flg = true;
     node_ota_attr->ota_dst_addr.sin6_family = AF_INET6;
     node_ota_attr->ota_dst_addr.sin6_port = htons(node_ota_attr->ota_port_num);
-    memcpy((void*)&node_ota_attr->ota_dst_addr.sin6_addr, ctxt->node_ota_address, 16);
+    memcpy((void*)&node_ota_attr->ota_dst_addr.sin6_addr, &ctxt->node_ota_address[0], 16);
 
     node_ota_attr->block_seq = 0;
     node_ota_attr->image_size = 0;
@@ -383,20 +393,31 @@ static int init_ota_socket(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_att
     if (node_ota_attr->ota_sid < 0)
         return SOCKET_OPEN_ERR;
     WARN("Created and opened ipv6 UDP socket with socket_id:%d", node_ota_attr->ota_sid);
-    ret = bind(node_ota_attr->ota_sid, (struct sockaddr *) &node_ota_attr->ota_dst_addr, sizeof(struct sockaddr_in6));
-    ERROR_ON(ret < 0, "%s: bind: %m", __func__);
-    if (node_ota_attr->ota_sid < 0)
-        return SOCKET_BIND_ERR;
-    WARN("Bind multicast address: %s for OTA transactions", tr_ipv6(&ctxt->node_ota_address[0]));
+
+    //ret = bind(node_ota_attr->ota_sid, (struct sockaddr *) &node_ota_attr->ota_dst_addr, sizeof(struct sockaddr_in6));
+    //ERROR_ON(ret < 0, "%s: bind: %m", __func__);
+    //if (node_ota_attr->ota_sid < 0)
+    //    return SOCKET_BIND_ERR;
+    //WARN("Bind multicast address: %s for OTA transactions", tr_ipv6(&ctxt->node_ota_address[0]));
 
     ret = setsockopt(node_ota_attr->ota_sid, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, (char *)&node_ota_attr->ota_multicast_hops, sizeof(node_ota_attr->ota_multicast_hops));
     ERROR_ON(ret < 0, "ipv6 multicast hops \"%s\": %m", __func__);
-    if (node_ota_attr->ota_sid < 0)
-        return SOCKET_SET_MHOPS_ERR;
+    //if (node_ota_attr->ota_sid < 0)
+    //    return SOCKET_SET_MHOPS_ERR;
     
     struct timespec read_timeout;
     read_timeout.tv_sec = SOCKET_RECV_TIMEOUT;
-    ret = setsockopt(node_ota_attr->ota_sid, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof read_timeout);
+    ret = setsockopt(node_ota_attr->ota_sid, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout));
+
+    struct ipv6_mreq mreq;
+    mreq.ipv6mr_interface = 0;
+    memcpy(&mreq.ipv6mr_multiaddr, &ctxt->node_ota_address[0], 16);
+
+    ret = setsockopt(node_ota_attr->ota_sid, IPPROTO_IPV6, IPV6_JOIN_GROUP, &mreq, sizeof mreq);
+    WARN_ON(ret < 0, "ipv6 join group \"%s\": %m", __func__);
+    WARN("Join multicast group: %s for OTA transactions", tr_ipv6(&ctxt->node_ota_address[0]));
+
+
     return 0;
 }
 
@@ -412,6 +433,8 @@ void fragment_info_init(uint32_t image_size, uint16_t block_unit, node_ota_attr_
         node_ota_attr->upgrading_total_block_num = quotient + 1;
         node_ota_attr->upgrading_last_block_size = remainder;
     }
+    WARN("image_size = %d, block_unit = %d, block_num = %d, last_block_size = %d", image_size, 
+        block_unit, node_ota_attr->upgrading_total_block_num, node_ota_attr->upgrading_last_block_size);
 }
 
 uint8_t *read_ota_file(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr)
@@ -460,12 +483,16 @@ void send_ota_data(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr, uint1
     hdr->block_seq_num = block_seq;
     hdr->pkt_len       = len + sizeof(struct block_header);
     hdr->checksum      = cal_checksum(hdr);
+    WARN("cal_checksum() = 0x%04x", hdr->checksum);
     
-    memcpy(node_ota_attr->ota_buffer, (char*)hdr, sizeof(struct block_header));
+    memcpy(&node_ota_attr->ota_buffer[0], (char*)hdr, sizeof(struct block_header));
+    WARN("header[%d] = %s", (int)sizeof(struct block_header), tr_bytes((void*)hdr, 
+                        sizeof(struct block_header), NULL, 128, DELIM_SPACE | ELLIPSIS_STAR));
     //memcpy((void*)&node_ota_attr->ota_dst_addr.sin6_addr, ctxt->node_ota_address, 16);
-    WARN("Send OTA upgrade packet: %d/%d", block_seq, node_ota_attr->upgrading_total_block_num);
-    sendto(node_ota_attr->ota_sid, node_ota_attr->ota_buffer, (len+sizeof(struct block_header)), 0, 
+    sendto(node_ota_attr->ota_sid, &node_ota_attr->ota_buffer[0], (10+sizeof(struct block_header)), 0, 
                     (struct sockaddr *) &node_ota_attr->ota_dst_addr, sizeof(struct sockaddr_in6));                                
+    WARN("Send OTA upgrade packet: %d/%d to: %s", block_seq, node_ota_attr->upgrading_total_block_num,
+                                    tr_ipv6(node_ota_attr->ota_dst_addr.sin6_addr.s6_addr));
 }
 
 void init_fwupgrade_hdr(node_ota_attr_t *node_ota_attr)
@@ -498,11 +525,15 @@ int ota_upgrade_start(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr)
     for(node_ota_attr->block_seq = 0; node_ota_attr->block_seq < node_ota_attr->upgrading_total_block_num; node_ota_attr->block_seq++)
     {
         uint32_t read_addr = node_ota_attr->block_seq*node_ota_attr->upgrading_block_size;
+        WARN("Binary read address = %d*%d = %d", node_ota_attr->block_seq, 
+                                    node_ota_attr->upgrading_block_size, read_addr);
         memset(node_ota_attr->ota_buffer, 0x00, sizeof(node_ota_attr->ota_buffer));
 
         if(node_ota_attr->block_seq == (node_ota_attr->upgrading_total_block_num - 1)){
             memcpy(&node_ota_attr->ota_buffer[node_ota_attr->block_hdr_size], 
-                   &node_ota_attr->ota_upgrade_array[read_addr], node_ota_attr->upgrading_last_block_size);
+                    &node_ota_attr->ota_upgrade_array[read_addr], node_ota_attr->upgrading_last_block_size);
+            WARN("Copy ota_upgrade_array[%d] to ota_buffer[%d], size = %d", read_addr, 
+                    node_ota_attr->block_hdr_size, node_ota_attr->upgrading_last_block_size);
             send_ota_data(ctxt, node_ota_attr, node_ota_attr->block_seq, node_ota_attr->upgrading_last_block_size);
             /* wait for ota response from node */
             ret = recv_ota_msg(node_ota_attr);
@@ -511,7 +542,9 @@ int ota_upgrade_start(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr)
         }
         else{
             memcpy(&node_ota_attr->ota_buffer[node_ota_attr->block_hdr_size], 
-               &node_ota_attr->ota_upgrade_array[read_addr], node_ota_attr->upgrading_block_size);
+                    &node_ota_attr->ota_upgrade_array[read_addr], node_ota_attr->upgrading_block_size);
+            WARN("Copy ota_upgrade_array[%d] to ota_buffer[%d], size = %d", read_addr, 
+                    node_ota_attr->block_hdr_size, node_ota_attr->upgrading_block_size);
             send_ota_data(ctxt, node_ota_attr, node_ota_attr->block_seq, node_ota_attr->upgrading_block_size);
             /* wait for ota response from node */
             ret = recv_ota_msg(node_ota_attr);

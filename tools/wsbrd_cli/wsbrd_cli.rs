@@ -683,18 +683,19 @@ fn revoke_group_keys(dbus_user: bool, arg0: String, arg1: String) -> Result<(), 
     let temp: Vec<String> = arg0.to_string().split(":").map(|s| s.parse().expect("parse error")).collect();
     let gtk_keys: Vec<u8> = temp.iter().map(|x| u8::from_str_radix(x.as_str(), 16).unwrap()).collect();
     if gtk_keys.len() != 16 {
-        println!("Expected length of UDP tails is 10 but input: {}", gtk_keys.len());
+        println!("Expected length of UDP tails is 16 but input: {}", gtk_keys.len());
     }
 
     let temp: Vec<String> = arg1.to_string().split(":").map(|s| s.parse().expect("parse error")).collect();
     let lgtk_keys: Vec<u8> = temp.iter().map(|x| u8::from_str_radix(x.as_str(), 16).unwrap()).collect();
     if lgtk_keys.len() != 16 {
-        println!("Expected length of UDP tails is 10 but input: {}", lgtk_keys.len());
+        println!("Expected length of UDP tails is 16 but input: {}", lgtk_keys.len());
     }
 
     let _ret = dbus_proxy.revoke_group_keys(gtk_keys, lgtk_keys);
 
-    Ok(())}
+    Ok(())
+}
 
 fn create_udp_socket(dbus_user: bool, arg0: u16) -> Result<(), Box<dyn std::error::Error>> {
     let dbus_conn;

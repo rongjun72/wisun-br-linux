@@ -86,6 +86,7 @@ typedef struct node_ota_attr {
     struct sockaddr_in6 ota_src_addr;
     uint8_t recv_image_flg;
     int ota_sid;
+    int ota_recv_fd;
 
     uint8_t ota_upgrade_flg;// = 1;                        
     uint16_t block_seq;//       = 0x00;                                              

@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <termios.h>
 #include <sys/file.h>
+#include <sys/epoll.h>
 #include <errno.h>
 #include <time.h>
 #include <limits.h>
@@ -285,10 +286,17 @@ static uint16_t cal_checksum(struct block_header* ptr)
 int recv_ota_msg(node_ota_attr_t *node_ota_attr)
 {
     int ret;
+    struct epoll_event events[2];
     /* get received content and source address, thread will blocked here untill received from socket */
-    struct timespec read_timeout;
-    read_timeout.tv_sec = SOCKET_RECV_TIMEOUT;
-    ret = setsockopt(node_ota_attr->ota_sid, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout));
+    //struct timespec read_timeout;
+    //read_timeout.tv_sec = SOCKET_RECV_TIMEOUT;
+    //ret = setsockopt(node_ota_attr->ota_sid, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout));
+
+    ret = epoll_wait(node_ota_attr->ota_recv_fd, events, 2, 10);
+    if (ret == 0) {
+        tr_warn("timeout wait for 10ms...");
+        return SOCKET_RECV_TIMEO_ERR;
+    }
 
     memset(node_ota_attr->tmp_buffer, 0x00, sizeof(node_ota_attr->tmp_buffer));
     socklen_t src_addr_len = sizeof(struct sockaddr_in6);
@@ -540,8 +548,9 @@ int ota_upgrade_start(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr)
             send_ota_data(ctxt, node_ota_attr, node_ota_attr->block_seq, node_ota_attr->upgrading_last_block_size);
             /* wait for ota response from node */
             ret = recv_ota_msg(node_ota_attr);
-            if (ret < 0)
-                return ret;
+            //if (ret < 0)
+            //    return ret;
+            usleep(200000);
         }
         else{
             memcpy(&node_ota_attr->ota_buffer[node_ota_attr->block_hdr_size], 
@@ -551,10 +560,12 @@ int ota_upgrade_start(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr)
             send_ota_data(ctxt, node_ota_attr, node_ota_attr->block_seq, node_ota_attr->upgrading_block_size);
             /* wait for ota response from node */
             ret = recv_ota_msg(node_ota_attr);
-            if (ret < 0)
-                return ret;
+            //if (ret < 0)
+            //    return ret;
+            usleep(200000);
         }
     }
+    (void) ret;
     return 0;
 }
 
@@ -585,12 +596,24 @@ void *node_firmware_ota_thread(void *arg)
         goto end_thread;
     node_ota_attr->ota_upgrade_array = ota_upgrade_array;
 
+    /* create a epoll file descriptor for ota receive */
+    node_ota_attr->ota_recv_fd = epoll_create(2);
+    struct epoll_event ev;
+    // set file descriptor for event to be handled
+    ev.data.fd = node_ota_attr->ota_sid;
+    // set event type to be handled
+    ev.events = EPOLLIN;
+    // register epoll event
+    epoll_ctl(node_ota_attr->ota_recv_fd, EPOLL_CTL_ADD, node_ota_attr->ota_sid, &ev);
+
     ota_upgrade_start(ctxt, node_ota_attr);
     
 
 
 end_thread:
     WARN("OTA upgrade thread ended here...");
+    close(node_ota_attr->ota_recv_fd);
+    close(node_ota_attr->ota_sid);
     free(ota_upgrade_array);
     free(node_ota_attr);
     pthread_exit(NULL);

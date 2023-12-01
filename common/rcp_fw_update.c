@@ -560,7 +560,7 @@ int ota_upgrade_start(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr)
                     node_ota_attr->block_hdr_size, node_ota_attr->upgrading_last_block_size);
             send_ota_data(ctxt, node_ota_attr, node_ota_attr->block_seq, node_ota_attr->upgrading_last_block_size);
             /* sleep 150ms to send next block */
-            usleep(150000);
+            usleep(180000);
         //} else if (node_ota_attr->block_seq == 7) {
         //    /* for debug: do not send this block_seq, and wait for node to send GET_BLK request */
         //    ;
@@ -571,7 +571,7 @@ int ota_upgrade_start(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr)
                     node_ota_attr->block_hdr_size, node_ota_attr->upgrading_block_size);
             send_ota_data(ctxt, node_ota_attr, node_ota_attr->block_seq, node_ota_attr->upgrading_block_size);
             /* sleep 150ms to send next block */
-            usleep(150000);
+            usleep(180000);
         }
     }
     (void) ret;

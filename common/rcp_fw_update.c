@@ -556,8 +556,8 @@ int ota_upgrade_start(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr)
         if(node_ota_attr->block_seq == (node_ota_attr->upgrading_total_block_num - 1)){
             memcpy(&node_ota_attr->ota_buffer[node_ota_attr->block_hdr_size], 
                     &node_ota_attr->ota_upgrade_array[read_addr], node_ota_attr->upgrading_last_block_size);
-            WARN("Copy ota_upgrade_array[%d] to ota_buffer[%d], size = %d", read_addr, 
-                    node_ota_attr->block_hdr_size, node_ota_attr->upgrading_last_block_size);
+            //WARN("Copy ota_upgrade_array[%d] to ota_buffer[%d], size = %d", read_addr, 
+            //        node_ota_attr->block_hdr_size, node_ota_attr->upgrading_last_block_size);
             send_ota_data(ctxt, node_ota_attr, node_ota_attr->block_seq, node_ota_attr->upgrading_last_block_size);
             /* sleep 150ms to send next block */
             usleep(180000);
@@ -567,8 +567,8 @@ int ota_upgrade_start(struct wsbr_ctxt *ctxt, node_ota_attr_t *node_ota_attr)
         } else {
             memcpy(&node_ota_attr->ota_buffer[node_ota_attr->block_hdr_size], 
                     &node_ota_attr->ota_upgrade_array[read_addr], node_ota_attr->upgrading_block_size);
-            WARN("Copy ota_upgrade_array[%d] to ota_buffer[%d], size = %d", read_addr, 
-                    node_ota_attr->block_hdr_size, node_ota_attr->upgrading_block_size);
+            //WARN("Copy ota_upgrade_array[%d] to ota_buffer[%d], size = %d", read_addr, 
+            //        node_ota_attr->block_hdr_size, node_ota_attr->upgrading_block_size);
             send_ota_data(ctxt, node_ota_attr, node_ota_attr->block_seq, node_ota_attr->upgrading_block_size);
             /* sleep 150ms to send next block */
             usleep(180000);

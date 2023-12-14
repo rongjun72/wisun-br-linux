@@ -388,8 +388,8 @@ int8_t ws_pae_controller_border_router_addr_read(struct net_if *interface_ptr, u
  * \return >= 0 success
  *
  */
-int8_t ws_pae_controller_gtk_update(int8_t interface_id, uint8_t *gtk[4]);
-int8_t ws_pae_controller_lgtk_update(int8_t interface_id, uint8_t *lgtk[3]);
+int8_t ws_pae_controller_gtk_update(int8_t interface_id, uint8_t *gtk[GTK_NUM]);
+int8_t ws_pae_controller_lgtk_update(int8_t interface_id, uint8_t *lgtk[LGTK_NUM]);
 
 /**
  * ws_pae_controller_next_gtk_update update next GTKs used during GTK lifecycle (test interface)
@@ -401,8 +401,8 @@ int8_t ws_pae_controller_lgtk_update(int8_t interface_id, uint8_t *lgtk[3]);
  * \return >= 0 success
  *
  */
-int8_t ws_pae_controller_next_gtk_update(int8_t interface_id, uint8_t *gtk[4]);
-int8_t ws_pae_controller_next_lgtk_update(int8_t interface_id, uint8_t *lgtk[3]);
+int8_t ws_pae_controller_next_gtk_update(int8_t interface_id, uint8_t *gtk[GTK_NUM]);
+int8_t ws_pae_controller_next_lgtk_update(int8_t interface_id, uint8_t *lgtk[LGTK_NUM]);
 
 /**
  * ws_pae_controller_key_lifetime_update update key lifetime

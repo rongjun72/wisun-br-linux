@@ -28,6 +28,7 @@
 #include "common/utils.h"
 #include "stack/mac/mac_common_defines.h"
 #include "stack/ws_management_api.h"
+#include "stack/source/security/protocols/sec_prot_keys.h"
 
 #include "6lowpan/ws/ws_common_defines.h"
 
@@ -435,7 +436,7 @@ void ws_wp_nested_panver_write(struct iobuf_write *buf, uint8_t pan_version)
 }
 
 void ws_wp_nested_gtkhash_write(struct iobuf_write *buf,
-                                const gtkhash_t gtkhash[4])
+                                const gtkhash_t gtkhash[GTK_NUM])
 {
     int offset;
 
@@ -838,7 +839,7 @@ bool ws_wp_nested_panver_read(const uint8_t *data, uint16_t length, uint16_t *pa
     return !ie_buf.err;
 }
 
-bool ws_wp_nested_gtkhash_read(const uint8_t *data, uint16_t length, gtkhash_t gtkhash[4])
+bool ws_wp_nested_gtkhash_read(const uint8_t *data, uint16_t length, gtkhash_t gtkhash[GTK_NUM])
 {
     struct iobuf_read ie_buf;
 

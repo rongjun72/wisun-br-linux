@@ -21,6 +21,7 @@
 #include <linux/if.h>
 
 #include "stack/net_interface.h"
+#include "stack/source/security/protocols/sec_prot_keys.h"
 
 // This struct is filled by parse_commandline() and never modified after.
 struct wsbrd_conf {
@@ -61,8 +62,8 @@ struct wsbrd_conf {
     bool storage_delete;
     arm_certificate_entry_s tls_own;
     arm_certificate_entry_s tls_ca;
-    uint8_t ws_gtk[4][16];
-    bool ws_gtk_force[4];
+    uint8_t ws_gtk[GTK_NUM][16];
+    bool ws_gtk_force[GTK_NUM];
     uint8_t ws_lgtk[4][16];
     bool ws_lgtk_force[4];
     struct sockaddr_storage radius_server;

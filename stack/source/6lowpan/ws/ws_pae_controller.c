@@ -76,7 +76,7 @@ typedef struct pae_controller_gtk {
     sec_prot_gtk_keys_t gtks;                                        /**< GTKs */
     sec_prot_gtk_keys_t next_gtks;                                   /**< Next GTKs */
     int8_t gtk_index;                                                /**< GTK index */
-    gtkhash_t gtkhash[4];                                            /**< GTK hashes */
+    gtkhash_t gtkhash[GTK_NUM];                                            /**< GTK hashes */
     nw_key_t nw_key[GTK_NUM];                                        /**< Currently active network keys (on MAC) */
     frame_counters_t frame_counters;                                 /**< Frame counters */
     bool gtks_set : 1;                                               /**< GTKs are set */
@@ -1002,7 +1002,7 @@ static int8_t ws_pae_controller_nvm_nw_info_write(struct net_if *interface_ptr,
             ws_pae_controller_gak_from_gtk(gak, gtks->gtk[i].key, network_name);
             str_key(gtks->gtk[i].key, GTK_LEN, str_buf, sizeof(str_buf));
             fprintf(info->file, "gtk[%d] = %s\n", i, str_buf);
-            fprintf(info->file, "gtk[%d].lifetime = %llu\n", i, gtks->gtk[i].lifetime + current_time);
+            fprintf(info->file, "gtk[%d].lifetime = %llu\n", i, gtks->gtk[i].lifetime + current_time);// + current_time);
             fprintf(info->file, "gtk[%d].status = %s\n", i, val_to_str(gtks->gtk[i].status, valid_gtk_status, NULL));
             fprintf(info->file, "gtk[%d].install_order = %u\n", i, gtks->gtk[i].install_order);
             fprintf(info->file, "# For information:\n");
@@ -1021,7 +1021,7 @@ static int8_t ws_pae_controller_nvm_nw_info_write(struct net_if *interface_ptr,
             ws_pae_controller_gak_from_gtk(gak, lgtks->gtk[i].key, network_name);
             str_key(lgtks->gtk[i].key, GTK_LEN, str_buf, sizeof(str_buf));
             fprintf(info->file, "lgtk[%d] = %s\n", i, str_buf);
-            fprintf(info->file, "lgtk[%d].lifetime = %llu\n", i, lgtks->gtk[i].lifetime + current_time);
+            fprintf(info->file, "lgtk[%d].lifetime = %llu\n", i, lgtks->gtk[i].lifetime + current_time);// + current_time);
             fprintf(info->file, "lgtk[%d].status = %s\n", i, val_to_str(lgtks->gtk[i].status, valid_gtk_status, NULL));
             fprintf(info->file, "lgtk[%d].install_order = %u\n", i, lgtks->gtk[i].install_order);
             fprintf(info->file, "# For information:\n");

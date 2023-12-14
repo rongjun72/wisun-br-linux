@@ -20,6 +20,7 @@
 #define NET_WS_TEST_H_
 #include <stdint.h>
 #include <stdbool.h>
+#include "stack/source/security/protocols/sec_prot_keys.h"
 
 /* Prevent this file being inserted in public Doxygen generated file
  * this is not part of our external API. */
@@ -89,7 +90,7 @@ int ws_test_max_child_count_set(int8_t interface_id, uint16_t child_count);
  * \return 0                         GTKs are set
  * \return <0                        GTK set has failed
  */
-int ws_test_gtk_set(int8_t interface_id, uint8_t *gtk[4]);
+int ws_test_gtk_set(int8_t interface_id, uint8_t *gtk[GTK_NUM]);
 int ws_test_lgtk_set(int8_t interface_id, uint8_t *lgtk[3]);
 
 /**
@@ -120,7 +121,7 @@ int ws_test_active_key_set(int8_t interface_id, uint8_t index);
  * \return 0                         GTKs are set
  * \return <0                        GTK set has failed
  */
-int ws_test_next_gtk_set(int8_t interface_id, uint8_t *gtk[4]);
+int ws_test_next_gtk_set(int8_t interface_id, uint8_t *gtk[GTK_NUM]);
 int ws_test_next_lgtk_set(int8_t interface_id, uint8_t *gtk[3]);
 
 /**

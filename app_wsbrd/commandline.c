@@ -473,7 +473,7 @@ static void conf_set_denied_macaddr(struct wsbrd_conf *config, const struct stor
 
 static void conf_set_gtk(struct wsbrd_conf *config, const struct storage_parse_info *info, void *raw_dest, const void *raw_param)
 {
-    int max_key_index = (raw_dest == config->ws_lgtk) ? 3 : 4;
+    int max_key_index = (raw_dest == config->ws_lgtk) ? LGTK_NUM : GTK_NUM;
     uint8_t (*dest)[16] = raw_dest;
 
     BUG_ON(raw_param);

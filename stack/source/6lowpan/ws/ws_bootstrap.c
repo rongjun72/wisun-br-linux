@@ -163,12 +163,14 @@ void test_clean_mac_neighbor_table(struct net_if *interface, const uint8_t *mac_
     mac_neighbor_table_entry_t *neighbor_buffer = NULL;
 
     neighbor_buffer = mac_neighbor_table_address_discover(interface->mac_parameters.mac_neighbor_table, mac_64, ADDR_802_15_4_LONG);
+    tr_info("----check if mac_64[%s] existed in neighbour table: %s", trace_array(mac_64, 8), neighbor_buffer? "Yes" : "No");
    
     if (neighbor_buffer) {
         ws_neighbor_class_entry_get(&interface->ws_info.neighbor_storage, neighbor_buffer->index);
         rcp_set_neighbor(neighbor_buffer->index, mac_helper_panid_get(interface), neighbor_buffer->mac16, neighbor_buffer->mac64, 0);
         // mac_helper_devicetable_set(&device_desc, interface, neighbor_buffer->index, interface->mac_parameters->mac_default_key_index, true);
         mac_neighbor_table_neighbor_remove(interface->mac_parameters.mac_neighbor_table, neighbor_buffer); 
+        etx_neighbor_remove(interface->id, neighbor_buffer->index, neighbor_buffer->mac64);
         ws_neighbor_class_entry_remove(&interface->ws_info.neighbor_storage, neighbor_buffer->index);
         tr_info("-----------------MAC address: %s clean registered", trace_array(mac_64, 8));
     }

@@ -22,6 +22,7 @@
 #include <stdbool.h>
 #include "common/int24.h"
 #include "6lowpan/ws/ws_common_defines.h"
+#include "stack/source/security/protocols/sec_prot_keys.h"
 
 struct iobuf_write;
 struct ws_pan_information;
@@ -131,7 +132,7 @@ void       ws_wp_nested_bs_write(struct iobuf_write *buf, const struct ws_hoppin
 void      ws_wp_nested_pan_write(struct iobuf_write *buf, uint16_t pan_size, uint16_t routing_cost, uint8_t tps_version);
 void  ws_wp_nested_netname_write(struct iobuf_write *buf, uint8_t *network_name, uint8_t network_name_length);
 void   ws_wp_nested_panver_write(struct iobuf_write *buf, uint8_t pan_version);
-void  ws_wp_nested_gtkhash_write(struct iobuf_write *buf, const gtkhash_t gtkhash[4]);
+void  ws_wp_nested_gtkhash_write(struct iobuf_write *buf, const gtkhash_t gtkhash[GTK_NUM]);
 uint16_t ws_wp_nested_hopping_schedule_length(struct ws_hopping_schedule *hopping_schedule, bool unicast_schedule);
 /* Wi-SUN FAN 1.1 */
 void      ws_wp_nested_pom_write(struct iobuf_write *buf, uint8_t phy_op_mode_number, uint8_t *phy_operating_modes, uint8_t mdr_command_capable);
@@ -146,7 +147,7 @@ bool ws_wp_nested_bs_read(const uint8_t *data, uint16_t length, struct ws_bs_ie 
 bool ws_wp_nested_pan_read(const uint8_t *data, uint16_t length, struct ws_pan_information *pan_configuration);
 bool ws_wp_nested_panver_read(const uint8_t *data, uint16_t length, uint16_t *pan_version);
 bool ws_wp_nested_netname_read(const uint8_t *data, uint16_t length, ws_wp_netname_t *network_name);
-bool ws_wp_nested_gtkhash_read(const uint8_t *data, uint16_t length, gtkhash_t gtkhash[4]);
+bool ws_wp_nested_gtkhash_read(const uint8_t *data, uint16_t length, gtkhash_t gtkhash[GTK_NUM]);
 /* Wi-SUN FAN 1.1 */
 bool ws_wp_nested_pom_read(const uint8_t *data, uint16_t length, struct ws_pom_ie *pom_ie);
 bool ws_wp_nested_lbats_read(const uint8_t *data, uint16_t length, struct ws_lbats_ie *lbats_ie);

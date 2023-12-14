@@ -44,6 +44,7 @@
 #include "stack/source/core/ns_address_internal.h"
 #include "stack/source/nwk_interface/protocol.h"
 #include "stack/source/security/kmp/kmp_socket_if.h"
+#include "stack/source/security/protocols/sec_prot_keys.h"
 
 #include "mbedtls_config_check.h"
 #include "commandline_values.h"
@@ -135,7 +136,7 @@ static void ws_enable_mac_filtering(struct wsbr_ctxt *ctxt)
     for (i = 0; i < ctxt->config.ws_allowed_mac_address_count; i++)
         rcp_add_mac_filter_entry(ctxt->config.ws_allowed_mac_addresses[i], true);
     for (i = 0; i < ctxt->config.ws_denied_mac_address_count; i++)
-        rcp_add_mac_filter_entry(ctxt->config.ws_allowed_mac_addresses[i], false);
+        rcp_add_mac_filter_entry(ctxt->config.ws_denied_mac_addresses[i], false);
 }
 
 static int wsbr_configure_ws_sect_time(struct wsbr_ctxt *ctxt)
@@ -164,7 +165,7 @@ static void wsbr_configure_ws(struct wsbr_ctxt *ctxt)
     int ret, i;
     int fixed_channel = get_fixed_channel(ctxt->config.ws_allowed_channels);
     uint8_t channel_function = (fixed_channel == 0xFFFF) ? WS_DH1CF : WS_FIXED_CHANNEL;
-    uint8_t *gtks[4] = { };
+    uint8_t *gtks[GTK_NUM] = { };
     bool gtk_force = false;
     uint8_t *lgtks[3] = { };
     bool lgtk_force = false;

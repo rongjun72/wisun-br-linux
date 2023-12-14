@@ -61,7 +61,7 @@ int ws_test_max_child_count_set(int8_t interface_id, uint16_t child_count)
     return 0;
 }
 
-int ws_test_gtk_set(int8_t interface_id, uint8_t *gtk[4])
+int ws_test_gtk_set(int8_t interface_id, uint8_t *gtk[GTK_NUM])
 {
     return ws_pae_controller_gtk_update(interface_id, gtk);
 }
@@ -76,7 +76,7 @@ int ws_test_active_key_set(int8_t interface_id, uint8_t index)
     return ws_pae_controller_active_key_update(interface_id, index);
 }
 
-int ws_test_next_gtk_set(int8_t interface_id, uint8_t *gtk[4])
+int ws_test_next_gtk_set(int8_t interface_id, uint8_t *gtk[GTK_NUM])
 {
     return ws_pae_controller_next_gtk_update(interface_id, gtk);
 }

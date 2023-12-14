@@ -670,7 +670,7 @@ static void ws_bootstrap_ffn_pan_config_lfn_analyze(struct net_if *cur, const st
 
 static void ws_bootstrap_ffn_pan_config_analyse(struct net_if *cur, const struct mcps_data_ind *data, const struct mcps_data_ie_list *ie_ext, ws_utt_ie_t *ws_utt, ws_us_ie_t *ws_us)
 {
-    gtkhash_t gtkhash[4];
+    gtkhash_t gtkhash[GTK_NUM];
     uint16_t pan_version;
     ws_bs_ie_t ws_bs_ie;
     ws_bt_ie_t ws_bt_ie;

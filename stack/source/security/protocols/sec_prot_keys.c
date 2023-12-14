@@ -40,6 +40,7 @@
 #include "security/protocols/sec_prot_keys.h"
 
 #define TRACE_GROUP "spke"
+#define ENABLE_DEBUG_INFO_OUTPUT 0
 
 sec_prot_keys_t *sec_prot_keys_create(sec_prot_gtk_keys_t *gtks, sec_prot_gtk_keys_t *lgtks, const sec_prot_certs_t *certs)
 {
@@ -452,6 +453,10 @@ int8_t sec_prot_keys_gtk_set(sec_prot_gtk_keys_t *gtks, uint8_t index, const uin
 
     // If same GTK is given again, do not update
     if (gtks->gtk[index].set && memcmp(gtks->gtk[index].key, gtk, GTK_LEN) == 0) {
+#if ENABLE_DEBUG_INFO_OUTPUT
+        tr_warn("--------neglict because: gtk[%d].set = %d \t  memcmp(gtks->gtk[index].key, gtk) = %d", 
+                                index, gtks->gtk[index].set, memcmp(gtks->gtk[index].key, gtk, GTK_LEN));
+#endif
         return -1;
     }
 
@@ -463,9 +468,18 @@ int8_t sec_prot_keys_gtk_set(sec_prot_gtk_keys_t *gtks, uint8_t index, const uin
     gtks->gtk[index].status = GTK_STATUS_NEW;
     gtks->gtk[index].install_order = install_order;
     memcpy(gtks->gtk[index].key, gtk, GTK_LEN);
-    
-    tr_info("----set gdk: %s", trace_array(gtks->gtk[index].key, GTK_LEN));
 
+#if ENABLE_DEBUG_INFO_OUTPUT    
+    uint8_t temp_array[GTK_NUM];
+    tr_info("----set gdk: %s", trace_array(gtks->gtk[index].key, GTK_LEN));
+    tr_info("------------------------------------------------------------");
+    for (uint8_t i = 0; i < GTK_NUM; i++) 
+        temp_array[i] = sec_prot_keys_gtk_is_set(gtks, i);
+    tr_warn("------sec_prot_keys_gtk_is_set[0-3d] = %s", tr_bytes(&temp_array[0], GTK_NUM, NULL, 128, DELIM_SPACE | ELLIPSIS_STAR));
+    for (uint8_t i = 0; i < GTK_NUM; i++) 
+        temp_array[i] = gtks->gtk[i].install_order;
+    tr_warn("------gtks->gtk[0-3].install_order   = %s", tr_bytes(&temp_array[0], GTK_NUM, NULL, 128, DELIM_SPACE | ELLIPSIS_STAR));
+#endif //ENABLE_DEBUG_INFO_OUTPUT
     gtks->updated = true;
 
     return 0;
@@ -834,7 +848,20 @@ int8_t sec_prot_keys_gtk_install_order_second_index_get(sec_prot_gtk_keys_t *gtk
 
 void sec_prot_keys_gtk_install_order_update(sec_prot_gtk_keys_t *gtks)
 {
-    int8_t ordered_indexes[4] = {-1, -1, -1, -1};
+    int8_t ordered_indexes[GTK_NUM] = {-1, -1, -1, -1};
+#if ENABLE_DEBUG_INFO_OUTPUT
+    tr_warn("--------gtk_install_order_update:");
+    uint8_t temp_array[GTK_NUM];
+
+    for (uint8_t i = 0; i < GTK_NUM; i++) 
+        temp_array[i] = sec_prot_keys_gtk_is_set(gtks, i);
+    tr_warn("------sec_prot_keys_gtk_is_set[0-3d] = %s", tr_bytes(&temp_array[0], GTK_NUM, NULL, 128, DELIM_SPACE | ELLIPSIS_STAR));
+    for (uint8_t i = 0; i < GTK_NUM; i++) 
+        temp_array[i] = gtks->gtk[i].install_order;
+    tr_warn("------gtks->gtk[0-3].install_order   = %s", tr_bytes(&temp_array[0], GTK_NUM, NULL, 128, DELIM_SPACE | ELLIPSIS_STAR));
+    tr_warn("-----------------------------------------------------");
+#endif //ENABLE_DEBUG_INFO_OUTPUT    
+
 
     // Creates table of ordered indexes
     for (uint8_t i = 0; i < GTK_NUM; i++) {
@@ -842,6 +869,12 @@ void sec_prot_keys_gtk_install_order_update(sec_prot_gtk_keys_t *gtks)
             ordered_indexes[gtks->gtk[i].install_order] = i;
         }
     }
+
+#if ENABLE_DEBUG_INFO_OUTPUT
+    for (uint8_t i = 0; i < GTK_NUM; i++)
+        temp_array[i] = ordered_indexes[i];
+    tr_warn("------ordered_indexes[0-3]           = %s", tr_bytes(&temp_array[0], GTK_NUM, NULL, 128, DELIM_SPACE | ELLIPSIS_STAR));
+#endif //ENABLE_DEBUG_INFO_OUTPUT    
 
     // Updates indexes of the GTKs
     uint8_t new_install_order = 0;
@@ -853,6 +886,12 @@ void sec_prot_keys_gtk_install_order_update(sec_prot_gtk_keys_t *gtks)
             gtks->gtk[ordered_indexes[i]].install_order = new_install_order++;
         }
     }
+
+#if ENABLE_DEBUG_INFO_OUTPUT    
+    for (uint8_t i = 0; i < GTK_NUM; i++) 
+        temp_array[i] = gtks->gtk[i].install_order;
+    tr_warn("------gtks->gtk[0-3].install_order   = %s", tr_bytes(&temp_array[0], GTK_NUM, NULL, 128, DELIM_SPACE | ELLIPSIS_STAR));
+#endif //ENABLE_DEBUG_INFO_OUTPUT    
 }
 
 int8_t sec_prot_keys_gtk_install_index_get(sec_prot_gtk_keys_t *gtks, bool is_lgtk)

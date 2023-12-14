@@ -74,6 +74,10 @@ static void ws_pae_timers_calculate(struct sec_timer_gtk_cfg *timer_gtk_settings
 {
     uint32_t gtk_revocation_lifetime = timer_gtk_settings->expire_offset / timer_gtk_settings->revocat_lifetime_reduct;
     uint32_t new_gtk_activation_time = timer_gtk_settings->expire_offset / timer_gtk_settings->new_act_time;
+    ////////tr_warn("gtk_revocation_lifetime = expire_offset/revocat_lifetime_reduct = %d / %d = %d", timer_gtk_settings->expire_offset, 
+    ////////                                            timer_gtk_settings->revocat_lifetime_reduct, gtk_revocation_lifetime);
+    ////////tr_warn("new_gtk_activation_time = expire_offset/new_act_time = %d / %d = %d", timer_gtk_settings->expire_offset, 
+    ////////                                            timer_gtk_settings->new_act_time, new_gtk_activation_time);
 
     uint32_t time_to_gtk_update = gtk_revocation_lifetime;
     if (gtk_revocation_lifetime > new_gtk_activation_time) {
@@ -116,12 +120,24 @@ bool ws_pae_timers_gtk_new_install_required(struct sec_timer_gtk_cfg *timer_gtk_
 {
     uint32_t gtk_new_install_req_seconds = timer_gtk_cfg->expire_offset - timer_gtk_cfg->new_install_req * timer_gtk_cfg->expire_offset / 100;
 
+    ////////bool gtk_new_install_required = timer_gtk_cfg->new_install_req > 0 && seconds < gtk_new_install_req_seconds;
+    ////////if (seconds%20 == 0 || gtk_new_install_required) {
+    ////////    tr_info("-----check if gtk new install required: (%d >? 0 && %d <? %d) = %s", timer_gtk_cfg->new_install_req, seconds, gtk_new_install_req_seconds, 
+    ////////            gtk_new_install_required ? "True": "False");
+    ////////}
+
     return timer_gtk_cfg->new_install_req > 0 && seconds < gtk_new_install_req_seconds;
 }
 
 bool ws_pae_timers_gtk_new_activation_time(struct sec_timer_gtk_cfg *timer_gtk_cfg, uint32_t seconds)
 {
     uint32_t gtk_gtk_new_activation_time_seconds = timer_gtk_cfg->expire_offset / timer_gtk_cfg->new_act_time;
+
+    ////////bool gtk_new_activation = seconds < gtk_gtk_new_activation_time_seconds;
+    ////////if (seconds%20 == 0 || gtk_new_activation) {
+    ////////    tr_info("-----check if timers gtk new atctivate: (%d <? %d) = %s", seconds, gtk_gtk_new_activation_time_seconds, 
+    ////////                        gtk_new_activation ? "True" : "False");
+    ////////}
 
     if (seconds < gtk_gtk_new_activation_time_seconds) {
         return true;

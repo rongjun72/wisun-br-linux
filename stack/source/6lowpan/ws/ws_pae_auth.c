@@ -666,7 +666,7 @@ static int8_t ws_pae_auth_network_keys_from_gtks_set(pae_auth_t *pae_auth, bool 
     sec_prot_keys_gtk_status_all_fresh_set(gtks);
 
     if (pae_auth->hash_set) {
-        gtkhash_t gtk_hash[4];
+        gtkhash_t gtk_hash[GTK_NUM];
         sec_prot_keys_gtks_hash_generate(gtks, gtk_hash);
         pae_auth->hash_set(pae_auth->interface_ptr, gtk_hash, is_lgtk);
     }
@@ -835,6 +835,7 @@ void ws_pae_auth_slow_timer_key(pae_auth_t *pae_auth, int i, uint16_t seconds, b
             pae_auth_gtk->gtk_new_inst_req_exp = ws_pae_timers_gtk_new_install_required(timer_gtk_cfg, timer_seconds);
             if (pae_auth_gtk->gtk_new_inst_req_exp) {
                 int8_t second_index = sec_prot_keys_gtk_install_order_second_index_get(keys);
+                ////////tr_warn("----------------------------second_index = %d", second_index);
                 if (second_index < 0) {
                     tr_info("%s new install required active index: %i, time: %"PRIu32", system time: %"PRIu32"",
                             is_lgtk ? "LGTK" : "GTK", active_index, timer_seconds, g_monotonic_time_100ms / 10);
@@ -871,8 +872,8 @@ void ws_pae_auth_slow_timer_key(pae_auth_t *pae_auth, int i, uint16_t seconds, b
     }
 
     if (timer_seconds == 0) {
-        tr_info("%s expired index: %i, system time: %"PRIu32"",
-                is_lgtk ? "LGTK" : "GTK", i, g_monotonic_time_100ms / 10);
+        tr_info("%s expired index: %i, system time: %"PRIu32", timer_seconds: %d",
+                is_lgtk ? "LGTK" : "GTK", i, g_monotonic_time_100ms / 10, timer_seconds);
         ws_pae_auth_gtk_clear(keys, i);
         ws_pae_auth_network_keys_from_gtks_set(pae_auth, false, is_lgtk);
         // Update keys to NVM as needed
@@ -1002,7 +1003,7 @@ static void ws_pae_auth_gtk_insert(sec_prot_gtk_keys_t *gtks, const uint8_t gtk[
 
     // Installs the new key
     i_install = sec_prot_keys_gtk_install_index_get(gtks, is_lgtk);
-    sec_prot_keys_gtk_clear(gtks, i_install);
+    //////sec_prot_keys_gtk_clear(gtks, i_install);
     sec_prot_keys_gtk_set(gtks, i_install, gtk, lifetime);
 
     // Authenticator keys are always fresh
@@ -1015,19 +1016,24 @@ static void ws_pae_auth_gtk_insert(sec_prot_gtk_keys_t *gtks, const uint8_t gtk[
 static void ws_pae_auth_gtk_key_insert(sec_prot_gtk_keys_t *gtks, sec_prot_gtk_keys_t *next_gtks, uint32_t lifetime, bool is_lgtk)
 {
     // Key to install
-    uint8_t gtk_value[GTK_LEN];
+    uint8_t gtk_value[GTK_LEN]; 
 
     // Checks if next GTK values are set and gets first GTK to install
     int8_t next_gtk_index = sec_prot_keys_gtk_install_order_first_index_get(next_gtks);
-    tr_info("----next_gtk_index = %d", next_gtk_index);
+    ////////uint8_t temp_array[GTK_NUM];
+    ////////for (uint8_t i = 0; i < GTK_NUM; i++) 
+    ////////    temp_array[i] = next_gtks->gtk[i].install_order;
+    ////////tr_warn("------next_gtks->gtk[0-3].install_order   = %s", tr_bytes(&temp_array[0], GTK_NUM, NULL, 128, DELIM_SPACE | ELLIPSIS_STAR));
+    ////////tr_warn("----next_gtk_index = %d", next_gtk_index);
     if (next_gtk_index >= 0) {
         // Gets GTK value
         uint8_t *gtk = sec_prot_keys_gtk_get(next_gtks, next_gtk_index);
         memcpy(gtk_value, gtk, GTK_LEN);
         // Sets same key back to next GTKs but as the last key to be installed
-        sec_prot_keys_gtk_clear(next_gtks, next_gtk_index);
+        //////sec_prot_keys_gtk_clear(next_gtks, next_gtk_index);
         sec_prot_keys_gtk_set(next_gtks, next_gtk_index, gtk_value, 0);
     } else {
+        ////////tr_warn("--------------------get random 16 bytes for gtk insert");
         do {
             rand_get_n_bytes_random(gtk_value, GTK_LEN);
         } while (sec_prot_keys_gtk_valid_check(gtk_value) < 0);
@@ -1271,9 +1277,6 @@ static kmp_api_t *ws_pae_auth_kmp_incoming_ind(kmp_service_t *service, uint8_t m
                  */
                 tr_debug("PAE: to active, eui-64: %s", tr_eui64(supp_entry->addr.eui_64));
                 ns_list_add_to_start(&pae_auth->active_supp_list, supp_entry);
-                /* For the new supplicant, if its corresponding mac address existed in the neighbor table, clean it */
-                struct net_if *interface_ptr = protocol_stack_interface_info_get_by_id(pae_auth->interface_ptr->id);
-                test_clean_mac_neighbor_table(interface_ptr, supp_entry->addr.eui_64);
             }
         }
     }
@@ -1481,6 +1484,10 @@ static kmp_type_e ws_pae_auth_next_protocol_get(pae_auth_t *pae_auth, supp_entry
         return next_type;
     }
     if (sec_keys->ptk_mismatch) {
+        /* For the new supplicant, if its corresponding mac address existed in the neighbor table, clean it */
+        struct net_if *interface_ptr = protocol_stack_interface_info_get_by_id(pae_auth->interface_ptr->id);
+        test_clean_mac_neighbor_table(interface_ptr, supp_entry->addr.eui_64);
+        
         // start 4WH towards supplicant
         next_type = IEEE_802_11_4WH;
         tr_info("PAE: start 4WH, eui-64: %s", tr_eui64(supp_entry->addr.eui_64));

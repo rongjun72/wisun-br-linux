@@ -45,6 +45,7 @@ endif()
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads)
+link_libraries(pthread)
 
 # Syntax "MbedTLS 2.18...<4" does not work :(
 find_package(MbedTLS REQUIRED)

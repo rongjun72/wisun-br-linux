@@ -26,13 +26,17 @@
 // This struct is filled by parse_commandline() and never modified after.
 struct wsbrd_conf {
     bool list_rf_configs;
-    int color_output;
+    int  color_output;
 
     char cpc_instance[PATH_MAX];
 
-    char uart_dev[PATH_MAX];
-    int  uart_baudrate;
-    bool uart_rtscts;
+    char rcp_uart_dev[PATH_MAX];
+    int  rcp_uart_baudrate;
+    bool rcp_uart_rtscts;
+
+    char ext_uart_dev[PATH_MAX];
+    int  ext_uart_baudrate;
+    bool ext_uart_rtscts;
 
     char tun_dev[IFNAMSIZ];
     char neighbor_proxy[IFNAMSIZ];

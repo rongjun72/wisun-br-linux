@@ -50,8 +50,8 @@ const struct name_value valid_traces[] = {
 struct commandline_args {
     uint8_t mode;
     char cpc_instance[256];
-    char uart_device[256];
-    int uart_baudrate;
+    char rcp_uart_dev[256];
+    int rcp_uart_baudrate;
     int payload_size;
     int number_of_exchanges;
     int window;
@@ -110,18 +110,18 @@ void parse_commandline(struct commandline_args *cmd, int argc, char *argv[])
     cmd->window = -1;
     cmd->payload_size = 515;
     cmd->number_of_exchanges = 100;
-    cmd->uart_baudrate = 115200;
-    strcpy(cmd->uart_device, "/dev/ttyACM0");
+    cmd->rcp_uart_baudrate = 115200;
+    strcpy(cmd->rcp_uart_dev, "/dev/ttyACM0");
     while ((opt = getopt_long(argc, argv, opts_short, opts_long, NULL)) != -1) {
         switch (opt) {
             case 'u':
-                strcpy(cmd->uart_device, optarg);
+                strcpy(cmd->rcp_uart_dev, optarg);
                 break;
             case 'C':
                 strcpy(cmd->cpc_instance, optarg);
                 break;
             case 'B':
-                cmd->uart_baudrate = strtol(optarg, NULL, 10);
+                cmd->rcp_uart_baudrate = strtol(optarg, NULL, 10);
                 break;
             case 's':
                 cmd->payload_size = strtol(optarg, NULL, 10);
@@ -341,7 +341,7 @@ int main(int argc, char **argv)
     if (cmdline.cpc_instance[0])
         ctxt.data_fd = cpc_open(&ctxt, cmdline.cpc_instance, g_enabled_traces & TR_CPC);
     else
-        ctxt.data_fd = uart_open(cmdline.uart_device, cmdline.uart_baudrate, false);
+        ctxt.data_fd = uart_open(cmdline.rcp_uart_dev, cmdline.rcp_uart_baudrate, false);
     ctxt.trig_fd = ctxt.data_fd;
     FATAL_ON(ctxt.data_fd < 0, 2, "Cannot open device: %m");
 

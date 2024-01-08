@@ -491,9 +491,9 @@ static void conf_set_gtk(struct wsbrd_conf *config, const struct storage_parse_i
 static void parse_config_line(struct wsbrd_conf *config, struct storage_parse_info *info)
 {
     const struct option_struct options[] = {
-        { "uart_device",                   config->uart_dev,                          conf_set_string,      (void *)sizeof(config->uart_dev) },
-        { "uart_baudrate",                 &config->uart_baudrate,                    conf_set_number,      NULL },
-        { "uart_rtscts",                   &config->uart_rtscts,                      conf_set_bool,        NULL },
+        { "rcp_uart_device",               config->rcp_uart_dev,                      conf_set_string,      (void *)sizeof(config->rcp_uart_dev) },
+        { "rcp_uart_baudrate",             &config->rcp_uart_baudrate,                conf_set_number,      NULL },
+        { "rcp_uart_rtscts",               &config->rcp_uart_rtscts,                  conf_set_bool,        NULL },
         { "cpc_instance",                  config->cpc_instance,                      conf_set_string,      (void *)sizeof(config->cpc_instance) },
         { "tun_device",                    config->tun_dev,                           conf_set_string,      (void *)sizeof(config->tun_dev) },
         { "tun_autoconf",                  &config->tun_autoconf,                     conf_set_bool,        NULL },
@@ -610,7 +610,7 @@ void parse_commandline(struct wsbrd_conf *config, int argc, char *argv[],
     int opt;
 
     // Keep these values in sync with examples/wsbrd.conf
-    config->uart_baudrate = 115200;
+    config->rcp_uart_baudrate = 115200;
     config->tun_autoconf = true;
     config->internal_dhcp = true;
     config->ws_class = 0;
@@ -664,7 +664,7 @@ void parse_commandline(struct wsbrd_conf *config, int argc, char *argv[],
             case 'F':
                 break;
             case 'u':
-                snprintf(config->uart_dev, sizeof(config->uart_dev), "%s", optarg); // safe strncpy()
+                snprintf(config->rcp_uart_dev, sizeof(config->rcp_uart_dev), "%s", optarg); // safe strncpy()
                 break;
             case 'o':
                 snprintf(info.line, sizeof(info.line), "%s", optarg); // safe strncpy()
@@ -738,10 +738,10 @@ void parse_commandline(struct wsbrd_conf *config, int argc, char *argv[],
     }
     if (optind != argc)
         FATAL(1, "unexpected argument: %s", argv[optind]);
-    if (!config->uart_dev[0] && !config->cpc_instance[0])
-        FATAL(1, "missing \"uart_device\" (or \"cpc_instance\") parameter");
-    if (config->uart_dev[0] && config->cpc_instance[0])
-        FATAL(1, "\"uart_device\" and \"cpc_instance\" are exclusive %s", config->uart_dev);
+    if (!config->rcp_uart_dev[0] && !config->cpc_instance[0])
+        FATAL(1, "missing \"rcp_uart_device\" (or \"cpc_instance\") parameter");
+    if (config->rcp_uart_dev[0] && config->cpc_instance[0])
+        FATAL(1, "\"rcp_uart_device\" and \"cpc_instance\" are exclusive %s", config->rcp_uart_dev);
     if (!config->user[0] && config->group[0])
         WARN("group is set while user is not: privileges will not be dropped if started as root");
     if (config->user[0] && !config->group[0])
@@ -821,8 +821,8 @@ void parse_commandline(struct wsbrd_conf *config, int argc, char *argv[],
     if (memcmp(config->ipv6_prefix, ADDR_UNSPECIFIED, 16) && !config->tun_autoconf)
         FATAL(1, "\"ipv6_prefix\" is only available when \"tun_autoconf\" is set");
 #else
-    if (!config->uart_dev[0])
-        FATAL(1, "missing \"uart_device\" parameter");
+    if (!config->rcp_uart_dev[0])
+        FATAL(1, "missing \"rcp_uart_device\" parameter");
     if (memcmp(config->ipv6_prefix, ADDR_UNSPECIFIED, 16))
         WARN("ipv6_prefix is ignored");
 #endif

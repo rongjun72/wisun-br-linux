@@ -31,8 +31,8 @@
 
 
 struct commandline_args {
-    int uart_baudrate;
-    char uart_device[PATH_MAX];
+    int rcp_uart_baudrate;
+    char rcp_uart_dev[PATH_MAX];
     char gbl_file_path[PATH_MAX];
 };
 
@@ -66,15 +66,15 @@ void parse_commandline(struct commandline_args *cmd, int argc, char *argv[])
     };
     int opt, ret;
 
-    cmd->uart_baudrate = 115200;
-    strcpy(cmd->uart_device, "/dev/ttyACM0");
+    cmd->rcp_uart_baudrate = 115200;
+    strcpy(cmd->rcp_uart_dev, "/dev/ttyACM0");
     while ((opt = getopt_long(argc, argv, opts_short, opts_long, NULL)) != -1) {
         switch (opt) {
             case 'u':
-                strcpy(cmd->uart_device, optarg);
+                strcpy(cmd->rcp_uart_dev, optarg);
                 break;
             case 'B':
-                cmd->uart_baudrate = strtol(optarg, NULL, 10);
+                cmd->rcp_uart_baudrate = strtol(optarg, NULL, 10);
                 break;
             case 'h':
                 print_help(stdout, 0);
@@ -232,9 +232,9 @@ int main(int argc, char **argv)
     parse_commandline(&cmdline, argc, argv);
     check_if_sx_is_installed();
 
-    ctxt.data_fd = uart_open(cmdline.uart_device, cmdline.uart_baudrate, false);
+    ctxt.data_fd = uart_open(cmdline.rcp_uart_dev, cmdline.rcp_uart_baudrate, false);
     ctxt.trig_fd = ctxt.data_fd;
-    FATAL_ON(ctxt.data_fd < 0, 2, "%s: %m", cmdline.uart_device);
+    FATAL_ON(ctxt.data_fd < 0, 2, "%s: %m", cmdline.rcp_uart_dev);
     send_btl_update(&ctxt);
     handle_btl_update(&ctxt);
     close(ctxt.data_fd);
@@ -243,8 +243,8 @@ int main(int argc, char **argv)
     if (pid > 0) {
         waitpid(pid, &wstatus, 0);
     } else if (pid == 0) {
-        sxfd = open(cmdline.uart_device, O_RDWR);
-        FATAL_ON(sxfd == -1, 2, "open %s: %m", cmdline.uart_device);
+        sxfd = open(cmdline.rcp_uart_dev, O_RDWR);
+        FATAL_ON(sxfd == -1, 2, "open %s: %m", cmdline.rcp_uart_dev);
         ret = dup2(sxfd, STDIN_FILENO);
         FATAL_ON(ret == -1, 2, "dup2: %m");
         ret = dup2(sxfd, STDOUT_FILENO);
@@ -260,9 +260,9 @@ int main(int argc, char **argv)
     if (!WIFEXITED(wstatus) || WEXITSTATUS(wstatus))
         FATAL(1, "xmodem transfer failed");
 
-    ctxt.data_fd = uart_open(cmdline.uart_device, cmdline.uart_baudrate, false);
+    ctxt.data_fd = uart_open(cmdline.rcp_uart_dev, cmdline.rcp_uart_baudrate, false);
     ctxt.trig_fd = ctxt.data_fd;
-    FATAL_ON(ctxt.data_fd < 0, 2, "%s: %m", cmdline.uart_device);
+    FATAL_ON(ctxt.data_fd < 0, 2, "%s: %m", cmdline.rcp_uart_dev);
     handle_btl_run(&ctxt);
     handle_rcp_reset(&ctxt);
     close(ctxt.data_fd);

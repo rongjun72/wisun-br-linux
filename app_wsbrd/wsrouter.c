@@ -296,7 +296,7 @@ int main(int argc, char *argv[])
     g_storage_prefix = ctxt->config.storage_prefix[0] ? ctxt->config.storage_prefix : NULL;
     if (ctxt->config.storage_delete)
         storage_delete(files);
-    ctxt->os_ctxt->data_fd = uart_open(ctxt->config.uart_dev, ctxt->config.uart_baudrate, ctxt->config.uart_rtscts);
+    ctxt->os_ctxt->data_fd = uart_open(ctxt->config.rcp_uart_dev, ctxt->config.rcp_uart_baudrate, ctxt->config.rcp_uart_rtscts);
     ctxt->os_ctxt->trig_fd = ctxt->os_ctxt->data_fd;
 
     rcp_reset();

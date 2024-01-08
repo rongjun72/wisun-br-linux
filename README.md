@@ -542,6 +542,50 @@ ssh-keygen -f "/home/rongjun/.ssh/known_hosts" -R "192.168.31.217"
 
 
 
+# Ubuntu 22.04.03 install on vm
+## solution to "is not in the sudoers file"
+  switch to super user by: >su root
+  ```bash
+  # open file: /etc/sudoers：
+  $nano /etc/sudoers
+  # find line "root ALL=(ALL) ALL", add line as following: "username ALL=(ALL) ALL", save and exit
+  $exit
+  ``` 
+
+## Ubuntu issue: terminal can not open
+  CTRL + ALT + F3 enter command line mode (return to desktop: CTRL + ALT + F1)
+  ```bash
+  $cd /etc/default
+  $sudo nano locale
+  # change all "en_US" into "en_US.UTF-8"
+  # save and exit editor
+  $sudo locale-gen --purge
+  $reboot 
+  ```
+
+## Ubuntu Server 22.04 configuration for VirtualBox shared folder
+  reference web page: https://blog.csdn.net/kaka_buka/article/details/130413579
+  make sure you have installed VirtualBox extension package before configuration
+  
+  ```bash
+  # update to latest
+  $sudo apt update
+  $sudo apt upgrade
+  # install necessary package  
+  $sudo apt install build-essential dkms linux-headers-$(uname -r)
+  $sudo apt install nfs-common -y
+  # ....
+  ```
+  
+## generate ssh key pair for github
+  ```bash
+  $ssh-keygen -t ed25519 -C "your_email@example.com"
+  $cat .ssh/ed25519.pub
+  # copy the public key to https://github.com/settings/keys
+  ```
+
+##
+
 
 
 

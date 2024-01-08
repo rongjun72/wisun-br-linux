@@ -146,7 +146,8 @@ void print_help_br(FILE *stream) {
     fprintf(stream, "  wsbrd [OPTIONS] --list-rf-configs\n");
     fprintf(stream, "\n");
     fprintf(stream, "Common options:\n");
-    fprintf(stream, "  -u UART_DEVICE        Use UART bus\n");
+    fprintf(stream, "  -u RCP_UART_DEVICE        Use RCP UART bus\n");
+    fprintf(stream, "  -e EXT_UART_DEVICE        Use external UART bus\n");
     fprintf(stream, "  -t TUN                Map a specific TUN device (eg. allocated with 'ip tuntap add tun0')\n");
     fprintf(stream, "  -T, --trace=TAG[,TAG] Enable traces marked with TAG. Valid tags: bus, cpc, hdlc, hif,\n");
     fprintf(stream, "                           hif-extra, trickle, 15.4-mngt, 15.4, eap, icmp-rf, icmp-tun,\n");
@@ -191,7 +192,8 @@ void print_help_node(FILE *stream) {
     fprintf(stream, "  wsnode [OPTIONS]\n");
     fprintf(stream, "\n");
     fprintf(stream, "Common options:\n");
-    fprintf(stream, "  -u UART_DEVICE        Use UART bus\n");
+    fprintf(stream, "  -u RCP_UART_DEVICE        Use RCP UART bus\n");
+    fprintf(stream, "  -e EXT_UART_DEVICE        Use external UART bus\n");
     fprintf(stream, "  -T, --trace=TAG[,TAG] Enable traces marked with TAG. Valid tags: bus, hdlc, hif,\n");
     fprintf(stream, "                          hif-extra, timers, drop\n");
     fprintf(stream, "  -F, --config=FILE     Read parameters from FILE. Command line options always have priority\n");
@@ -494,6 +496,9 @@ static void parse_config_line(struct wsbrd_conf *config, struct storage_parse_in
         { "rcp_uart_device",               config->rcp_uart_dev,                      conf_set_string,      (void *)sizeof(config->rcp_uart_dev) },
         { "rcp_uart_baudrate",             &config->rcp_uart_baudrate,                conf_set_number,      NULL },
         { "rcp_uart_rtscts",               &config->rcp_uart_rtscts,                  conf_set_bool,        NULL },
+        { "ext_uart_device",               config->ext_uart_dev,                      conf_set_string,      (void *)sizeof(config->ext_uart_dev) },
+        { "ext_uart_baudrate",             &config->ext_uart_baudrate,                conf_set_number,      NULL },
+        { "ext_uart_rtscts",               &config->ext_uart_rtscts,                  conf_set_bool,        NULL },
         { "cpc_instance",                  config->cpc_instance,                      conf_set_string,      (void *)sizeof(config->cpc_instance) },
         { "tun_device",                    config->tun_dev,                           conf_set_string,      (void *)sizeof(config->tun_dev) },
         { "tun_autoconf",                  &config->tun_autoconf,                     conf_set_bool,        NULL },
@@ -666,6 +671,9 @@ void parse_commandline(struct wsbrd_conf *config, int argc, char *argv[],
             case 'u':
                 snprintf(config->rcp_uart_dev, sizeof(config->rcp_uart_dev), "%s", optarg); // safe strncpy()
                 break;
+            case 'e':
+                snprintf(config->ext_uart_dev, sizeof(config->ext_uart_dev), "%s", optarg); // safe strncpy()
+                break;
             case 'o':
                 snprintf(info.line, sizeof(info.line), "%s", optarg); // safe strncpy()
                 if (sscanf(info.line, " %256[^= ] = %256s", info.key, info.value) != 2)
@@ -823,6 +831,8 @@ void parse_commandline(struct wsbrd_conf *config, int argc, char *argv[],
 #else
     if (!config->rcp_uart_dev[0])
         FATAL(1, "missing \"rcp_uart_device\" parameter");
+    if (!config->ext_uart_dev[0])
+        FATAL(1, "missing \"ext_uart_device\" parameter");
     if (memcmp(config->ipv6_prefix, ADDR_UNSPECIFIED, 16))
         WARN("ipv6_prefix is ignored");
 #endif

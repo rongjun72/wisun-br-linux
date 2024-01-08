@@ -71,7 +71,7 @@ void print_help(FILE *stream, int exit_code)
     fprintf(stream, "MODE can be RX, TX or DUAL\n");
     fprintf(stream, "\n");
     fprintf(stream, "Options:\n");
-    fprintf(stream, "  -u, --uart=UART_DEVICE Use UART bus (default: /dev/ttyACM0)\n");
+    fprintf(stream, "  -u, --uart=RCP_UART_DEVICE Use UART bus (default: /dev/ttyACM0)\n");
     fprintf(stream, "  -C, --cpc=CPC_INSTANCE Use CPC instance (ie. cpcd_0)\n");
     fprintf(stream, "  -B, --baurate=VAL      Configure UART with this baudrate (default: 115200)\n");
     fprintf(stream, "  -s, --size=SIZE        Size of the payload in frames (default: 512)\n");

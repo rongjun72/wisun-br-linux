@@ -114,6 +114,7 @@ add_library(libwsbrd STATIC
     app_wsbrd/frame_helpers.c
     app_wsbrd/rail_config.c
     app_wsbrd/rcp_api.c
+    app_wsbrd/ext_cmd_bus.c
     app_wsbrd/timers.c
     app_wsbrd/tun.c
     app_wsbrd/commandline.c

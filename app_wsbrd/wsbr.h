@@ -26,6 +26,7 @@ typedef struct sd_bus sd_bus;
 #include "stack/mac/mac_api.h"
 #include "stack/mac/fhss_config.h"
 #include "rcp_api.h"
+#include "ext_cmd_bus.h"
 
 #include "commandline.h"
 
@@ -33,6 +34,7 @@ struct iobuf_read;
 
 struct wsbr_ctxt {
     struct os_ctxt *os_ctxt;
+    struct os_ctxt *ext_cmd_ctxt;
     struct events_scheduler scheduler;
     struct wsbrd_conf config;
     struct dhcp_server dhcp_server;
@@ -51,6 +53,8 @@ struct wsbr_ctxt {
 
     int pcapng_fd;
     mode_t pcapng_type;
+
+    struct extcmd extcmd;
 
     struct {
         uint8_t eui64[8];

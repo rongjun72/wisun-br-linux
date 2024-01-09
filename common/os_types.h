@@ -55,5 +55,6 @@ struct os_ctxt {
 // This global variable is necessary for various API of nanostack. Beside this
 // case, please never use it.
 extern struct os_ctxt g_os_ctxt;
+extern struct os_ctxt c_os_ctxt;
 
 #endif

@@ -60,6 +60,7 @@
 #include "rail_config.h"
 #include "dbus.h"
 #include "tun.h"
+#include "ext_cmd_bus.h"
 
 #define TRACE_GROUP "wspa"
 
@@ -78,6 +79,7 @@ enum {
     POLLFD_PAE_AUTH,
     POLLFD_RADIUS,
     POLLFD_COUNT,
+    POLLFD_EXT_CMD,
 };
 
 // See warning in wsbr.h
@@ -96,6 +98,7 @@ struct wsbr_ctxt g_ctxt = {
     .dhcp_server.fd = -1,
 
     .os_ctxt = &g_os_ctxt,
+    .ext_cmd_ctxt = &c_os_ctxt,
 };
 
 // See warning in common/os_types.h
@@ -104,6 +107,13 @@ struct os_ctxt g_os_ctxt = {
     .trig_fd = -1,
     .data_fd = -1,
 };
+
+struct os_ctxt c_os_ctxt = {
+    // avoid initializating to 0 = STDIN_FILENO
+    .trig_fd = -1,
+    .data_fd = -1,
+};
+
 
 static int get_fixed_channel(uint8_t bitmask[static 32])
 {
@@ -464,6 +474,8 @@ static void wsbr_fds_init(struct wsbr_ctxt *ctxt, struct pollfd *fds)
     fds[POLLFD_PAE_AUTH].events = POLLIN;
     fds[POLLFD_RADIUS].fd = kmp_socket_if_get_radius_sockfd();
     fds[POLLFD_RADIUS].events = POLLIN;
+    fds[POLLFD_EXT_CMD].fd = ctxt->ext_cmd_ctxt->trig_fd;
+    fds[POLLFD_EXT_CMD].events = POLLIN;
 }
 
 static void wsbr_poll(struct wsbr_ctxt *ctxt, struct pollfd *fds)
@@ -500,6 +512,10 @@ static void wsbr_poll(struct wsbr_ctxt *ctxt, struct pollfd *fds)
         fds[POLLFD_RCP].revents & POLLERR ||
         ctxt->os_ctxt->uart_next_frame_ready)
         rcp_rx(ctxt);
+    if (fds[POLLFD_EXT_CMD].revents & POLLIN ||
+        fds[POLLFD_EXT_CMD].revents & POLLERR ||
+        ctxt->ext_cmd_ctxt->uart_next_frame_ready)
+        ext_cmd_rx(ctxt);
     if (fds[POLLFD_TIMER].revents & POLLIN)
         wsbr_common_timer_process(ctxt);
 }
@@ -533,6 +549,12 @@ int wsbr_main(int argc, char *argv[])
         test_pan_size_override = ctxt->config.pan_size;
     if (ctxt->config.pcap_file[0])
         wsbr_pcapng_init(ctxt);
+    if (ctxt->config.ext_uart_dev[0]) {
+        ctxt->extcmd.device_tx = wsbr_uart_tx;
+        ctxt->extcmd.device_rx = uart_rx;
+        ctxt->extcmd.on_crc_error = uart_handle_crc_error;
+        ctxt->ext_cmd_ctxt->data_fd = uart_open(ctxt->config.ext_uart_dev, ctxt->config.ext_uart_baudrate, ctxt->config.ext_uart_rtscts);
+    }
     if (ctxt->config.rcp_uart_dev[0]) {
         ctxt->rcp.device_tx = wsbr_uart_tx;
         ctxt->rcp.device_rx = uart_rx;
@@ -546,6 +568,7 @@ int wsbr_main(int argc, char *argv[])
         BUG();
     }
     ctxt->os_ctxt->trig_fd = ctxt->os_ctxt->data_fd;
+    ctxt->ext_cmd_ctxt->trig_fd = ctxt->ext_cmd_ctxt->data_fd;
 
     rcp_noop(NOOP_RESET);
     tr_info("--------wait 300ms for RCP reset----");

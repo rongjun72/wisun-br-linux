@@ -112,6 +112,7 @@ static void exp_get_wisun_status(struct wsbr_ctxt *ctxt, uint32_t prop, struct i
     struct net_if *interface_ptr = protocol_stack_interface_info_get_by_id(interface_id);
     sec_prot_gtk_keys_t *gtks = ws_pae_controller_get_transient_keys(interface_id, false);
 
+    WARN("-------send wisun status data through spinel");
     spinel_push_hdr_is_prop(&tx_buf, SPINEL_PROP_EXT_WisunStatus);
     spinel_push_str( &tx_buf, ctxt->config.ws_name);
     spinel_push_uint(&tx_buf, ctxt->config.ws_fan_version);

@@ -163,11 +163,11 @@ void ext_cmd_rx(struct wsbr_ctxt *ctxt)
     spinel_pop_u8(&buf); /* packet header */
     cmd = spinel_pop_uint(&buf);
     WARN("--------cmd : 0x%04x", cmd);
-    if (cmd != SPINEL_CMD_PROP_IS) {
-        prop = (uint32_t)-1;
-    } else {
+    //if (cmd != SPINEL_CMD_PROP_IS) {
+    //    prop = (uint32_t)-1;
+    //} else {
         prop = spinel_pop_uint(&buf);
-    }
+    //}
     WARN("--------prop : 0x%04x", prop);
     for (i = 0; ext_cmds[i].cmd != (uint32_t)-1; i++)
         if (ext_cmds[i].cmd == cmd && ext_cmds[i].prop == prop)

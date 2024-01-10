@@ -154,6 +154,7 @@ void ext_cmd_rx(struct wsbr_ctxt *ctxt)
     };
     uint32_t cmd, prop;
     int i;
+    WARN("---------------------EXTERNAL COMMAND UART enter...");
 
     buf.data_size = ctxt->extcmd.device_rx(ctxt->ext_cmd_ctxt, rx_buf, sizeof(rx_buf));
     if (!buf.data_size)

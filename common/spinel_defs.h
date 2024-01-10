@@ -261,7 +261,7 @@ enum {
 
     SPINEL_PROP_EXT_BEGIN = SPINEL_PROP_EXPERIMENTAL__BEGIN + 80,
     SPINEL_PROP_EXT_WisunStatus                     = SPINEL_PROP_EXT_BEGIN + 0,
-    SPINEL_PROP_EXT_WisunSize                       = SPINEL_PROP_EXT_BEGIN + 1,
+    SPINEL_PROP_EXT_WisunNetworkName                = SPINEL_PROP_EXT_BEGIN + 1,
     
 
     SPINEL_PROP_EXPERIMENTAL__END   = 0x200000,

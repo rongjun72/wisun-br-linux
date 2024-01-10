@@ -131,10 +131,18 @@ static void exp_get_wisun_status(struct wsbr_ctxt *ctxt, uint32_t prop, struct i
 
 }
 
+static void exp_set_wisun_network_name(struct wsbr_ctxt *ctxt, uint32_t prop, struct iobuf_read *buf)
+{
+    int interface_id = ctxt->rcp_if_id;
+    char *nwkname = strdup(spinel_pop_str(buf));
+    ws_management_network_name_set(interface_id, nwkname);
+}
+
 // Some debug tools (fuzzers) may deflect this struct. So keep it public.
 struct ext_rx_cmds ext_cmds[] = {
     { SPINEL_CMD_NOOP,             (uint32_t)-1,                         ext_rx_no_op },
     { SPINEL_CMD_PROP_GET,         SPINEL_PROP_EXT_WisunStatus,          exp_get_wisun_status },
+    { SPINEL_CMD_PROP_SET,         SPINEL_PROP_EXT_WisunNetworkName,     exp_set_wisun_network_name },
     { (uint32_t)-1,                (uint32_t)-1,                         NULL },
 };
 

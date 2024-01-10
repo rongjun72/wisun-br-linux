@@ -47,20 +47,94 @@
 
 #define TRACE_GROUP "extc"
 
+static uint8_t ext_get_spinel_hdr()
+{
+    struct wsbr_ctxt *ctxt = &g_ctxt;
+    uint8_t hdr = FIELD_PREP(0xC0, 0x2) | FIELD_PREP(0x30, ctxt->spinel_iid);
+
+    ctxt->spinel_tid = (ctxt->spinel_tid + 1) % 0x10;
+    if (!ctxt->spinel_tid)
+        ctxt->spinel_tid = 1;
+    hdr |= FIELD_PREP(0x0F, ctxt->spinel_tid);
+    return hdr;
+}
+
+////static void spinel_push_hdr_set_prop(struct iobuf_write *buf, unsigned int prop)
+////{
+////    spinel_push_u8(buf, ext_get_spinel_hdr());
+////    spinel_push_uint(buf, SPINEL_CMD_PROP_SET);
+////    spinel_push_uint(buf, prop);
+////}
+////
+////static void spinel_push_hdr_get_prop(struct iobuf_write *buf, unsigned int prop)
+////{
+////    spinel_push_u8(buf, ext_get_spinel_hdr());
+////    spinel_push_uint(buf, SPINEL_CMD_PROP_GET);
+////    spinel_push_uint(buf, prop);
+////}
+
+static void spinel_push_hdr_is_prop(struct iobuf_write *buf, unsigned int prop)
+{
+    spinel_push_u8(buf, ext_get_spinel_hdr());
+    spinel_push_uint(buf, SPINEL_CMD_PROP_IS);
+    spinel_push_uint(buf, prop);
+}
+
 void ext_cmd_tx(struct wsbr_ctxt *ctxt, struct iobuf_write *buf)
 {
     spinel_trace_tx(buf);
     ctxt->extcmd.device_tx(ctxt->ext_cmd_ctxt, buf->data, buf->len);
 }
 
-static void rcp_rx_no_op(struct wsbr_ctxt *ctxt, uint32_t prop, struct iobuf_read *buf)
+static void ext_rx_no_op(struct wsbr_ctxt *ctxt, uint32_t prop, struct iobuf_read *buf)
 {
+}
+
+/* 
+ * response to external get_wisun_status command:
+ *  network_name,   char*33
+ *  fan_version,    uint
+ *  domain,         uint
+ *  mode,           uint
+ *  class,          uint
+ *  panid:          uint
+ *  gtk[0]:         u8*16
+ *  gak[0]:         u8*16
+ *  ...
+ *  gtk[3]:         u8*16
+ *  gak[3]:         u8*16
+ */
+static void exp_get_wisun_status(struct wsbr_ctxt *ctxt, uint32_t prop, struct iobuf_read *buf)
+{
+    int interface_id = ctxt->rcp_if_id;
+    struct iobuf_write tx_buf = { };
+    uint8_t gak[16];
+    struct net_if *interface_ptr = protocol_stack_interface_info_get_by_id(interface_id);
+    sec_prot_gtk_keys_t *gtks = ws_pae_controller_get_transient_keys(interface_id, false);
+
+    spinel_push_hdr_is_prop(&tx_buf, SPINEL_PROP_EXT_WisunStatus);
+    spinel_push_str( &tx_buf, ctxt->config.ws_name);
+    spinel_push_uint(&tx_buf, ctxt->config.ws_fan_version);
+    spinel_push_uint(&tx_buf, ctxt->config.ws_domain);
+    spinel_push_uint(&tx_buf, ctxt->config.ws_mode);
+    spinel_push_uint(&tx_buf, ctxt->config.ws_class);
+    spinel_push_uint(&tx_buf, ctxt->config.ws_pan_id);
+    spinel_push_uint(&tx_buf, ctxt->config.ws_size);
+    for (int i = 0; i < GTK_NUM; i++) {
+        spinel_push_fixed_u8_array(&tx_buf, gtks->gtk[i].key, ARRAY_SIZE(gtks->gtk[i].key));
+        ws_pae_controller_gak_from_gtk(gak, gtks->gtk[i].key, interface_ptr->ws_info.cfg->gen.network_name);
+        spinel_push_fixed_u8_array(&tx_buf, gak, ARRAY_SIZE(gak));
+    }
+
+    ext_cmd_tx(ctxt, &tx_buf);
+    iobuf_free(&tx_buf);
+
 }
 
 // Some debug tools (fuzzers) may deflect this struct. So keep it public.
 struct ext_rx_cmds ext_cmds[] = {
-    { SPINEL_CMD_NOOP,             (uint32_t)-1,                         rcp_rx_no_op },
-    { SPINEL_CMD_PROP_IS,          SPINEL_PROP_EXTCMD_NOP,               rcp_rx_no_op },
+    { SPINEL_CMD_NOOP,             (uint32_t)-1,                         ext_rx_no_op },
+    { SPINEL_CMD_PROP_GET,         SPINEL_PROP_EXT_WisunStatus,          exp_get_wisun_status },
     { (uint32_t)-1,                (uint32_t)-1,                         NULL },
 };
 

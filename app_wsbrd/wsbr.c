@@ -78,8 +78,8 @@ enum {
     POLLFD_EAPOL_RELAY,
     POLLFD_PAE_AUTH,
     POLLFD_RADIUS,
-    POLLFD_COUNT,
     POLLFD_EXT_CMD,
+    POLLFD_COUNT,
 };
 
 // See warning in wsbr.h

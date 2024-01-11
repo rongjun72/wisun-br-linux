@@ -262,6 +262,7 @@ static void exp_get_wisun_nodes(struct wsbr_ctxt *ctxt, uint32_t prop, struct io
     uint8_t ipv6[16];
     struct iobuf_write tx_buf = { };
 
+    WARN("-------send wisun nodes data through spinel");
     ret = ws_bbr_info_get(ctxt->rcp_if_id, &br_info);
     BUG_ON(ret < 0, "%d: %s", prop, strerror(-ret));
     len_pae = ws_pae_auth_supp_list(ctxt->rcp_if_id, eui64_pae, sizeof(eui64_pae));
@@ -315,7 +316,7 @@ struct ext_rx_cmds ext_cmds[] = {
     { SPINEL_CMD_NOOP,             (uint32_t)-1,                         ext_rx_no_op },
     { SPINEL_CMD_PROP_GET,         SPINEL_PROP_EXT_WisunStatus,          exp_get_wisun_status },
     { SPINEL_CMD_PROP_SET,         SPINEL_PROP_EXT_WisunNetworkName,     exp_set_wisun_network_name },
-    { SPINEL_CMD_PROP_SET,         SPINEL_PROP_EXT_WisunNodes,           exp_get_wisun_nodes },
+    { SPINEL_CMD_PROP_GET,         SPINEL_PROP_EXT_WisunNodes,           exp_get_wisun_nodes },
     { (uint32_t)-1,                (uint32_t)-1,                         NULL },
 };
 

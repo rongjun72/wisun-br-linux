@@ -262,7 +262,6 @@ static void exp_get_wisun_nodes(struct wsbr_ctxt *ctxt, uint32_t prop, struct io
     uint8_t ipv6[16];
     struct iobuf_write tx_buf = { };
 
-    WARN("-------send wisun nodes data through spinel");
     ret = ws_bbr_info_get(ctxt->rcp_if_id, &br_info);
     BUG_ON(ret < 0, "%d: %s", prop, strerror(-ret));
     len_pae = ws_pae_auth_supp_list(ctxt->rcp_if_id, eui64_pae, sizeof(eui64_pae));

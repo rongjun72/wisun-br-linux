@@ -486,10 +486,15 @@ static int dbus_message_append_node(
         dbus_message_open_info(m, property, "ipv6", "aay");
         ret = sd_bus_message_open_container(m, 'a', "ay");
         WARN_ON(ret < 0, "%s: %s", property, strerror(-ret));
-        for (; memcmp(*ipv6, ADDR_UNSPECIFIED, 16); ipv6++) {
+        for (uint8_t index = 0; memcmp(*ipv6, ADDR_UNSPECIFIED, 16); ipv6++, index++) {
             ret = sd_bus_message_append_array(m, 'y', *ipv6, 16);
             WARN_ON(ret < 0, "%s: %s", property, strerror(-ret));
-            WARN("------ipv6 : %s", tr_ipv6((uint8_t *)ipv6));
+
+            if (index ==0)
+                WARN("------ipv6 linkLocal: %s", tr_ipv6((uint8_t *)ipv6));
+            else
+                WARN("------ipv6 global: %s", tr_ipv6((uint8_t *)ipv6));
+            
         }
         ret = sd_bus_message_close_container(m);
         WARN_ON(ret < 0, "%s: %s", property, strerror(-ret));

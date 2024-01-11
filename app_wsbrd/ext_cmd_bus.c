@@ -139,12 +139,19 @@ static void exp_set_wisun_network_name(struct wsbr_ctxt *ctxt, uint32_t prop, st
     ws_management_network_name_set(interface_id, nwkname);
 }
 
-#if 0
 struct neighbor_info {
     int rssi;
     int rsl;
     int rsl_adv;
 };
+
+/* spinel push a fixed 20 length char string */
+void spinel_push_string(struct iobuf_write *buf, const char *val)
+{
+    char attr_tag[20] = {0};
+    memcpy(attr_tag, val, 20);
+    spinel_push_str(buf, attr_tag);
+}
 
 static void ext_message_append_node(
     struct iobuf_write *buf,
@@ -155,30 +162,43 @@ static void ext_message_append_node(
     supp_entry_t *supp,
     struct neighbor_info *neighbor)
 {
+    
+    spinel_push_string(buf, "node eui64");
     spinel_push_fixed_u8_array(buf, self, 8);
     
     if (is_br) {
-        spinel_push_u8(buf, WS_NR_ROLE_BR);
+        spinel_push_string(buf, "isBorderRouter");
     } else if (supp) {
+        spinel_push_string(buf, "isAuthenticated");
         if (ws_common_is_valid_nr(supp->sec_keys.node_role)) {
+            spinel_push_string(buf, "nodeRole");
             spinel_push_u8(buf, supp->sec_keys.node_role);
         }
     }
     if (parent) {
+        spinel_push_string(buf, "parent eui64");
         spinel_push_fixed_u8_array(buf, parent, 8);
     }
     if (neighbor) {
+        spinel_push_string(buf, "neighbor rssi");
         spinel_push_uint(buf, neighbor->rssi);
         
         if (neighbor->rsl != INT_MIN) {
+            spinel_push_string(buf, "neighbor rsl");
             spinel_push_uint(buf, neighbor->rsl);
         }
         if (neighbor->rsl_adv != INT_MIN) {
+            spinel_push_string(buf, "neighbor rsl_adv");
             spinel_push_uint(buf, neighbor->rsl_adv);
         }
     }
-    for (; memcmp(*ipv6, ADDR_UNSPECIFIED, 16); ipv6++) {
-        spinel_push_fixed_u8_array(buf, ipv6, 16);
+    for (uint8_t index = 0; memcmp(*ipv6, ADDR_UNSPECIFIED, 16); ipv6++, index++) {
+        if (index ==0)
+            spinel_push_string(buf, "LinkLocal ipv6");
+        else
+            spinel_push_string(buf, "global ipv6");
+
+        spinel_push_fixed_u8_array(buf, (uint8_t *)ipv6, 16);
     }
 }
 
@@ -289,14 +309,13 @@ static void exp_get_wisun_nodes(struct wsbr_ctxt *ctxt, uint32_t prop, struct io
             free(supp);
     }
 }
-#endif 
 
 // Some debug tools (fuzzers) may deflect this struct. So keep it public.
 struct ext_rx_cmds ext_cmds[] = {
     { SPINEL_CMD_NOOP,             (uint32_t)-1,                         ext_rx_no_op },
     { SPINEL_CMD_PROP_GET,         SPINEL_PROP_EXT_WisunStatus,          exp_get_wisun_status },
     { SPINEL_CMD_PROP_SET,         SPINEL_PROP_EXT_WisunNetworkName,     exp_set_wisun_network_name },
-    //{ SPINEL_CMD_PROP_SET,         SPINEL_PROP_EXT_WisunNodes,           exp_get_wisun_nodes },
+    { SPINEL_CMD_PROP_SET,         SPINEL_PROP_EXT_WisunNodes,           exp_get_wisun_nodes },
     { (uint32_t)-1,                (uint32_t)-1,                         NULL },
 };
 

@@ -417,7 +417,6 @@ static int dbus_message_append_node(
     ret = sd_bus_message_open_container(m, 'r', "aya{sv}");
     WARN_ON(ret < 0, "%s: %s", property, strerror(-ret));
     ret = sd_bus_message_append_array(m, 'y', self, 8);
-    WARN("------self eui64: %s", tr_eui64(self));
     WARN_ON(ret < 0, "%s: %s", property, strerror(-ret));
     ret = sd_bus_message_open_container(m, 'a', "{sv}");
     WARN_ON(ret < 0, "%s: %s", property, strerror(-ret));
@@ -427,26 +426,22 @@ static int dbus_message_append_node(
             ret = sd_bus_message_append(m, "b", true);
             WARN_ON(ret < 0, "%s: %s", property, strerror(-ret));
             dbus_message_close_info(m, property);
-            WARN("------is_border_router : %d", is_br);
             // TODO: deprecate is_border_router
             dbus_message_open_info(m, property, "node_role", "y");
             ret = sd_bus_message_append(m, "y", WS_NR_ROLE_BR);
             WARN_ON(ret < 0, "%s: %s", property, strerror(-ret));
             dbus_message_close_info(m, property);
-            WARN("------node_role : %d", WS_NR_ROLE_BR);
         } else if (supp) {
             dbus_message_open_info(m, property, "is_authenticated", "b");
             val = true;
             ret = sd_bus_message_append(m, "b", val);
             WARN_ON(ret < 0, "%s: %s", property, strerror(-ret));
             dbus_message_close_info(m, property);
-            WARN("------is_authenticated : %d", 1);
             if (ws_common_is_valid_nr(supp->sec_keys.node_role)) {
                 dbus_message_open_info(m, property, "node_role", "y");
                 ret = sd_bus_message_append(m, "y", supp->sec_keys.node_role);
                 WARN_ON(ret < 0, "%s: %s", property, strerror(-ret));
                 dbus_message_close_info(m, property);
-                WARN("------node_role : %d", supp->sec_keys.node_role);
             }
         }
         if (parent) {
@@ -454,47 +449,35 @@ static int dbus_message_append_node(
             ret = sd_bus_message_append_array(m, 'y', parent, 8);
             WARN_ON(ret < 0, "%s: %s", property, strerror(-ret));
             dbus_message_close_info(m, property);
-            WARN("------parent : %s", tr_eui64(parent));
         }
         if (neighbor) {
             dbus_message_open_info(m, property, "is_neighbor", "b");
             ret = sd_bus_message_append(m, "b", true);
             WARN_ON(ret < 0, "%s: %s", property, strerror(-ret));
             dbus_message_close_info(m, property);
-            WARN("------is_neighbor : %d", 1);
-
             dbus_message_open_info(m, property, "rssi", "i");
             ret = sd_bus_message_append_basic(m, 'i', &neighbor->rssi);
             WARN_ON(ret < 0, "%s: %s", property, strerror(-ret));
             dbus_message_close_info(m, property);
-            WARN("------rssi : %d", neighbor->rssi);
             if (neighbor->rsl != INT_MIN) {
                 dbus_message_open_info(m, property, "rsl", "i");
                 ret = sd_bus_message_append_basic(m, 'i', &neighbor->rsl);
                 WARN_ON(ret < 0, "%s: %s", property, strerror(-ret));
                 dbus_message_close_info(m, property);
-                WARN("------rsl : %d", neighbor->rsl);
             }
             if (neighbor->rsl_adv != INT_MIN) {
                 dbus_message_open_info(m, property, "rsl_adv", "i");
                 ret = sd_bus_message_append_basic(m, 'i', &neighbor->rsl_adv);
                 WARN_ON(ret < 0, "%s: %s", property, strerror(-ret));
                 dbus_message_close_info(m, property);
-                WARN("------rsl_adv : %d", neighbor->rsl_adv);
             }
         }
         dbus_message_open_info(m, property, "ipv6", "aay");
         ret = sd_bus_message_open_container(m, 'a', "ay");
         WARN_ON(ret < 0, "%s: %s", property, strerror(-ret));
-        for (uint8_t index = 0; memcmp(*ipv6, ADDR_UNSPECIFIED, 16); ipv6++, index++) {
+        for (; memcmp(*ipv6, ADDR_UNSPECIFIED, 16); ipv6++) {
             ret = sd_bus_message_append_array(m, 'y', *ipv6, 16);
             WARN_ON(ret < 0, "%s: %s", property, strerror(-ret));
-
-            if (index ==0)
-                WARN("------ipv6 linkLocal: %s", tr_ipv6((uint8_t *)ipv6));
-            else
-                WARN("------ipv6 global: %s", tr_ipv6((uint8_t *)ipv6));
-            
         }
         ret = sd_bus_message_close_container(m);
         WARN_ON(ret < 0, "%s: %s", property, strerror(-ret));

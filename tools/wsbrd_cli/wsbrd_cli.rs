@@ -122,7 +122,7 @@ fn do_status(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
     // for (i, g) in lgaks.iter().enumerate() {
     //     println!("LGAK[{}]: {}", i, format_byte_array(g));
     // }
-// 
+ 
     // let lgtks = dbus_proxy.lgtks().unwrap_or(vec![]);
     // for (i, g) in lgtks.iter().enumerate() {
     //     println!("LGTK[{}]: {}", i, format_byte_array(g));

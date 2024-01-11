@@ -308,7 +308,8 @@ static void exp_get_wisun_nodes(struct wsbr_ctxt *ctxt, uint32_t prop, struct io
         if (supp)
             free(supp);
     }
-}
+    ext_cmd_tx(ctxt, &tx_buf);
+    iobuf_free(&tx_buf);}
 
 // Some debug tools (fuzzers) may deflect this struct. So keep it public.
 struct ext_rx_cmds ext_cmds[] = {

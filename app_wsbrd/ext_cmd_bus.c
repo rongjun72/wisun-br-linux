@@ -327,8 +327,6 @@ void ext_cmd_rx(struct wsbr_ctxt *ctxt)
         .data = rx_buf,
     };
     uint32_t cmd, prop;
-    int i;
-    //WARN("---------------------EXTERNAL COMMAND UART enter...");
 
     buf.data_size = ctxt->extcmd.device_rx(ctxt->ext_cmd_ctxt, rx_buf, sizeof(rx_buf));
     if (!buf.data_size)
@@ -336,14 +334,14 @@ void ext_cmd_rx(struct wsbr_ctxt *ctxt)
     spinel_trace_rx(&buf);
     spinel_pop_u8(&buf); /* packet header */
     cmd = spinel_pop_uint(&buf);
-    WARN("--------cmd : 0x%04x", cmd);
-    //if (cmd != SPINEL_CMD_PROP_IS) {
-    //    prop = (uint32_t)-1;
-    //} else {
+    WARN("--------cmd : %s", spinel_cmd_str(cmd));
+    if (cmd < SPINEL_CMD_PROP_GET || cmd > SPINEL_CMD_PROP_REMOVED) {
+        prop = (uint32_t)-1;
+    } else {
         prop = spinel_pop_uint(&buf);
-    //}
-    WARN("--------prop : 0x%04x", prop);
-    for (i = 0; ext_cmds[i].cmd != (uint32_t)-1; i++)
+    }
+    WARN("-------prop : %s", spinel_prop_str(prop));
+    for (int i = 0; ext_cmds[i].cmd != (uint32_t)-1; i++)
         if (ext_cmds[i].cmd == cmd && ext_cmds[i].prop == prop)
             return ext_cmds[i].fn(ctxt, prop, &buf);
     ERROR("%s: command %04x/%04x not implemented", __func__, cmd, prop);

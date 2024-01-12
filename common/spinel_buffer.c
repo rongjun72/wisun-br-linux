@@ -117,6 +117,9 @@ const char *spinel_prop_str(int prop)
         prop_name(WS_SECURITY_ENABLED),
         prop_name(WS_START),
         prop_name(WS_TX_POWER),
+        prop_name(EXT_WisunStatus),
+        prop_name(EXT_WisunNetworkName),
+        prop_name(EXT_WisunNodes),
     };
 
     for (int i = 0; i < ARRAY_SIZE(spinel_props); i++)

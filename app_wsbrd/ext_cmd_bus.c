@@ -132,13 +132,6 @@ static void exp_get_wisun_status(struct wsbr_ctxt *ctxt, uint32_t prop, struct i
 
 }
 
-static void exp_set_wisun_network_name(struct wsbr_ctxt *ctxt, uint32_t prop, struct iobuf_read *buf)
-{
-    int interface_id = ctxt->rcp_if_id;
-    char *nwkname = strdup(spinel_pop_str(buf));
-    ws_management_network_name_set(interface_id, nwkname);
-}
-
 struct neighbor_info {
     int rssi;
     int rsl;
@@ -312,11 +305,105 @@ static void exp_get_wisun_nodes(struct wsbr_ctxt *ctxt, uint32_t prop, struct io
     iobuf_free(&tx_buf);
 }
 
+static void ext_message_append_node_reduced(
+    struct iobuf_write *buf,
+    const uint8_t self[8],
+    const uint8_t parent[8],
+    const uint8_t ipv6[3][16],
+    bool is_br,
+    supp_entry_t *supp,
+    struct neighbor_info *neighbor)
+{
+    spinel_push_fixed_u8_array(buf, self, 8); //node eui64
+    
+    if (is_br) {
+        spinel_push_string(buf, "isBdRt");
+    } else if (supp) {
+        spinel_push_string(buf, "isAuth");
+    }
+    if (parent) {
+        spinel_push_fixed_u8_array(buf, parent, 8); //parent eui64
+    } else {
+        uint8_t parent_tmp[8] = {0};
+        spinel_push_fixed_u8_array(buf, parent_tmp, 8); //parent eui64
+    }
+
+    // "LinkLocal ipv6" then "global ipv6"
+    for (uint8_t index = 0; memcmp(*ipv6, ADDR_UNSPECIFIED, 16); ipv6++, index++) {
+        spinel_push_fixed_u8_array(buf, (uint8_t *)ipv6, 16);
+    }
+}
+
+static void exp_set_wisun_nodes_reduced(struct wsbr_ctxt *ctxt, uint32_t prop, struct iobuf_read *buf)
+{
+    struct neighbor_info *neighbor_info_ptr;
+    struct neighbor_info neighbor_info;
+    uint8_t node_ipv6[3][16] = { 0 };
+    bbr_route_info_t table[4096];
+    uint8_t *parent, *ucast_addr;
+    int len_pae, len_rpl, ret, j;
+    uint8_t eui64_pae[4096][8];
+    bbr_information_t br_info;
+    supp_entry_t *supp;
+    uint8_t ipv6[16];
+    struct iobuf_write tx_buf = { };
+
+    ret = ws_bbr_info_get(ctxt->rcp_if_id, &br_info);
+    BUG_ON(ret < 0, "%d: %s", prop, strerror(-ret));
+    len_pae = ws_pae_auth_supp_list(ctxt->rcp_if_id, eui64_pae, sizeof(eui64_pae));
+    len_rpl = ws_bbr_routing_table_get(ctxt->rcp_if_id, table, ARRAY_SIZE(table));
+    BUG_ON(len_rpl < 0, "%d: %s", prop, strerror(-len_rpl));
+
+    tun_addr_get_link_local(ctxt->config.tun_dev, node_ipv6[0]);
+    tun_addr_get_global_unicast(ctxt->config.tun_dev, node_ipv6[1]);
+
+    WARN("-------send reduced wisun nodes info through spinel");
+    spinel_push_hdr_is_prop(&tx_buf, SPINEL_PROP_EXT_WisunNodes0);
+    ext_message_append_node_reduced(&tx_buf, ctxt->rcp.eui64, NULL,
+                             node_ipv6, true, false, NULL);
+
+    for (int i = 0; i < len_pae; i++) {
+        memcpy(node_ipv6[0], ADDR_LINK_LOCAL_PREFIX, 8);
+        memcpy(node_ipv6[0] + 8, eui64_pae[i], 8);
+        memcpy(node_ipv6[1], ADDR_UNSPECIFIED, 16);
+        parent = NULL;
+        ucast_addr = dhcp_eui64_to_ipv6(ctxt, eui64_pae[i]);
+        if (ucast_addr) {
+            memcpy(node_ipv6[1], ucast_addr, 16);
+            for (j = 0; j < len_rpl; j++)
+                if (!memcmp(table[j].target, node_ipv6[1] + 8, 8))
+                    break;
+            if (j != len_rpl) {
+                memcpy(ipv6, br_info.prefix, 8);
+                memcpy(ipv6 + 8, table[j].parent, 8);
+                parent = dhcp_ipv6_to_eui64(ctxt, ipv6);
+                WARN_ON(!parent, "RPL parent not in DHCP leases (%s)", tr_ipv6(ipv6));
+            }
+        }
+        if (dbus_get_neighbor_info(ctxt, &neighbor_info, eui64_pae[i]))
+            neighbor_info_ptr = &neighbor_info;
+        else
+            neighbor_info_ptr = NULL;
+        if (ws_pae_key_storage_supp_exists(eui64_pae[i]))
+            supp = ws_pae_key_storage_supp_read(NULL, eui64_pae[i], NULL, NULL, NULL);
+        else
+            supp = NULL;
+
+        ext_message_append_node_reduced(&tx_buf, eui64_pae[i], parent, node_ipv6,
+                                 false, supp, neighbor_info_ptr);
+        if (supp)
+            free(supp);
+    }
+    ext_cmd_tx(ctxt, &tx_buf);
+    iobuf_free(&tx_buf);
+}
+
+
 // Some debug tools (fuzzers) may deflect this struct. So keep it public.
 struct ext_rx_cmds ext_cmds[] = {
     { SPINEL_CMD_NOOP,             (uint32_t)-1,                         ext_rx_no_op },
     { SPINEL_CMD_PROP_GET,         SPINEL_PROP_EXT_WisunStatus,          exp_get_wisun_status },
-    { SPINEL_CMD_PROP_SET,         SPINEL_PROP_EXT_WisunNetworkName,     exp_set_wisun_network_name },
+    { SPINEL_CMD_PROP_SET,         SPINEL_PROP_EXT_WisunNodes0,          exp_set_wisun_nodes_reduced },
     { SPINEL_CMD_PROP_GET,         SPINEL_PROP_EXT_WisunNodes,           exp_get_wisun_nodes },
     { (uint32_t)-1,                (uint32_t)-1,                         NULL },
 };

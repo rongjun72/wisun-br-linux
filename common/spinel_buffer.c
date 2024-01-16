@@ -118,7 +118,7 @@ const char *spinel_prop_str(int prop)
         prop_name(WS_START),
         prop_name(WS_TX_POWER),
         prop_name(EXT_WisunStatus),
-        prop_name(EXT_WisunNetworkName),
+        prop_name(EXT_WisunNodes0),
         prop_name(EXT_WisunNodes),
     };
 

@@ -403,7 +403,7 @@ static void exp_set_wisun_nodes_reduced(struct wsbr_ctxt *ctxt, uint32_t prop, s
 struct ext_rx_cmds ext_cmds[] = {
     { SPINEL_CMD_NOOP,             (uint32_t)-1,                         ext_rx_no_op },
     { SPINEL_CMD_PROP_GET,         SPINEL_PROP_EXT_WisunStatus,          exp_get_wisun_status },
-    { SPINEL_CMD_PROP_SET,         SPINEL_PROP_EXT_WisunNodes0,          exp_set_wisun_nodes_reduced },
+    { SPINEL_CMD_PROP_GET,         SPINEL_PROP_EXT_WisunNodes0,          exp_set_wisun_nodes_reduced },
     { SPINEL_CMD_PROP_GET,         SPINEL_PROP_EXT_WisunNodes,           exp_get_wisun_nodes },
     { (uint32_t)-1,                (uint32_t)-1,                         NULL },
 };

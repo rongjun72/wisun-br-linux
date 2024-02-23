@@ -18,7 +18,9 @@ sudo chmod 777 $wsnode2
 # might not needed
 nohup minicom -D $wsnode0 &
 # serial port config
-stty -F ${wsnode0} ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 10 | cat ${wsnode0}
+# gnome-terminal --tab
+stty -F ${wsnode0} ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
+gnome-terminal --window -- cat ${wsnode0};
 
 #modulation_rate=(50 150)
 
@@ -71,6 +73,8 @@ function join_fan10
 
 echo "------start wsbrd-------"
 # check the thread number of wsbrd
+# return of "ps -u wsbrd" is "PID TTY TIME CMD $pid_val ? hour:min:sec wsbrd"
+# here we extact the thread id : $pid_val, if existed, kill it
 thread=$(echo $(ssh_command "ps -u wsbrd") | sed 's/?.*//' | sed 's/[^0-9/]*//g')
 echo "---check the thread number of wsbrd: $thread"
 # kill existing wsbrd thread before start
@@ -79,7 +83,9 @@ if [ -n "$thread" ]; then
   ssh_command "sudo kill $thread";
 fi
 echo "---start wsbrd application on Raspberry Pi..."
-ssh_command "cd ~/Git_repository/wisun-br-rong;sudo wsbrd -F wsbrd.conf -T 15.4-mngt,15.4,eap,icmp-rf,icmp-tun >> working.log" &
+gnome-terminal --window -- ssh  ${BorderRouterRPi_usr}@${BorderRouterRPi_ip} \
+  "cd ~/Git_repository/wisun-br-rong;sudo wsbrd -F wsbrd.conf -T 15.4-mngt,15.4,eap,icmp-rf"
+
 
 echo "------start wsnode-------"
 wisun_set $wsnode0

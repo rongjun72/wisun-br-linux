@@ -131,7 +131,7 @@ void       ws_wp_nested_us_write(struct iobuf_write *buf, const struct ws_hoppin
 void       ws_wp_nested_bs_write(struct iobuf_write *buf, const struct ws_hopping_schedule *hopping_schedule);
 void      ws_wp_nested_pan_write(struct iobuf_write *buf, uint16_t pan_size, uint16_t routing_cost, uint8_t tps_version);
 void  ws_wp_nested_netname_write(struct iobuf_write *buf, uint8_t *network_name, uint8_t network_name_length);
-void   ws_wp_nested_panver_write(struct iobuf_write *buf, uint8_t pan_version);
+void   ws_wp_nested_panver_write(struct iobuf_write *buf, uint16_t pan_version);
 void  ws_wp_nested_gtkhash_write(struct iobuf_write *buf, const gtkhash_t gtkhash[GTK_NUM]);
 uint16_t ws_wp_nested_hopping_schedule_length(struct ws_hopping_schedule *hopping_schedule, bool unicast_schedule);
 /* Wi-SUN FAN 1.1 */

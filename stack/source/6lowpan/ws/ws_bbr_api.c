@@ -573,7 +573,7 @@ void ws_bbr_pan_version_increase(struct net_if *cur)
     if (!cur) {
         return;
     }
-    tr_debug("Border router version number update");
+    ////////tr_debug("Border router version number update");
     if (configuration & BBR_PERIODIC_VERSION_INC) {
         // Periodically increase the version number.
         // This removes need for DAO, but causes slowness in recovery
@@ -583,6 +583,7 @@ void ws_bbr_pan_version_increase(struct net_if *cur)
         pan_version_timer = 0;
     }
     cur->ws_info.pan_information.pan_version++;
+    tr_debug("Border router version number update, pan_version:%d", cur->ws_info.pan_information.pan_version);
     // Inconsistent for border router to make information distribute faster
     ws_bootstrap_configuration_trickle_reset(cur);
 

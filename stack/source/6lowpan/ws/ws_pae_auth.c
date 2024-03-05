@@ -832,7 +832,7 @@ void ws_pae_auth_slow_timer_key(pae_auth_t *pae_auth, int i, uint16_t seconds, b
     uint32_t timer_seconds = sec_prot_keys_gtk_lifetime_decrement(keys, i, current_time, seconds + gtk_lifetime_dec_extra_seconds, true);
     if (active_index == i) {
         if (!pae_auth_gtk->gtk_new_inst_req_exp) {
-            pae_auth_gtk->gtk_new_inst_req_exp = ws_pae_timers_gtk_new_install_required(timer_gtk_cfg, timer_seconds);
+            pae_auth_gtk->gtk_new_inst_req_exp = ws_pae_timers_gtk_new_install_required(timer_gtk_cfg, timer_seconds);////////, is_lgtk);
             if (pae_auth_gtk->gtk_new_inst_req_exp) {
                 int8_t second_index = sec_prot_keys_gtk_install_order_second_index_get(keys);
                 ////////tr_warn("----------------------------second_index = %d", second_index);
@@ -851,7 +851,7 @@ void ws_pae_auth_slow_timer_key(pae_auth_t *pae_auth, int i, uint16_t seconds, b
         }
 
         if (!pae_auth_gtk->gtk_new_act_time_exp) {
-            pae_auth_gtk->gtk_new_act_time_exp =  ws_pae_timers_gtk_new_activation_time(timer_gtk_cfg, timer_seconds);
+            pae_auth_gtk->gtk_new_act_time_exp =  ws_pae_timers_gtk_new_activation_time(timer_gtk_cfg, timer_seconds);////////, is_lgtk);
             if (pae_auth_gtk->gtk_new_act_time_exp) {
                 int8_t new_active_index = ws_pae_auth_new_gtk_activate(keys);
                 tr_info("%s new activation time active index: %i, time: %"PRIu32", new index: %i, system time: %"PRIu32"",
@@ -1020,12 +1020,13 @@ static void ws_pae_auth_gtk_key_insert(sec_prot_gtk_keys_t *gtks, sec_prot_gtk_k
 
     // Checks if next GTK values are set and gets first GTK to install
     int8_t next_gtk_index = sec_prot_keys_gtk_install_order_first_index_get(next_gtks);
+    int8_t second_index = sec_prot_keys_gtk_install_order_second_index_get(gtks);
     ////////uint8_t temp_array[GTK_NUM];
     ////////for (uint8_t i = 0; i < GTK_NUM; i++) 
     ////////    temp_array[i] = next_gtks->gtk[i].install_order;
     ////////tr_warn("------next_gtks->gtk[0-3].install_order   = %s", tr_bytes(&temp_array[0], GTK_NUM, NULL, 128, DELIM_SPACE | ELLIPSIS_STAR));
     ////////tr_warn("----next_gtk_index = %d", next_gtk_index);
-    if (next_gtk_index >= 0) {
+    if ((next_gtk_index >= 0) && (second_index >=0)) {
         // Gets GTK value
         uint8_t *gtk = sec_prot_keys_gtk_get(next_gtks, next_gtk_index);
         memcpy(gtk_value, gtk, GTK_LEN);
@@ -1485,8 +1486,18 @@ static kmp_type_e ws_pae_auth_next_protocol_get(pae_auth_t *pae_auth, supp_entry
     }
     if (sec_keys->ptk_mismatch) {
         /* For the new supplicant, if its corresponding mac address existed in the neighbor table, clean it */
-        struct net_if *interface_ptr = protocol_stack_interface_info_get_by_id(pae_auth->interface_ptr->id);
-        test_clean_mac_neighbor_table(interface_ptr, supp_entry->addr.eui_64);
+        ///////////struct net_if *interface_ptr = protocol_stack_interface_info_get_by_id(pae_auth->interface_ptr->id);
+        ///////////test_clean_mac_neighbor_table(interface_ptr, supp_entry->addr.eui_64);
+        ////////tr_warn("-----supp_entry info:");
+        ////////tr_warn("-----supp_entry : %p", supp_entry);
+        ////////tr_warn("-----supp_entry.sec_keys.pmk_lifetime: %d",    supp_entry->sec_keys.pmk_lifetime);
+        ////////tr_warn("-----supp_entry.sec_keys.ptk_lifetime: %d",    supp_entry->sec_keys.ptk_lifetime);
+        ////////tr_warn("-----supp_entry.sec_keys.ptk_eui_64_set: %d",  supp_entry->sec_keys.ptk_eui_64_set);
+        ////////tr_warn("-----supp_entry.sec_keys.gtks.keys.updated: %d",    supp_entry->sec_keys.gtks.keys->updated);
+        ////////tr_warn("-----supp_entry.sec_keys.gtks.keys->gtk[0].lifetime: %d",    supp_entry->sec_keys.gtks.keys->gtk[0].lifetime);
+        ////////tr_warn("-----supp_entry.sec_keys.gtks.keys->gtk[1].lifetime: %d",    supp_entry->sec_keys.gtks.keys->gtk[1].lifetime);
+        ////////tr_warn("-----supp_entry.sec_keys.gtks.keys->gtk[2].lifetime: %d",    supp_entry->sec_keys.gtks.keys->gtk[2].lifetime);
+        ////////tr_warn("-----supp_entry.sec_keys.gtks.keys->gtk[3].lifetime: %d",    supp_entry->sec_keys.gtks.keys->gtk[3].lifetime);
         
         // start 4WH towards supplicant
         next_type = IEEE_802_11_4WH;

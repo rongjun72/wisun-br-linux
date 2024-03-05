@@ -43,7 +43,7 @@ void ws_pae_timers_settings_init(sec_timer_cfg_t *timer_settings, ws_sec_timer_c
  * \return false GTK install not required
  *
  */
-bool ws_pae_timers_gtk_new_install_required(struct sec_timer_gtk_cfg *sec_cfg, uint32_t seconds);
+bool ws_pae_timers_gtk_new_install_required(struct sec_timer_gtk_cfg *sec_cfg, uint32_t seconds);////////, bool is_lgtk);
 
 /**
  *  ws_pae_timers_gtk_new_activation_time GTK new activation time
@@ -55,7 +55,7 @@ bool ws_pae_timers_gtk_new_install_required(struct sec_timer_gtk_cfg *sec_cfg, u
  * \return false GTK new activation time not expired
  *
  */
-bool ws_pae_timers_gtk_new_activation_time(struct sec_timer_gtk_cfg *timer_gtk_cfg, uint32_t seconds);
+bool ws_pae_timers_gtk_new_activation_time(struct sec_timer_gtk_cfg *timer_gtk_cfg, uint32_t seconds);////////, bool is_lgtk);
 
 /**
  *  ws_pae_timers_gtk_revocation_lifetime_get GTK revocation lifetime get

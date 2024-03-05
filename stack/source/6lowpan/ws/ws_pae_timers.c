@@ -116,12 +116,12 @@ static void ws_pae_timers_calculate(struct sec_timer_gtk_cfg *timer_gtk_settings
 #endif
 }
 
-bool ws_pae_timers_gtk_new_install_required(struct sec_timer_gtk_cfg *timer_gtk_cfg, uint32_t seconds)
+bool ws_pae_timers_gtk_new_install_required(struct sec_timer_gtk_cfg *timer_gtk_cfg, uint32_t seconds)////////, bool is_lgtk)
 {
     uint32_t gtk_new_install_req_seconds = timer_gtk_cfg->expire_offset - timer_gtk_cfg->new_install_req * timer_gtk_cfg->expire_offset / 100;
 
     ////////bool gtk_new_install_required = timer_gtk_cfg->new_install_req > 0 && seconds < gtk_new_install_req_seconds;
-    ////////if (seconds%20 == 0 || gtk_new_install_required) {
+    ////////if (!is_lgtk &&(seconds%30 == 0 || gtk_new_install_required)) {
     ////////    tr_info("-----check if gtk new install required: (%d >? 0 && %d <? %d) = %s", timer_gtk_cfg->new_install_req, seconds, gtk_new_install_req_seconds, 
     ////////            gtk_new_install_required ? "True": "False");
     ////////}
@@ -129,12 +129,12 @@ bool ws_pae_timers_gtk_new_install_required(struct sec_timer_gtk_cfg *timer_gtk_
     return timer_gtk_cfg->new_install_req > 0 && seconds < gtk_new_install_req_seconds;
 }
 
-bool ws_pae_timers_gtk_new_activation_time(struct sec_timer_gtk_cfg *timer_gtk_cfg, uint32_t seconds)
+bool ws_pae_timers_gtk_new_activation_time(struct sec_timer_gtk_cfg *timer_gtk_cfg, uint32_t seconds)////////, bool is_lgtk)
 {
     uint32_t gtk_gtk_new_activation_time_seconds = timer_gtk_cfg->expire_offset / timer_gtk_cfg->new_act_time;
 
     ////////bool gtk_new_activation = seconds < gtk_gtk_new_activation_time_seconds;
-    ////////if (seconds%20 == 0 || gtk_new_activation) {
+    ////////if (!is_lgtk && (seconds%30 == 0 || gtk_new_activation)) {
     ////////    tr_info("-----check if timers gtk new atctivate: (%d <? %d) = %s", seconds, gtk_gtk_new_activation_time_seconds, 
     ////////                        gtk_new_activation ? "True" : "False");
     ////////}

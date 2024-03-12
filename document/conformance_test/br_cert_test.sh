@@ -45,21 +45,21 @@ java -jar $silabspti -discover > si_pti_discover.txt
 line_sn=$(sed -n '/'$wsnode0_sn'/=' si_pti_discover.txt)
 if [ -n "$line_sn" ]; then
   echo "node 0 jlink sn found in line: $line_sn..."
-  line_ip=$(expr $line_sn + 1); 
+  line_ip=$(($line_sn + 1)); 
   wsnode0_netif=$(sed -n "${line_ip}p" si_pti_discover.txt | sed 's/^.*netif=//g')
   echo "node 0 net if is: $wsnode0_netif"
 fi
 line_sn=$(sed -n '/'$wsnode1_sn'/=' si_pti_discover.txt)
 if [ -n "$line_sn" ]; then
   echo "node 1 jlink sn found in line: $line_sn..."
-  line_ip=$(expr $line_sn + 1); 
+  line_ip=$(($line_sn + 1)); 
   wsnode1_netif=$(sed -n "${line_ip}p" si_pti_discover.txt | sed 's/^.*netif=//g')
   echo "node 1 net if is: $wsnode1_netif"
 fi
 line_sn=$(sed -n '/'$wsnode2_sn'/=' si_pti_discover.txt)
 if [ -n "$line_sn" ]; then
   echo "node 0 jlink sn found in line: $line_sn..."
-  line_ip=$(expr $line_sn + 1); 
+  line_ip=$(($line_sn + 1)); 
   wsnode2_netif=$(sed -n "${line_ip}p" si_pti_discover.txt | sed 's/^.*netif=//g')
   echo "node 2 net if is: $wsnode2_netif"
 fi
@@ -205,17 +205,20 @@ echo "------start wsbrd application on Raspberry Pi..."
 wisun_domain="NA"; wisun_mode="5"; wisun_class="3"
 ssh_start_wsbrd_window $BRRPI_usr $BRRPI_ip $wisun_domain $wisun_mode $wisun_class
 
-echo "------start wsnode packet capture..."
+echo "------start wsnode packet capture, for 400s..."
 gnome-terminal --window -- \
-  sudo java -jar $silabspti -ip=$wsnode0_netif -driftCorrection=disable -time=500000 -format=log -out=test_cap$(date "+%m%d_%H-%M").log
+  sudo java -jar $silabspti -ip=$wsnode0_netif -driftCorrection=disable -time=400000 -format=log -out=test_cap$(date "+%m%d_%H-%M").log
 
-echo "------start wsnode join_fan10---0----"
-echo "wisun disconnect" > $wsnode0 
-echo "------start wsnode join_fan10----1---"
-echo "wisun join_fan10" > $wsnode0 
-echo "------start wsnode join_fan10-----2--"
+echo "------start wsnode join_fan10-------"
+time_0=$(date +%s%N); echo "wisun disconnect" > $wsnode0 
+time_1=$(date +%s%N); echo "send disconnect: $((($time_1 - $time_0)/1000000))ms"; echo "wisun join_fan10" > $wsnode0 
+time_2=$(date +%s%N); echo "send join_fan10: $((($time_2 - $time_1)/1000000))ms";
 
-for wait_idx in $(seq 0 50)
+
+
+
+
+for wait_idx in $(seq 0 40)
 do
   #echo $(date)
   echo -ne "\r"
@@ -228,7 +231,7 @@ do
       echo -n "."
     fi
   done
-  for idx in $(seq 0 $(expr 50 - $wait_idx))
+  for idx in $(seq 0 $((50 - $wait_idx)))
   do
     echo -n "|"
   done

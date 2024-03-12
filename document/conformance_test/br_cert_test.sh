@@ -24,10 +24,8 @@ wsnode2=/dev/ttyACM2
 sudo chmod 777 $wsnode0
 sudo chmod 777 $wsnode1
 sudo chmod 777 $wsnode2
-# might not needed
-#nohup minicom -D $wsnode0 &
-# serial port config
-# gnome-terminal --tab
+# open a minicom window to display serial port outcome
+gnome-terminal --window -- minicom -D /dev/ttyACM0 -b 115200 -8
 stty -F ${wsnode0} ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
 #gnome-terminal --window -- cat ${wsnode0};
 
@@ -115,7 +113,6 @@ function ssh_command
 function wisun_set
 {
   seria_port=$1
-  echo "wisun reset" > $seria_port; sleep 0.5;
   echo "wisun set wisun.network_name \"WiSUN test\"" > $seria_port
   echo "wisun set wisun.regulatory_domain NA" > $seria_port 
   echo "wisun set wisun.operating_class 3" > $seria_port
@@ -207,7 +204,7 @@ ssh_start_wsbrd_window $BRRPI_usr $BRRPI_ip $wisun_domain $wisun_mode $wisun_cla
 
 echo "------start wsnode packet capture, for 400s..."
 gnome-terminal --window -- \
-  sudo java -jar $silabspti -ip=$wsnode0_netif -driftCorrection=disable -time=400000 -format=log -out=test_cap$(date "+%m%d_%H-%M").log
+  sudo java -jar $silabspti -ip=$wsnode0_netif -driftCorrection=disable -time=400000 -format=log -out=testcap_$(date "+%m%d_%H-%M").log
 
 echo "------start wsnode join_fan10-------"
 time_0=$(date +%s%N); echo "wisun disconnect" > $wsnode0 
@@ -217,12 +214,11 @@ time_2=$(date +%s%N); echo "send join_fan10: $((($time_2 - $time_1)/1000000))ms"
 
 
 
-
-for wait_idx in $(seq 0 40)
+wait_sec=40
+for wait_idx in $(seq 0 $wait_sec)
 do
   #echo $(date)
   echo -ne "\r"
-  sleep 10
   for idx in $(seq 0 $wait_idx)
   do
     if [ "$idx" = "0" ]; then
@@ -231,10 +227,12 @@ do
       echo -n "."
     fi
   done
-  for idx in $(seq 0 $((50 - $wait_idx)))
+  for idx in $(seq 0 $(($wait_sec - $wait_idx)))
   do
     echo -n "|"
   done
+  sleep 10
 done
+echo -ne "\n"
 
 

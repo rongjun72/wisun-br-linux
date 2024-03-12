@@ -84,11 +84,12 @@ rm -f si_pti_discover.txt
 #	   gak : 96 06 14 33 9D 94 40 5A 4A 4A 44 2D 71 3E 3B 44
 #	   gak4: 960614339D94405A4A4A442D713E3B44
 # ---------------------------------------------------------
+# GAKs when net name set to "Wi-SUN test"
 # GAK[0]: a7 6c 4a e5 f6 41 95 d0 40 d7 e6 91 37 61 03 6e
 # GAK[1]: 49 a7 17 1a b3 0f 69 66 ff d5 b9 e3 5e e0 4c 44
 # GAK[2]: 76 fb e0 62 c4 0b 28 61 43 66 fd 17 5f 4b 46 7c
 # GAK[3]: 58 03 65 9d db 4a 6d 4e 53 1f a4 30 6b 57 de cf
-#
+# ----------------------------------------
 # GAK[0]: a76c4ae5f64195d040d7e6913761036e
 # GAK[1]: 49a7171ab30f6966ffd5b9e35ee04c44
 # GAK[2]: 76fbe062c40b28614366fd175f4b467c
@@ -133,6 +134,37 @@ function join_fan10
   echo "wisun join_fan10" > $seria_port
 }
 
+function ssh_check_and_kill_wsbrd
+{
+  BRRPI_usr=$1
+  BRRPI_ip=$2
+
+  # check the thread number of wsbrd
+  # return of "ps -u wsbrd" is "PID TTY TIME CMD $pid_val ? hour:min:sec wsbrd"
+  # here we extact the thread id : $pid_val, if existed, kill it
+  thread=$(echo $(ssh ${BRRPI_usr}@${BRRPI_ip} "ps -u wsbrd") | sed 's/^.*CMD //g' | sed 's/ .*$//g')
+  echo "------check the thread number of wsbrd: $thread"
+  # kill existing wsbrd thread before start
+  if [ -n "$thread" ]; then
+    echo "------kill the existing wsbrd thread: $thread before start" 
+    ssh ${BRRPI_usr}@${BRRPI_ip} "sudo kill $thread";
+  fi
+}
+
+function ssh_start_wsbrd_window
+{
+  BRRPI_usr=$1
+  BRRPI_ip=$2
+  wisun_domain=$3
+  wisun_mode=$4
+  wisun_class=$5
+  trace_set="15.4-mngt,15.4,eap,icmp-rf"
+
+  gnome-terminal --window -- ssh ${BRRPI_usr}@${BRRPI_ip} \
+    "cd $BRRPI_path;sudo wsbrd -F wsbrd.conf  -d $wisun_domain -m $wisun_mode -c $wisun_class -T $trace_set"
+  sleep 1;  
+}
+
 # --------------------------------------------------------------------------------------------
 # Before start test script, border router RCP packet capture through wireshark should be set.
 # USB serial port dongle: TX/RX/GND connect to PD8/PD9/GND on CMT RCP board
@@ -151,8 +183,7 @@ function join_fan10
 #   ...capture for RCP packet start in wireshark
 # --------------------------------------------------------------------------------------------
 # border router configurations:
-trace_set="15.4-mngt,15.4,eap,icmp-rf"
-PAN_ID=35
+#PAN_ID=35
 #network_name="Wi-SUN test"
 wisun_domain="NA"
 wisun_mode="5"
@@ -168,28 +199,15 @@ wisun_class="3"
 
 
 # check the thread number of wsbrd
-# return of "ps -u wsbrd" is "PID TTY TIME CMD $pid_val ? hour:min:sec wsbrd"
-# here we extact the thread id : $pid_val, if existed, kill it
-thread=$(echo $(ssh_command "ps -u wsbrd") | sed 's/^.*CMD //g' | sed 's/ .*$//g')
-#thread=$(echo $(ssh_command "ps -u wsbrd") | sed 's/?.*//' | sed 's/[^0-9/]*//g')
-#ssh ${BRRPI_usr}@${BRRPI_ip}
-echo "------check the thread number of wsbrd: $thread"
-# kill existing wsbrd thread before start
-if [ -n "$thread" ]; then
-  echo "------kill the existing wsbrd thread: $thread before start" 
-  ssh_command "sudo kill $thread";
-fi
-echo "------start wsbrd application on Raspberry Pi..."
-gnome-terminal --window -- ssh ${BRRPI_usr}@${BRRPI_ip} "cd $BRRPI_path;sudo wsbrd -F wsbrd.conf -T 15.4-mngt,15.4,eap,icmp-rf -D"
-#gnome-terminal --window -- ssh ${BRRPI_usr}@${BRRPI_ip} \
-#  "cd $BRRPI_path;sudo wsbrd -F wsbrd.conf  -d $wisun_domain -m $wisun_mode -c $wisun_class -T $trace_set"
-sleep 1;  
-#ssh ${BRRPI_usr}@${BRRPI_ip} "cd $BRRPI_path;sudo wsbrd_cli set-wisun-pan-id $PAN_ID"
+ssh_check_and_kill_wsbrd $BRRPI_usr $BRRPI_ip;
 
+echo "------start wsbrd application on Raspberry Pi..."
+wisun_domain="NA"; wisun_mode="5"; wisun_class="3"
+ssh_start_wsbrd_window $BRRPI_usr $BRRPI_ip $wisun_domain $wisun_mode $wisun_class
 
 echo "------start wsnode packet capture..."
 gnome-terminal --window -- \
-  sudo java -jar $silabspti -ip=$wsnode0_netif -driftCorrection=disable -time=500000 -format=log -out=test_cap.log
+  sudo java -jar $silabspti -ip=$wsnode0_netif -driftCorrection=disable -time=500000 -format=log -out=test_cap$(date "+%m%d_%H-%M").log
 
 echo "------start wsnode join_fan10---0----"
 echo "wisun disconnect" > $wsnode0 

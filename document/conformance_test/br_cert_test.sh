@@ -8,62 +8,16 @@ BRRPI_ip="192.168.31.97"
 BRRPI_path="/home/cmt/Git_repository/wisun-br-rong"
 silabspti=/home/jurong/Git_repository/java_packet_trace_library/silabs-pti/build/libs/silabs-pti-1.12.2.jar
 # Jlink serial number of TBUs
-wsnode0_sn=440088192
-wsnode1_sn=440054721
-wsnode2_sn=440136634
-wsnode0_mac="8c:1f:64:5e:40:bb:00:01"
-wsnode1_mac="8c:1f:64:5e:40:bb:00:02"
-wsnode2_mac="8c:1f:64:5e:40:bb:00:03"
+wsnode0_sn=440088192; wsnode0_mac="8c:1f:64:5e:40:bb:00:01"
+wsnode1_sn=440054721; wsnode1_mac="8c:1f:64:5e:40:bb:00:02"
+wsnode2_sn=440136634; wsnode2_mac="8c:1f:64:5e:40:bb:00:03"
 
 # Test Bed Units(TBU) connected to Test Bed through serial port
 # check serial port discripter for your test bed
-wsnode0=/dev/ttyACM0
-wsnode1=/dev/ttyACM1
-wsnode2=/dev/ttyACM2
-# get access permission to serial ports
-sudo chmod 777 $wsnode0
-sudo chmod 777 $wsnode1
-sudo chmod 777 $wsnode2
-# open a minicom window to display serial port outcome
-gnome-terminal --window -- minicom -D /dev/ttyACM0 -b 115200 -8
-stty -F ${wsnode0} ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
-#gnome-terminal --window -- cat ${wsnode0};
-
-# --------------------------------------------------------------------------------------------
-# Silabs Wi-SUN node packet capture
-# Hardware aspect, Silabs has PTI(Packet Tracking Interface) support which 
-# send network packets over debug channel (ethernet adapter)
-# Sofeware aspect, the java project: silabs-pti-X.Y.Z.jar communicate with Silabs WSTK adapters 
-# and stream debug channel messages to a file.
-# Data can be saved in a PCAPNG format to be consumed by wireshark, Silicon Labs Network Analyzer
-# , or as plain text or binary files.
-# --------------------------------------------------------------------------------------------
-# check the pti adapter network interface of the wsnodes
-java -jar $silabspti -discover > si_pti_discover.txt
-line_sn=$(sed -n '/'$wsnode0_sn'/=' si_pti_discover.txt)
-if [ -n "$line_sn" ]; then
-  echo "node 0 jlink sn found in line: $line_sn..."
-  line_ip=$(($line_sn + 1)); 
-  wsnode0_netif=$(sed -n "${line_ip}p" si_pti_discover.txt | sed 's/^.*netif=//g')
-  echo "node 0 net if is: $wsnode0_netif"
-fi
-line_sn=$(sed -n '/'$wsnode1_sn'/=' si_pti_discover.txt)
-if [ -n "$line_sn" ]; then
-  echo "node 1 jlink sn found in line: $line_sn..."
-  line_ip=$(($line_sn + 1)); 
-  wsnode1_netif=$(sed -n "${line_ip}p" si_pti_discover.txt | sed 's/^.*netif=//g')
-  echo "node 1 net if is: $wsnode1_netif"
-fi
-line_sn=$(sed -n '/'$wsnode2_sn'/=' si_pti_discover.txt)
-if [ -n "$line_sn" ]; then
-  echo "node 0 jlink sn found in line: $line_sn..."
-  line_ip=$(($line_sn + 1)); 
-  wsnode2_netif=$(sed -n "${line_ip}p" si_pti_discover.txt | sed 's/^.*netif=//g')
-  echo "node 2 net if is: $wsnode2_netif"
-fi
-
-rm -f si_pti_discover.txt
-
+# then get access permission to serial ports
+wsnode0=/dev/ttyACM0; sudo chmod 777 $wsnode0
+wsnode1=/dev/ttyACM1; sudo chmod 777 $wsnode1
+wsnode2=/dev/ttyACM2; sudo chmod 777 $wsnode2
 
 #modulation_rate=(50 150)
 
@@ -104,6 +58,10 @@ rm -f si_pti_discover.txt
 # gtk[3] = 44:44:44:44:44:44:44:44:44:44:44:44:44:44:44:44
 #    gak : CD 46 A0 50 AF 2B F1 6C F5 A0 E3 68 E5 10 44 9C
 #Note: the given GAKs are for Net Name of “WiSUN PAN”.
+
+# --------------------------------------------------------------------------------------------
+# Function definations:
+# --------------------------------------------------------------------------------------------
 
 function ssh_command
 {
@@ -161,6 +119,53 @@ function ssh_start_wsbrd_window
     "cd $BRRPI_path;sudo wsbrd -F wsbrd.conf  -d $wisun_domain -m $wisun_mode -c $wisun_class -T $trace_set"
   sleep 1;  
 }
+
+function find_netif_for_pti_capture 
+{
+  # Input parameters:
+  # -----------------------------------------
+  # $1: si_pti_discover.txt 
+  # $2: serial number of fg12 radio board
+  #------------------------------------------
+  wsnode_netif=""
+
+  line_sn=$(sed -n '/'$2'/=' $1)
+  if [ -n "$line_sn" ]; then
+    #echo "node jlink sn found in line: $line_sn..."
+    line_ip=$(($line_sn + 1)); 
+    wsnode_netif=$(sed -n "${line_ip}p" $1 | sed 's/^.*netif=//g')
+    #echo "node net if is: $wsnode_netif"
+  fi
+  echo $wsnode_netif
+}
+
+
+# open a minicom window to display serial port outcome
+gnome-terminal --window -- minicom -D /dev/ttyACM0 -b 115200 -8
+stty -F ${wsnode0} ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
+#gnome-terminal --window -- cat ${wsnode0};
+
+# --------------------------------------------------------------------------------------------
+# Silabs Wi-SUN node packet capture
+# Hardware aspect, Silabs has PTI(Packet Tracking Interface) support which 
+# send network packets over debug channel (ethernet adapter)
+# Sofeware aspect, the java project: silabs-pti-X.Y.Z.jar communicate with Silabs WSTK adapters 
+# and stream debug channel messages to a file.
+# Data can be saved in a PCAPNG format to be consumed by wireshark, Silicon Labs Network Analyzer
+# , or as plain text or binary files.
+# --------------------------------------------------------------------------------------------
+# check the pti adapter network interface of the wsnodes
+java -jar $silabspti -discover > si_pti_discover.txt
+wsnode0_netif=$(find_netif_for_pti_capture si_pti_discover.txt $wsnode0_sn)
+echo "find wsnode0_sn:$wsnode0_sn and wsnode0_netif: $wsnode0_netif"
+wsnode1_netif=$(find_netif_for_pti_capture si_pti_discover.txt $wsnode1_sn)
+echo "find wsnode1_sn:$wsnode1_sn and wsnode1_netif: $wsnode1_netif"
+wsnode2_netif=$(find_netif_for_pti_capture si_pti_discover.txt $wsnode2_sn)
+echo "find wsnode2_sn:$wsnode2_sn and wsnode2_netif: $wsnode2_netif"
+
+# delete temprary file
+rm -f si_pti_discover.txt
+
 
 # --------------------------------------------------------------------------------------------
 # Before start test script, border router RCP packet capture through wireshark should be set.

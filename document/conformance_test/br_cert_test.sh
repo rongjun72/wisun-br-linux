@@ -1,5 +1,7 @@
-LOG_PATH=$(pwd)/log
+LOG_PATH=$(pwd)/logs
 WisunBR_PATH="~/Git_repository/wisun-br-rong"
+TBC_usr="jurong"
+TBC_ip="192.168.31.179"
 
 # Device Under Test(DUT) are border router(BR) implemented by RaspberryPi+RCP
 # witch can be controlled through ssh remote access  
@@ -22,6 +24,7 @@ wsnode2=/dev/ttyACM2; sudo chmod 777 $wsnode2
 # Wi-SUN network configurations:
 #PAN_ID=35
 #network_name="Wi-SUN test"
+wisun_domain="NA"; wisun_mode="0x1b"; wisun_class="1"
 wisun_domain="NA"; wisun_mode="5"; wisun_class="3"
 
 #modulation_rate=(50 150)
@@ -126,12 +129,11 @@ rm -f si_pti_discover.txt
 ssh_check_and_kill_wsbrd $BRRPI_usr $BRRPI_ip;
 
 echo "------start wsbrd application on Raspberry Pi..."
-wisun_domain="NA"; wisun_mode="5"; wisun_class="3"
 ssh_start_wsbrd_window $BRRPI_usr $BRRPI_ip $wisun_domain $wisun_mode $wisun_class
 
 echo "------start wsnode packet capture, for 400s..."
 gnome-terminal --window --title="Node Capture" --geometry=90x24+200+0 -- \
-  sudo java -jar $silabspti -ip=$wsnode0_netif -driftCorrection=disable -time=400000 -format=log -out=testcap_$(date "+%m%d_%H-%M").log
+  sudo java -jar $silabspti -ip=$wsnode0_netif -driftCorrection=disable -time=400000 -format=log -out=${LOG_PATH}/testcap_$(date "+%m%d_%H-%M").log
 
 echo "------start wsnode join_fan10-------"
 time_0=$(date +%s%N); echo "wisun disconnect" > $wsnode0 
@@ -140,5 +142,8 @@ time_2=$(date +%s%N); echo "send join_fan10: $((($time_2 - $time_1)/1000000))ms"
 
 
 display_wait_progress 40;
+# copy border router host/rcp received message pcapng file from RapspberryPi
+ssh ${BRRPI_usr}@${BRRPI_ip} \
+  "scp /tmp/wisun_dump.pcapng ${TBC_usr}@${TBC_ip}:${LOG_PATH}//BrCap_$(date "+%m%d_%H-%M").pcapng"
 
 

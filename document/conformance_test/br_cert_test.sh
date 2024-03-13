@@ -19,6 +19,8 @@ wsnode0=/dev/ttyACM0; sudo chmod 777 $wsnode0
 wsnode1=/dev/ttyACM1; sudo chmod 777 $wsnode1
 wsnode2=/dev/ttyACM2; sudo chmod 777 $wsnode2
 
+source br_cert_funcions.sh
+
 #modulation_rate=(50 150)
 
 # The GTKs for PAN A are set to a specific set of values when the BR is a TBU
@@ -59,91 +61,11 @@ wsnode2=/dev/ttyACM2; sudo chmod 777 $wsnode2
 #    gak : CD 46 A0 50 AF 2B F1 6C F5 A0 E3 68 E5 10 44 9C
 #Note: the given GAKs are for Net Name of “WiSUN PAN”.
 
-# --------------------------------------------------------------------------------------------
-# Function definations:
-# --------------------------------------------------------------------------------------------
-
-function ssh_command
-{
-  ssh ${BRRPI_usr}@${BRRPI_ip} "$1"
-}
-
-function wisun_set
-{
-  seria_port=$1
-  echo "wisun set wisun.network_name \"WiSUN test\"" > $seria_port
-  echo "wisun set wisun.regulatory_domain NA" > $seria_port 
-  echo "wisun set wisun.operating_class 3" > $seria_port
-  echo "wisun set wisun.operating_mode 5" > $seria_port
-  echo "wisun set wisun.unicast_dwell_interval 15" > $seria_port
-  echo "wisun set wisun.allowed_channels 0-255" > $seria_port
-  # clear the white list before set the list
-  echo "wisun mac_allow FF:FF:FF:FF:FF:FF:FF:FF" > $seria_port
-  echo "wisun save" > $seria_port
-  sleep 0.5
-}
-
-function join_fan10
-{
-  seria_port=$1
-  echo "wisun join_fan10" > $seria_port
-}
-
-function ssh_check_and_kill_wsbrd
-{
-  BRRPI_usr=$1
-  BRRPI_ip=$2
-
-  # check the thread number of wsbrd
-  # return of "ps -u wsbrd" is "PID TTY TIME CMD $pid_val ? hour:min:sec wsbrd"
-  # here we extact the thread id : $pid_val, if existed, kill it
-  thread=$(echo $(ssh ${BRRPI_usr}@${BRRPI_ip} "ps -u wsbrd") | sed 's/^.*CMD //g' | sed 's/ .*$//g')
-  echo "------check the thread number of wsbrd: $thread"
-  # kill existing wsbrd thread before start
-  if [ -n "$thread" ]; then
-    echo "------kill the existing wsbrd thread: $thread before start" 
-    ssh ${BRRPI_usr}@${BRRPI_ip} "sudo kill $thread";
-  fi
-}
-
-function ssh_start_wsbrd_window
-{
-  BRRPI_usr=$1
-  BRRPI_ip=$2
-  wisun_domain=$3
-  wisun_mode=$4
-  wisun_class=$5
-  trace_set="15.4-mngt,15.4,eap,icmp-rf"
-
-  gnome-terminal --window -- ssh ${BRRPI_usr}@${BRRPI_ip} \
-    "cd $BRRPI_path;sudo wsbrd -F wsbrd.conf  -d $wisun_domain -m $wisun_mode -c $wisun_class -T $trace_set"
-  sleep 1;  
-}
-
-function find_netif_for_pti_capture 
-{
-  # Input parameters:
-  # -----------------------------------------
-  # $1: si_pti_discover.txt 
-  # $2: serial number of fg12 radio board
-  #------------------------------------------
-  wsnode_netif=""
-
-  line_sn=$(sed -n '/'$2'/=' $1)
-  if [ -n "$line_sn" ]; then
-    #echo "node jlink sn found in line: $line_sn..."
-    line_ip=$(($line_sn + 1)); 
-    wsnode_netif=$(sed -n "${line_ip}p" $1 | sed 's/^.*netif=//g')
-    #echo "node net if is: $wsnode_netif"
-  fi
-  echo $wsnode_netif
-}
 
 
-# open a minicom window to display serial port outcome
-gnome-terminal --window -- minicom -D /dev/ttyACM0 -b 115200 -8
+# open a minicom window to display serial port echo
+gnome-terminal --window --title="SNode0" --geometry=80x25+200+100 -- minicom -D /dev/ttyACM0 -b 115200 -8
 stty -F ${wsnode0} ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
-#gnome-terminal --window -- cat ${wsnode0};
 
 # --------------------------------------------------------------------------------------------
 # Silabs Wi-SUN node packet capture
@@ -193,9 +115,9 @@ wisun_class="3"
 #-------------------------------------------------------------
 
 # test begin........
-#wisun_set $wsnode0
-#wisun_set $wsnode1
-#wisun_set $wsnode2
+#wisun_node_set $wsnode0 $wisun_domain $wisun_mode $wisun_class
+#wisun_node_set $wsnode1
+#wisun_node_set $wsnode2
 #echo "wisun mac_allow $wsnode1_mac" > $wsnode0
 #echo "wisun mac_allow $wsnode2_mac" > $wsnode1
 
@@ -208,7 +130,7 @@ wisun_domain="NA"; wisun_mode="5"; wisun_class="3"
 ssh_start_wsbrd_window $BRRPI_usr $BRRPI_ip $wisun_domain $wisun_mode $wisun_class
 
 echo "------start wsnode packet capture, for 400s..."
-gnome-terminal --window -- \
+gnome-terminal --window --title="Node Capture" --geometry=90x24+200+0 -- \
   sudo java -jar $silabspti -ip=$wsnode0_netif -driftCorrection=disable -time=400000 -format=log -out=testcap_$(date "+%m%d_%H-%M").log
 
 echo "------start wsnode join_fan10-------"
@@ -217,27 +139,6 @@ time_1=$(date +%s%N); echo "send disconnect: $((($time_1 - $time_0)/1000000))ms"
 time_2=$(date +%s%N); echo "send join_fan10: $((($time_2 - $time_1)/1000000))ms";
 
 
-
-
-wait_sec=40
-for wait_idx in $(seq 0 $wait_sec)
-do
-  #echo $(date)
-  echo -ne "\r"
-  for idx in $(seq 0 $wait_idx)
-  do
-    if [ "$idx" = "0" ]; then
-      echo -ne "\r."
-    else
-      echo -n "."
-    fi
-  done
-  for idx in $(seq 0 $(($wait_sec - $wait_idx)))
-  do
-    echo -n "|"
-  done
-  sleep 10
-done
-echo -ne "\n"
+display_wait_progress 40;
 
 

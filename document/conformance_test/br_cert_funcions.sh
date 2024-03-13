@@ -24,12 +24,38 @@ function wisun_node_set
   sleep 0.2; echo "wisun set wisun.operating_class $wisun_class" > $seria_port
   sleep 0.2; echo "wisun set wisun.operating_mode $wisun_mode" > $seria_port
   sleep 0.2; echo "wisun set wisun.unicast_dwell_interval 15" > $seria_port
-  sleep 0.2; echo "wisun set wisun.allowed_channels 0-255" > $seria_port
+  #sleep 0.2; echo "wisun set wisun.allowed_channels 0-255" > $seria_port
+  # Channel Function for both devices are set to Fixed Channel
+  sleep 0.2; echo "wisun set wisun.allowed_channels 0" > $seria_port
   # clear the white list before set the list
   sleep 0.2; echo "wisun mac_allow FF:FF:FF:FF:FF:FF:FF:FF" > $seria_port
   sleep 0.2; echo "wisun save" > $seria_port
   sleep 0.5
 }
+
+function wisun_br_config
+{
+  # Input parameters:
+  # -------------------------------------------------
+  # $1: wsbrd.conf file to be modified
+  # $2: expected Wi-SUN domain
+  # $3: expected Wi-SUN mode
+  # $4: expected Wi-SUN class
+  #--------------------------------------------------
+  Fwsbrd=$1
+  wisun_domain=$2
+  wisun_mode=$3
+  wisun_class=$4
+
+  # find "domain = XX" and replace with "domain = YY #XX", mean while delete possible comment symbol #
+  sed -i "s/^.*domain =/domain = $wisun_domain #/" $Fwsbrd
+  sed -i "s/^.*mode =/mode = $wisun_mode #/" $Fwsbrd
+  sed -i "s/^.*class =/class = $wisun_class #/" $Fwsbrd
+  sed -i "s/^.*unicast_dwell_interval =/unicast_dwell_interval = 15 #/" $Fwsbrd
+  # Channel Function for both devices are set to Fixed Channel 0
+  sed -i "s/^.*allowed_channels =/allowed_channels = 0 #/" $Fwsbrd
+}
+
 
 function join_fan10
 {

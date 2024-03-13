@@ -2,6 +2,7 @@ LOG_PATH=$(pwd)/logs
 WisunBR_PATH="~/Git_repository/wisun-br-rong"
 TBC_usr="jurong"
 TBC_ip="192.168.31.179"
+TEST_TIME=$(date "+%m%d_%H-%M");
 
 # Device Under Test(DUT) are border router(BR) implemented by RaspberryPi+RCP
 # witch can be controlled through ssh remote access  
@@ -128,12 +129,21 @@ rm -f si_pti_discover.txt
 # check the thread number of wsbrd
 ssh_check_and_kill_wsbrd $BRRPI_usr $BRRPI_ip;
 
+
+# get/modify/overwrite the wsbrd.conf file before start wsbrd application in RPi
+ssh ${BRRPI_usr}@${BRRPI_ip} \
+  "scp $BRRPI_path/wsbrd.conf ${TBC_usr}@${TBC_ip}:${LOG_PATH}/wsbrd.conf"
+wisun_br_config ${LOG_PATH}/wsbrd.conf $wisun_domain $wisun_mode $wisun_class
+scp ${LOG_PATH}/wsbrd.conf ${BRRPI_usr}@${BRRPI_ip}:$BRRPI_path/wsbrd.conf
+
 echo "------start wsbrd application on Raspberry Pi..."
 ssh_start_wsbrd_window $BRRPI_usr $BRRPI_ip $wisun_domain $wisun_mode $wisun_class
 
+
+
 echo "------start wsnode packet capture, for 400s..."
 gnome-terminal --window --title="Node Capture" --geometry=90x24+200+0 -- \
-  sudo java -jar $silabspti -ip=$wsnode0_netif -driftCorrection=disable -time=400000 -format=log -out=${LOG_PATH}/testcap_$(date "+%m%d_%H-%M").log
+  sudo java -jar $silabspti -ip=$wsnode0_netif -driftCorrection=disable -time=400000 -format=log -out=${LOG_PATH}/testcap_${TEST_TIME}.log
 
 echo "------start wsnode join_fan10-------"
 time_0=$(date +%s%N); echo "wisun disconnect" > $wsnode0 
@@ -141,9 +151,15 @@ time_1=$(date +%s%N); echo "send disconnect: $((($time_1 - $time_0)/1000000))ms"
 time_2=$(date +%s%N); echo "send join_fan10: $((($time_2 - $time_1)/1000000))ms";
 
 
+
+
+
 display_wait_progress 40;
+# -------------------------------------------------------------------------------------------------
 # copy border router host/rcp received message pcapng file from RapspberryPi
+# prerequiste is uncomment "pcap_file = /tmp/wisun_dump.pcapng" in wsbrd.conf in RPi
+# -------------------------------------------------------------------------------------------------
 ssh ${BRRPI_usr}@${BRRPI_ip} \
-  "scp /tmp/wisun_dump.pcapng ${TBC_usr}@${TBC_ip}:${LOG_PATH}//BrCap_$(date "+%m%d_%H-%M").pcapng"
+  "scp /tmp/wisun_dump.pcapng ${TBC_usr}@${TBC_ip}:${LOG_PATH}/BrCap_${TEST_TIME}.pcapng"
 
 

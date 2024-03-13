@@ -19,7 +19,10 @@ wsnode0=/dev/ttyACM0; sudo chmod 777 $wsnode0
 wsnode1=/dev/ttyACM1; sudo chmod 777 $wsnode1
 wsnode2=/dev/ttyACM2; sudo chmod 777 $wsnode2
 
-source br_cert_funcions.sh
+# Wi-SUN network configurations:
+#PAN_ID=35
+#network_name="Wi-SUN test"
+wisun_domain="NA"; wisun_mode="5"; wisun_class="3"
 
 #modulation_rate=(50 150)
 
@@ -60,13 +63,37 @@ source br_cert_funcions.sh
 # gtk[3] = 44:44:44:44:44:44:44:44:44:44:44:44:44:44:44:44
 #    gak : CD 46 A0 50 AF 2B F1 6C F5 A0 E3 68 E5 10 44 9C
 #Note: the given GAKs are for Net Name of “WiSUN PAN”.
+#-------------------------------------------------------------
 
-
+source br_cert_funcions.sh
 
 # open a minicom window to display serial port echo
 gnome-terminal --window --title="SNode0" --geometry=80x25+200+100 -- minicom -D /dev/ttyACM0 -b 115200 -8
 stty -F ${wsnode0} ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
+# --------------------------------------------------------------------------------------------
+# Before start test script, border router RCP packet capture through wireshark should be set.
+# USB serial port dongle: TX/RX/GND connect to PD8/PD9/GND on CMT RCP board
+# We have serial port assistant ((packet sniffer)) pipes sniffer packet from RCP UART to wireshark
+# The tool is application on windows. So, we have to run RCP captrue on windows side which
+# is independant from the Linux TBU platform.
+#
+# Opperation sequence of wireshark piped capture:
+#   1. start packet sniffer application (D:\software\sniffer_rev1_2\serial.exe)
+#   2. open pipe, and press confirm button in the pop-up box
+#   3. start wireshark and add new pipe with name:  \\.\pipe\sniffer_pip
+#       in menu:->Capture->Options->Manage Interfaces->pipes  
+#       In windows cmd: wireshark -ni \\.\pipe\sniffer_pip
+#   4. start pipe capture, and then you can see something poped like "pipe connected" in sniffer app 
+#   5. search set and open corresponding serial port in sniffer app
+#   ...capture for RCP packet start in wireshark
+# --------------------------------------------------------------------------------------------
 
+# test begin........
+wisun_node_set $wsnode0 $wisun_domain $wisun_mode $wisun_class
+#wisun_node_set $wsnode1
+#wisun_node_set $wsnode2
+#echo "wisun mac_allow $wsnode1_mac" > $wsnode0
+#echo "wisun mac_allow $wsnode2_mac" > $wsnode1
 # --------------------------------------------------------------------------------------------
 # Silabs Wi-SUN node packet capture
 # Hardware aspect, Silabs has PTI(Packet Tracking Interface) support which 
@@ -87,40 +114,6 @@ echo "find wsnode2_sn:$wsnode2_sn and wsnode2_netif: $wsnode2_netif"
 
 # delete temprary file
 rm -f si_pti_discover.txt
-
-
-# --------------------------------------------------------------------------------------------
-# Before start test script, border router RCP packet capture through wireshark should be set.
-# USB serial port dongle: TX/RX/GND connect to PD8/PD9/GND on CMT RCP board
-# We have serial port assistant ((packet sniffer)) pipes sniffer packet from RCP UART to wireshark
-# The tool is application on windows. So, we have to run RCP captrue on windows side which
-# is independant from the Linux TBU platform.
-#
-# Opperation sequence of wireshark piped capture:
-#   1. start packet sniffer application (D:\software\sniffer_rev1_2\serial.exe)
-#   2. open pipe, and press confirm button in the pop-up box
-#   3. start wireshark and add new pipe with name:  \\.\pipe\sniffer_pip
-#       in menu:->Capture->Options->Manage Interfaces->pipes  
-#       In windows cmd: wireshark -ni \\.\pipe\sniffer_pip
-#   4. start pipe capture, and then you can see something poped like "pipe connected" in sniffer app 
-#   5. search set and open corresponding serial port in sniffer app
-#   ...capture for RCP packet start in wireshark
-# --------------------------------------------------------------------------------------------
-# border router configurations:
-#PAN_ID=35
-#network_name="Wi-SUN test"
-wisun_domain="NA"
-wisun_mode="5"
-wisun_class="3"
-#-------------------------------------------------------------
-
-# test begin........
-#wisun_node_set $wsnode0 $wisun_domain $wisun_mode $wisun_class
-#wisun_node_set $wsnode1
-#wisun_node_set $wsnode2
-#echo "wisun mac_allow $wsnode1_mac" > $wsnode0
-#echo "wisun mac_allow $wsnode2_mac" > $wsnode1
-
 
 # check the thread number of wsbrd
 ssh_check_and_kill_wsbrd $BRRPI_usr $BRRPI_ip;

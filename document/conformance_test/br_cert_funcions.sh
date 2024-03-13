@@ -17,7 +17,9 @@ function wisun_node_set
   wisun_domain=$2
   wisun_mode=$3
   wisun_class=$4
-  echo "wisun set wisun.network_name \"WiSUN test\"" > $seria_port
+  echo "wisun disconnect" > $seria_port
+  #echo "wisun get wisun" > $seria_port
+  #echo "wisun set wisun.network_name \"WiSUN test\"" > $seria_port
   sleep 0.2; echo "wisun set wisun.regulatory_domain $wisun_domain" > $seria_port 
   sleep 0.2; echo "wisun set wisun.operating_class $wisun_class" > $seria_port
   sleep 0.2; echo "wisun set wisun.operating_mode $wisun_mode" > $seria_port

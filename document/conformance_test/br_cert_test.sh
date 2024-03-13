@@ -68,8 +68,14 @@ wisun_domain="NA"; wisun_mode="5"; wisun_class="3"
 source br_cert_funcions.sh
 
 # open a minicom window to display serial port echo
-gnome-terminal --window --title="SNode0" --geometry=80x25+200+100 -- minicom -D /dev/ttyACM0 -b 115200 -8
+gnome-terminal --window --title="node0" --geometry=80x25+200+100 \
+                                        -e 'minicom -D /dev/ttyACM0 -b 115200 -8' \
+                  --tab --title="node1" -e 'minicom -D /dev/ttyACM1 -b 115200 -8' \
+                  --tab --title="node2" -e 'minicom -D /dev/ttyACM2 -b 115200 -8'
 stty -F ${wsnode0} ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
+stty -F ${wsnode1} ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
+stty -F ${wsnode2} ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
+
 # --------------------------------------------------------------------------------------------
 # Before start test script, border router RCP packet capture through wireshark should be set.
 # USB serial port dongle: TX/RX/GND connect to PD8/PD9/GND on CMT RCP board
@@ -90,10 +96,11 @@ stty -F ${wsnode0} ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0
 
 # test begin........
 wisun_node_set $wsnode0 $wisun_domain $wisun_mode $wisun_class
-#wisun_node_set $wsnode1
-#wisun_node_set $wsnode2
+wisun_node_set $wsnode1 $wisun_domain $wisun_mode $wisun_class
+wisun_node_set $wsnode2 $wisun_domain $wisun_mode $wisun_class
 #echo "wisun mac_allow $wsnode1_mac" > $wsnode0
 #echo "wisun mac_allow $wsnode2_mac" > $wsnode1
+
 # --------------------------------------------------------------------------------------------
 # Silabs Wi-SUN node packet capture
 # Hardware aspect, Silabs has PTI(Packet Tracking Interface) support which 

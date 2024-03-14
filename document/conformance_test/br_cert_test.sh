@@ -1,6 +1,6 @@
 LOG_PATH=$(pwd)/logs
 WisunBR_PATH="~/Git_repository/wisun-br-rong"
-TBC_usr="jurong"
+TBC_usr=$(whoami)
 TBC_ip="192.168.31.179"
 TEST_TIME=$(date "+%m%d_%H-%M");
 
@@ -9,7 +9,7 @@ TEST_TIME=$(date "+%m%d_%H-%M");
 BRRPI_usr="cmt"
 BRRPI_ip="192.168.31.97"
 BRRPI_path="/home/cmt/Git_repository/wisun-br-rong"
-silabspti=/home/jurong/Git_repository/java_packet_trace_library/silabs-pti/build/libs/silabs-pti-1.12.2.jar
+silabspti=/home/${TBC_usr}/Git_repository/java_packet_trace_library/silabs-pti/build/libs/silabs-pti-1.12.2.jar
 # Jlink serial number of TBUs
 wsnode0_sn=440088192; wsnode0_mac="8c:1f:64:5e:40:bb:00:01"
 wsnode1_sn=440054721; wsnode1_mac="8c:1f:64:5e:40:bb:00:02"
@@ -155,6 +155,15 @@ time_2=$(date +%s%N); echo "send join_fan10: $((($time_2 - $time_1)/1000000))ms"
 
 
 display_wait_progress 40;
+# check session id of serial port and wsbrd(ssh RPi) and kill them
+node0_id=$(ps -u | grep 'minicom -D' | grep $wsnode0 | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
+node1_id=$(ps -u | grep 'minicom -D' | grep $wsnode1 | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
+node2_id=$(ps -u | grep 'minicom -D' | grep $wsnode2 | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
+wsbrd_id=$(ps -u | grep cd | grep 'sudo wsbrd -F' | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
+echo "kill minicom serial port 0: $node0_id"; kill $node0_id;
+echo "kill minicom serial port 1: $node1_id"; kill $node1_id;
+echo "kill minicom serial port 2: $node2_id"; kill $node2_id;
+echo "kill wsbrd window: $wsbrd_id, actually wsbrd is still running on remote RPi"; kill $wsbrd_id;
 # -------------------------------------------------------------------------------------------------
 # copy border router host/rcp received message pcapng file from RapspberryPi
 # prerequiste is uncomment "pcap_file = /tmp/wisun_dump.pcapng" in wsbrd.conf in RPi

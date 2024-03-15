@@ -116,3 +116,13 @@ rm -f si_pti_discover.txt
 # test begin........
 source test_PAN-PA-SELECT-2.sh
 
+#source test_PAN-PA-SELECT-2.sh
+
+
+# check session id of serial port and wsbrd(ssh RPi) and kill them
+node0_id=$(ps -u | grep 'minicom -D' | grep $wsnode0 | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
+node1_id=$(ps -u | grep 'minicom -D' | grep $wsnode1 | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
+node2_id=$(ps -u | grep 'minicom -D' | grep $wsnode2 | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
+echo "kill minicom serial port 0: $node0_id"; kill $node0_id;
+echo "kill minicom serial port 1: $node1_id"; kill $node1_id;
+echo "kill minicom serial port 2: $node2_id"; kill $node2_id;

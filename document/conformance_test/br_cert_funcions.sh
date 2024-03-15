@@ -13,10 +13,10 @@ function wisun_node_set
   # $3: expected Wi-SUN mode
   # $4: expected Wi-SUN class
   #----------------------------------------------
-  seria_port=$1
-  wisun_domain=$2
-  wisun_mode=$3
-  wisun_class=$4
+  local seria_port=$1
+  local wisun_domain=$2
+  local wisun_mode=$3
+  local wisun_class=$4
   echo "wisun disconnect" > $seria_port
   #echo "wisun get wisun" > $seria_port
   #echo "wisun set wisun.network_name \"WiSUN test\"" > $seria_port
@@ -42,10 +42,11 @@ function wisun_br_config
   # $3: expected Wi-SUN mode
   # $4: expected Wi-SUN class
   #--------------------------------------------------
-  Fwsbrd=$1
-  wisun_domain=$2
-  wisun_mode=$3
-  wisun_class=$4
+  local Fwsbrd=$1
+  local wisun_domain=$2
+  local wisun_mode=$3
+  local wisun_class=$4
+  local gdk0=""
 
   # find "domain = XX" and replace with "domain = YY #XX", mean while delete possible comment symbol #
   sed -i "s/^.*domain =/domain = $wisun_domain #/" $Fwsbrd
@@ -54,12 +55,14 @@ function wisun_br_config
   sed -i "s/^.*unicast_dwell_interval =/unicast_dwell_interval = 15 #/" $Fwsbrd
   # Channel Function for both devices are set to Fixed Channel 0
   sed -i "s/^.*allowed_channels =/allowed_channels = 0 #/" $Fwsbrd
+  # set expected GTKs 
+  #sed -i "s/^.*gtk[0] =/gtk[0] =/" $Fwsbrd
 }
 
 
 function join_fan10
 {
-  seria_port=$1
+  local seria_port=$1
   echo "wisun join_fan10" > $seria_port
 }
 
@@ -70,13 +73,13 @@ function ssh_check_and_kill_wsbrd
   # $1: usr name of border router Raspberry Pi
   # $2: ip address of border router Raspberry Pi
   #----------------------------------------------
-  BRRPI_usr=$1
-  BRRPI_ip=$2
+  local BRRPI_usr=$1
+  local BRRPI_ip=$2
 
   # check the thread number of wsbrd
   # return of "ps -u wsbrd" is "PID TTY TIME CMD $pid_val ? hour:min:sec wsbrd"
   # here we extact the thread id : $pid_val, if existed, kill it
-  thread=$(echo $(ssh ${BRRPI_usr}@${BRRPI_ip} "ps -u wsbrd") | sed 's/^.*CMD //g' | sed 's/ .*$//g')
+  local thread=$(echo $(ssh ${BRRPI_usr}@${BRRPI_ip} "ps -u wsbrd") | sed 's/^.*CMD //g' | sed 's/ .*$//g')
   echo "------check the thread number of wsbrd: $thread"
   # kill existing wsbrd thread before start
   if [ -n "$thread" ]; then
@@ -95,15 +98,15 @@ function ssh_start_wsbrd_window
   # $4: expected Wi-SUN mode
   # $5: expected Wi-SUN class
   #----------------------------------------------
-  BRRPI_usr=$1
-  BRRPI_ip=$2
-  wisun_domain=$3
-  wisun_mode=$4
-  wisun_class=$5
-  trace_set="15.4-mngt,15.4,eap,icmp-rf"
+  local BRRPI_usr=$1
+  local BRRPI_ip=$2
+  local wisun_domain=$3
+  local wisun_mode=$4
+  local wisun_class=$5
+  local trace_set="15.4-mngt,15.4,eap,icmp-rf"
 
   gnome-terminal --window --title="BR log" --geometry=110x45+0+0 -- ssh ${BRRPI_usr}@${BRRPI_ip} \
-    "cd $BRRPI_path;sudo wsbrd -F wsbrd.conf  -d $3 -m $4 -c $5 -T $trace_set"
+    "cd $BRRPI_path;sudo wsbrd -F wsbrd.conf -D -d $3 -m $4 -c $5 -T $trace_set"
   sleep 0.5;  
 }
 
@@ -114,12 +117,12 @@ function find_netif_for_pti_capture
   # $1: si_pti_discover.txt 
   # $2: serial number of fg12 radio board
   #------------------------------------------
-  wsnode_netif=""
+  local wsnode_netif=""
 
-  line_sn=$(sed -n '/'$2'/=' $1)
+  local line_sn=$(sed -n '/'$2'/=' $1)
   if [ -n "$line_sn" ]; then
     #echo "node jlink sn found in line: $line_sn..."
-    line_ip=$(($line_sn + 1)); 
+    local line_ip=$(($line_sn + 1)); 
     wsnode_netif=$(sed -n "${line_ip}p" $1 | sed 's/^.*netif=//g')
     #echo "node net if is: $wsnode_netif"
   fi
@@ -132,26 +135,26 @@ function display_wait_progress
   # -----------------------------------------
   # $1: wait time in second 
   #------------------------------------------
-wait_sec=$1
-for wait_idx in $(seq 0 $wait_sec)
-do
-  #echo $(date)
-  echo -ne "\r"
-  for idx in $(seq 0 $wait_idx)
+  local wait_sec=$1
+  for wait_idx in $(seq 0 $wait_sec)
   do
-    if [ "$idx" = "0" ]; then
-      echo -ne "\r."
-    else
-      echo -n "."
-    fi
+    #echo $(date)
+    echo -ne "\r"
+    for idx in $(seq 0 $wait_idx)
+    do
+      if [ "$idx" = "0" ]; then
+        echo -ne "\r."
+      else
+        echo -n "."
+      fi
+    done
+    for idx in $(seq 0 $(($wait_sec - $wait_idx)))
+    do
+      echo -n "|"
+    done
+    sleep 10
   done
-  for idx in $(seq 0 $(($wait_sec - $wait_idx)))
-  do
-    echo -n "|"
-  done
-  sleep 10
-done
-echo -ne "\n"
+  echo -ne "\n"
 
 
 }

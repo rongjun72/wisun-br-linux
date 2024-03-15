@@ -17,7 +17,8 @@ source br_cert_funcions.sh
 # $wsnode2_netif: network interface of WSTK2 used for PTI capture
 # ------------- global variables end ------------------------------------
 TEST_TIME=$(date "+%m%d_%H-%M");
-node0_pti_cap_file=${LOG_PATH}/Node0Cap_PAN-PA-SELECT-2_${TEST_TIME}.log
+time_start_test=$(($(date +%s%N)/1000000)); 
+node0_pti_cap_file=${LOG_PATH}/Node0Cap_PAN-PA-SELECT-2_${TEST_TIME}.text
 wsbrd_cap_file=${LOG_PATH}/BrCap_PAN-PA-SELECT-2_${TEST_TIME}.pcapng
 
 # Wi-SUN network configurations:
@@ -46,32 +47,35 @@ scp ${LOG_PATH}/wsbrd.conf ${BRRPI_usr}@${BRRPI_ip}:$BRRPI_path/wsbrd.conf
 rm -f ${LOG_PATH}/wsbrd.conf
 
 echo "------start wsbrd application on Raspberry Pi..."
+time_start_wsbrd=$(($(date +%s%N)/1000000 - $time_start_test)) # uint in ms
+echo "------start wsbrd at: $(($time_start_wsbrd/1000)).$(echo $(($time_start_wsbrd%1000+1000)) | sed 's/^1//')"
 ssh_start_wsbrd_window $BRRPI_usr $BRRPI_ip $wisun_domain $wisun_mode $wisun_class
 
 
 capture_time=200
 echo "------start wsnode packet capture, for ${capture_time}s..."
 gnome-terminal --window --title="Node Capture" --geometry=90x24+200+0 -- \
-  sudo java -jar $silabspti -ip=$wsnode0_netif -driftCorrection=disable -time=$(($capture_time*1000)) -format=log -out=${node0_pti_cap_file}
+  sudo java -jar $silabspti -ip=$wsnode0_netif -driftCorrection=disable -time=$(($capture_time*1000)) -format=text -out=${node0_pti_cap_file}
 
-echo "------start wsnode join_fan10-------"
+# ------start wsnode join_fan10-------
 time_0=$(date +%s%N); echo "wisun disconnect" > $wsnode0 
 time_1=$(date +%s%N); echo "send disconnect: $((($time_1 - $time_0)/1000000))ms"; echo "wisun join_fan10" > $wsnode0 
 time_2=$(date +%s%N); echo "send join_fan10: $((($time_2 - $time_1)/1000000))ms";
-
+time_join_fan10=$(($time_2/1000000-$time_start_test))
+echo "------node0 start wsnode join_fan10 at: $(($time_join_fan10/1000)).$(echo $(($time_join_fan10%1000+1000)) | sed 's/^1//')"
 
 
 
 
 display_wait_progress $(($capture_time/10));
 # check session id of serial port and wsbrd(ssh RPi) and kill them
-node0_id=$(ps -u | grep 'minicom -D' | grep $wsnode0 | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
-node1_id=$(ps -u | grep 'minicom -D' | grep $wsnode1 | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
-node2_id=$(ps -u | grep 'minicom -D' | grep $wsnode2 | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
+#node0_id=$(ps -u | grep 'minicom -D' | grep $wsnode0 | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
+#node1_id=$(ps -u | grep 'minicom -D' | grep $wsnode1 | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
+#node2_id=$(ps -u | grep 'minicom -D' | grep $wsnode2 | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
 wsbrd_id=$(ps -u | grep cd | grep 'sudo wsbrd -F' | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
-echo "kill minicom serial port 0: $node0_id"; kill $node0_id;
-echo "kill minicom serial port 1: $node1_id"; kill $node1_id;
-echo "kill minicom serial port 2: $node2_id"; kill $node2_id;
+#echo "kill minicom serial port 0: $node0_id"; kill $node0_id;
+#echo "kill minicom serial port 1: $node1_id"; kill $node1_id;
+#echo "kill minicom serial port 2: $node2_id"; kill $node2_id;
 echo "kill wsbrd window: $wsbrd_id, actually wsbrd is still running on remote RPi"; kill $wsbrd_id;
 # -------------------------------------------------------------------------------------------------
 # copy border router host/rcp received message pcapng file from RapspberryPi
@@ -82,8 +86,23 @@ scp ${BRRPI_usr}@${BRRPI_ip}:/tmp/wisun_dump.pcapng ${wsbrd_cap_file}
 
 
 
+# check the thread number of wsbrd
+# ssh_check_and_kill_wsbrd $BRRPI_usr $BRRPI_ip;
 
 
 # -------------------------------------------------------------------------------------------------
 # ------- post test analysis begin based on ${wsbrd_cap_file} and ${node0_pti_cap_file}
 # -------------------------------------------------------------------------------------------------
+# wisun.uttie.type: "Frame Type: PAN Advertisement (0)"
+#                   "Frame Type: PAN Advertisement Solicit (1)"
+#                   "Frame Type: PAN Configuration Solicit (3)"
+#                   "Frame Type: Data (4)"
+#                   "Frame Type: EAPOL (6)"
+extract_items="-e frame.time_epoch -e wpan.src64 -e wpan.addr64 -e frame.protocols -e wisun.uttie.type"
+tshark -r ${wsbrd_cap_file} -T fields $extract_items > output.csv
+cat output.csv
+
+
+# text2pcap -q -t %H:%M:%S. -l 230 -n Node0Cap_PAN-PA-SELECT-2_0314_18-12.txt Node0Cap_PAN-PA-SELECT-2_0314_18-12.pcapng
+# -n : output file format of pcapng not default pcap format
+# -l : link-layer type number; default is 1 (Ethernet). see https://www.tcpdump.org/linktypes.html for other

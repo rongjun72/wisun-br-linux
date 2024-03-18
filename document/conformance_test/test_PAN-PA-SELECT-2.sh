@@ -18,7 +18,7 @@ source br_cert_funcions.sh
 # ------------- global variables end ------------------------------------
 TEST_TIME=$(date "+%m%d_%H-%M");
 time_start_test=$(($(date +%s%N)/1000000)); 
-node0_pti_cap_file=${LOG_PATH}/Node0Cap_PAN-PA-SELECT-2_${TEST_TIME}.text
+node0_pti_cap_file=${LOG_PATH}/Node0Cap_PAN-PA-SELECT-2_${TEST_TIME}.pcapng
 wsbrd_cap_file=${LOG_PATH}/BrCap_PAN-PA-SELECT-2_${TEST_TIME}.pcapng
 
 # Wi-SUN network configurations:
@@ -55,7 +55,7 @@ ssh_start_wsbrd_window $BRRPI_usr $BRRPI_ip $wisun_domain $wisun_mode $wisun_cla
 capture_time=200
 echo "------start wsnode packet capture, for ${capture_time}s..."
 gnome-terminal --window --title="Node Capture" --geometry=90x24+200+0 -- \
-  sudo java -jar $silabspti -ip=$wsnode0_netif -driftCorrection=disable -time=$(($capture_time*1000)) -format=text -out=${node0_pti_cap_file}
+  sudo java -jar $silabspti -ip=$wsnode0_netif -time=$(($capture_time*1000)) -format=pcapng_wisun -out=${node0_pti_cap_file}
 
 # ------start wsnode join_fan10-------
 time_0=$(date +%s%N); echo "wisun disconnect" > $wsnode0 

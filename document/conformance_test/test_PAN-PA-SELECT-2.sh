@@ -12,9 +12,17 @@ source br_cert_funcions.sh
 # $wsnode0:       serial port descripter for wisun node 0, rank=1
 # $wsnode1:       serial port descripter for wisun node 1, rank=2
 # $wsnode2:       serial port descripter for wisun node 2, rank=3
+# $wsnode0_mac:   device mac address for wisun node 0, rank=1
+# $wsnode1_mac:   device mac address for wisun node 1, rank=2
+# $wsnode2_mac:   device mac address for wisun node 2, rank=3
 # $wsnode0_netif: network interface of WSTK0 used for PTI capture
 # $wsnode1_netif: network interface of WSTK1 used for PTI capture
 # $wsnode2_netif: network interface of WSTK2 used for PTI capture
+#
+# DEFAULT_DIO_INTERVAL_DOUBLINGS=2
+# DEFAULT_DIO_INTERVAL_MIN=15
+# DISC_IMIN=15
+# DISC_IMAX=2
 # ------------- global variables end ------------------------------------
 TEST_TIME=$(date "+%m%d_%H-%M");
 time_start_test=$(($(date +%s%N)/1000000)); 
@@ -101,14 +109,14 @@ echo "----------------------------------Test Pass/Fail Analysis-----------------
 #                   "Frame Type: Data (4)"                        - Data
 #                   "Frame Type: Acknowledgment (5)"              - ACK
 #                   "Frame Type: EAPOL (6)"                       - EAPOL
-echo "----------------------------Border router packet captures-------------------"
+echo "------------convert Border router packet captures to csv-------------------"
 # the first 2 options in EXTRACT_OPTIONS MUST be "-e frame.number -e frame.time_epoch"
 EXTRACT_OPTIONS="-e frame.number -e frame.time_epoch -e wpan.src64 -e wpan.dst64 -e frame.protocols -e wisun.uttie.type"
 tshark -r ${wsbrd_cap_file} -T fields $EXTRACT_OPTIONS > ${LOG_PATH}/output_br.csv
 #cat output_br.csv
 
 
-echo "----------------------------Node router packet captures---------------------"
+echo "-------------convert Node router packet captures to csv---------------------"
 # text2pcap -q -t %H:%M:%S. -l 230 -n Node0Cap_PAN-PA-SELECT-2_0314_18-12.txt Node0Cap_PAN-PA-SELECT-2_0314_18-12.pcapng
 # -n : output file format of pcapng not default pcap format
 # -l : link-layer type number; default is 1 (Ethernet). see https://www.tcpdump.org/linktypes.html for other
@@ -116,3 +124,60 @@ tshark -r ${node0_pti_cap_file} -T fields $EXTRACT_OPTIONS > ${LOG_PATH}/output_
 #cat output_node.csv
 
 synchronize_node_cap_to_Br_cap ${LOG_PATH}/output_br.csv ${LOG_PATH}/output_node.csv
+
+# [PAN-PA-SELECT-2] Pass/Fail Criteria
+# -------------------------------------------------------------------------------------------------
+# Step2 PASS: Wireshark capture shows transmission of PA from DUT before DISC_IMIN time passes after receiving the PAS.
+#       FAIL: PAN Advertisement frame fails to be transmitted from DUT within DISC_IMIN seconds of the PAS being received.
+# -------------------------------------------------------------------------------------------------
+# Step3 PASS: DUT Border Router PAN Advertisement frame observed
+#       FAIL: No DUT Border Router PAN Advertisement frames observed
+# -------------------------------------------------------------------------------------------------
+time_DUT_receive_PAS=($(check_receive_message ${LOG_PATH}/output_node.csv $wsnode0_mac "" "wpan" 1));
+time_DUT_transmit_PA=($(check_receive_message ${LOG_PATH}/output_node.csv $BRRPI_mac "" "wpan" 0));
+
+DUT_receive_PAS_num=${#time_DUT_receive_PAS[*]};
+DUT_transmit_PA_num=${#time_DUT_transmit_PA[*]};
+
+if [ $DUT_receive_PAS_num -eq 0 ]; then
+  echo "----TEST FAIL: DUT(BR) have not received PAS from test node"
+elif [ $DUT_transmit_PA_num -eq 0 ]; then
+  echo "----TEST     : DUT(BR) received PAS from TBU..."
+  echo "----TEST FAIL: DUT(BR) have not send PA..."
+else
+  echo "----TEST     : DUT(BR) transmitted/broadcasted PA..."
+  loop_break=0
+  for pas_idx in $(seq 1 $DUT_receive_PAS_num)
+  do 
+    if [ $loop_break -ne 0 ]; then
+      break;
+    else
+      # extract abc.defgh to abc.d
+      time_pas=$(echo ${time_DUT_receive_PAS[$(($pas_idx-1))]} | sed 's/\([0-9]\+\.[0-9]\{1\}\).*/\1/' | sed 's/\.//')
+      for pa_idx in $(seq 1 $DUT_transmit_PA_num)
+      do 
+        time_pa=$(echo ${time_DUT_transmit_PA[$(($pa_idx-1))]} | sed 's/\([0-9]\+\.[0-9]\{1\}\).*/\1/' | sed 's/\.//')
+        if [ $time_pa -lt $time_pas ]; then
+          continue;
+        fi
+        echo "The first PA send after PAS received..$time_pa - $time_pas.."
+        time_between_PA_and_PAS=$(($time_pa - $time_pas));
+        echo "DUT send PA $(echo "$time_between_PA_and_PAS/10" | bc -l | sed 's/\([0-9]\+\.[0-9]\{1\}\).*/\1/')s after receive PAS"
+        ten_of_DISC_IMIN=$(($DISC_IMIN*10));
+        if [ $time_between_PA_and_PAS -lt $ten_of_DISC_IMIN ]; then
+          echo "----TEST SUCCESS: PA, PAS observed and time delta available"
+          loop_break=1;
+          break;
+        else
+          echo "----TEST FAIL: PA, PAS observed, BUT too much time between PA and PAS"
+          loop_break=1;
+          break;
+        fi
+      done
+    fi
+  done
+fi
+
+
+echo "----TEST [PAN-PA-SELECT-2] complete ..................................................................."
+

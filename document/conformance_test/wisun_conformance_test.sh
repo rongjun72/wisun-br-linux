@@ -7,6 +7,7 @@ TBC_ip="192.168.31.179"
 # witch can be controlled through ssh remote access  
 BRRPI_usr="cmt"
 BRRPI_ip="192.168.31.97"
+BRRPI_mac="8e:1f:64:5e:40:00:f2:0b"
 BRRPI_path="/home/cmt/Git_repository/wisun-br-rong"
 silabspti=/home/${TBC_usr}/Git_repository/java_packet_trace_library/silabs-pti/build/libs/silabs-pti-1.12.2.jar
 # Jlink serial number of TBUs
@@ -61,6 +62,30 @@ wsnode2=/dev/ttyACM2; sudo chmod 777 $wsnode2
 #    gak : CD 46 A0 50 AF 2B F1 6C F5 A0 E3 68 E5 10 44 9C
 #Note: the given GAKs are for Net Name of “WiSUN PAN”.
 #-------------------------------------------------------------
+
+# -------------------------------------------------------------------------------------------------
+# Trickle Timer Settings
+# -------------------------------------------------------------------------------------------------
+# Name                              Description                         Range	    Value
+# DEFAULT_DIO_INTERVAL_DOUBLINGS    The DIO trickle timer Imax value.   1-8         2
+#                                   Small network - 2 (an Imax of       doublings
+#                                   approximately 128 seconds)	
+# DEFAULT_DIO_INTERVAL_MIN 	        The DIO trickle timer Imin value    1-255       15 
+#                                   is defined as 2 to the power of 
+#                                   this value in millseconds.
+#                                   Small network - 15 (an Imin of 
+#                                   approximtety 32 seconds)	
+# DISC_IMIN                         Discovery Trickle Timer Imin        1-255       15
+#                                   Small network - 15 second
+# DISC_IMAX                         Discovery Trickle timer Imax        1-8         2
+#                                   Small network - 2 (max Trickle      doublings
+#                                   interval = approximately 60 sec).   
+# -------------------------------------------------------------------------------------------------
+DEFAULT_DIO_INTERVAL_DOUBLINGS=2
+DEFAULT_DIO_INTERVAL_MIN=15
+DISC_IMIN=15
+DISC_IMAX=2
+
 
 source br_cert_funcions.sh
 

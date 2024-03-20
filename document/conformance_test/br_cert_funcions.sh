@@ -173,7 +173,7 @@ function compensate_node_csv_time
   local time_offset=$1
   local NodeCsv=$2
 
-  time_offset=$(echo "$time_offset / 1000 + 0.000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{9\}\).*/\1/')
+  time_offset=$(echo "$time_offset / 1000 + 0.000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/')
   echo "compensate time_offset: $time_offset, according to Br capture time"
 
   for line_idx in $(seq 1 $(sed -n '$=' $NodeCsv))
@@ -248,18 +248,18 @@ function synchronize_node_cap_to_Br_cap
         time_offset_var=$((  $time_offset_var + (${time_offset[$arr_idx]}-$time_offset_avg)*(${time_offset[$arr_idx]}-$time_offset_avg)/$found_lines_br  ))
       done
       #echo "time offset : ${time_offset[*]}"
-      echo "time offset average: $time_offset_avg"
+      #echo "time offset average: $time_offset_avg"
       #echo "time offset variance: $time_offset_var"
 
 
       if [ $time_offset_var -lt $VAR_THRESHOLD ]; then
         hit_cnt=$(($hit_cnt + $found_lines_br));
-        echo "hit count increase: $hit_cnt"
+        #echo "hit count increase: $hit_cnt"
         total_time_offset_avg=$(($total_time_offset_avg*($hit_cnt-$found_lines_br) + $time_offset_avg*$found_lines_br));
         total_time_offset_avg=$(($total_time_offset_avg/$hit_cnt));
       fi
       if [ $hit_cnt -gt $SUCCESS_HITs ]; then
-        echo " $hit_cnt > $SUCCESS_HITs"
+        #echo " $hit_cnt > $SUCCESS_HITs"
         echo "Find time offset average esitmate: $total_time_offset_avg"
         compensate_node_csv_time  $total_time_offset_avg $NodeCsv
         break;
@@ -269,4 +269,41 @@ function synchronize_node_cap_to_Br_cap
   if [ $hit_cnt -lt 5 ]; then
     echo "can not synchronize time for $BrCsv and $NodeCsv "
   fi
+}
+
+function check_receive_message
+{
+  # function description:
+  # check if given device received given packet
+  # 
+  # -----------------------------------------------------------------------------
+  # Input parameters:
+  # ----------------------------------------------
+  # $1: packet capture file 
+  # $2: packet come from (source mac address) 
+  # $3: packet protocol
+  # $4: wisun.uttie.type 
+  #-----------------------------------------------
+  # Return:
+  # ----------------------------------------------
+  # : if exist, return the packet receiving time 
+  #-----------------------------------------------
+  local CaptureCsv=$1;
+  local source_mac=$2
+  local dest_mac=$3
+  local protocol=$4
+  local wisun_uttie_type=$5
+
+  # source_mac=$(cat output_node.csv | sed -n "5p" | cut -f 3)
+  #check_item=$(sed -n "/${source_mac}\t${dest_mac}\t${protocol}\t1/p" ${CaptureCsv})
+  check_item=$(sed -n "/${source_mac}\t${dest_mac}\t${protocol}\t${wisun_uttie_type}/p" ${CaptureCsv})
+  check_item_num=$(sed -n "/${source_mac}\t${dest_mac}\t${protocol}\t${wisun_uttie_type}/p" ${CaptureCsv} | sed -n '$=')
+  
+  #echo "check_item = $check_item"
+  #echo "check_item_num = $check_item_num"
+  
+  if [ -n $check_item_num ]; then
+    echo $(sed -n "/${source_mac}\t${dest_mac}\t${protocol}\t${wisun_uttie_type}/p" ${CaptureCsv} | cut -f 2)
+  fi
+
 }

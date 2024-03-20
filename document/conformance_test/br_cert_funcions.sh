@@ -155,6 +155,118 @@ function display_wait_progress
     sleep 10
   done
   echo -ne "\n"
+}
+
+function compensate_node_csv_time
+{
+  # function description:
+  # compensate time in node router captue cav file
+  # add estimated average timeoffset. 
+  # 
+  # Assuming: the first 2 options in EXTRACT_OPTIONS MUST be "-e frame.number -e frame.time_epoch"
+  # -----------------------------------------------------------------------------
+  # Input parameters:
+  # -----------------------------------------
+  # $1: estimated average timeoffset 
+  # $2: node router capture csv file 
+  #------------------------------------------
+  local time_offset=$1
+  local NodeCsv=$2
+
+  time_offset=$(echo "$time_offset / 1000 + 0.000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{9\}\).*/\1/')
+  echo "compensate time_offset: $time_offset, according to Br capture time"
+
+  for line_idx in $(seq 1 $(sed -n '$=' $NodeCsv))
+  do
+    time_origin=$(sed -n "${line_idx}p" $NodeCsv | cut -f 2);
+    time_compensate=$(echo "$time_origin+$time_offset" | bc -l | sed 's/\([0-9]\+\.[0-9]\{9\}\).*/\1/');
+    #echo "line: $line_idx -- $time_origin + $time_offset = $time_compensate"
+    sed -i "${line_idx}s/[0-9]\+\.[0-9]\+/${time_compensate}/" $NodeCsv;
+  done
+}
+
+function synchronize_node_cap_to_Br_cap
+{
+  # function description:
+  # time in origin node router captue file is relative time to the first packet.
+  # the purpose of this function is try to synchronize time of router capture
+  # to border router capture time. 
+  # 
+  # Assuming: the first 2 options in EXTRACT_OPTIONS MUST be "-e frame.number -e frame.time_epoch"
+  # -----------------------------------------------------------------------------
+  # Input parameters:
+  # -----------------------------------------
+  # $1: border router capture csv file 
+  # $2: node router capture csv file
+  #------------------------------------------
+  local BrCsv=$1;
+  local NodeCsv=$2;
+  local MAX_FAILs=20;
+  local fail_cnt=0;
+  local SUCCESS_HITs=120;
+  local hit_cnt=0;
+  local br_search_line=0
+  local node_search_line=0
+  local COL_START=3
+  local total_time_offset_avg=0
+  local total_time_offset_cnt=0
+  local VAR_THRESHOLD=1000
+
+  # while [ $fail_cnt le $MAX_FAILs ]
+  # COL_START=3;line=3;sss=$(cat output_br.csv | sed -n "${line}p" | cut -f ${COL_START}-);echo $sss
+  # sed -n "/${sss}/=" output_node.csv
+  for br_line in $(seq 1 $(sed -n '$=' $BrCsv))
+  do
+    # extract line:$(br_line) from BR file for later searching
+    search_str=$(cat $BrCsv | sed -n "${br_line}p" | cut -f ${COL_START}-);
+
+    # for the given string,find lines that the string exist in $BrCsv
+    #found_matrix_br=$(sed -n "/${search_str}/p" $BrCsv);
+    time_array_br=($(sed -n "/${search_str}/p" $BrCsv | cut -f 2 | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/' | sed 's/\.//g'));
+    found_lines_br=$(sed -n "/${search_str}/=" $BrCsv | sed -n '$=');
+    # for the given string,find lines that the string exist in $NodeCsv
+    #found_matrix_node=$(sed -n "/${search_str}/p" $NodeCsv);
+    time_array_node=($(sed -n "/${search_str}/p" $NodeCsv | cut -f 2 | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/' | sed 's/\.//g'));
+    found_lines_node=$(sed -n "/${search_str}/=" $NodeCsv | sed -n '$=');
+    time_offset=("");
+    #echo "[$found_lines_br == $found_lines_node]"
+    # calculate time offset between BrCsv and NodeCsv
+    if [ $found_lines_br == $found_lines_node ] && [ $found_lines_br -ne 1 ]; then
+      time_offset_avg=0;
+      time_offset_var=0;
+      # calculate time offset average
+      for idx in $(seq 1 $found_lines_br)
+      do
+        arr_idx=$(($idx-1));
+        time_offset[$arr_idx]=$((${time_array_br[$arr_idx]}-${time_array_node[$arr_idx]}));
+        time_offset_avg=$(($time_offset_avg + ${time_offset[$arr_idx]}/$found_lines_br))
+      done
+      # calculate time offset variance
+      for idx in $(seq 1 $found_lines_br)
+      do
+        arr_idx=$(($idx-1));
+        time_offset_var=$((  $time_offset_var + (${time_offset[$arr_idx]}-$time_offset_avg)*(${time_offset[$arr_idx]}-$time_offset_avg)/$found_lines_br  ))
+      done
+      #echo "time offset : ${time_offset[*]}"
+      echo "time offset average: $time_offset_avg"
+      #echo "time offset variance: $time_offset_var"
 
 
+      if [ $time_offset_var -lt $VAR_THRESHOLD ]; then
+        hit_cnt=$(($hit_cnt + $found_lines_br));
+        echo "hit count increase: $hit_cnt"
+        total_time_offset_avg=$(($total_time_offset_avg*($hit_cnt-$found_lines_br) + $time_offset_avg*$found_lines_br));
+        total_time_offset_avg=$(($total_time_offset_avg/$hit_cnt));
+      fi
+      if [ $hit_cnt -gt $SUCCESS_HITs ]; then
+        echo " $hit_cnt > $SUCCESS_HITs"
+        echo "Find time offset average esitmate: $total_time_offset_avg"
+        compensate_node_csv_time  $total_time_offset_avg $NodeCsv
+        break;
+      fi
+    fi
+  done
+  if [ $hit_cnt -lt 5 ]; then
+    echo "can not synchronize time for $BrCsv and $NodeCsv "
+  fi
 }

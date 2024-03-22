@@ -1,13 +1,13 @@
 source br_cert_funcions.sh
 # -----------------------------------------------------------------------
-# Test case :   Border Router as DUT [PAN-PA-SELECT-2]
+# Test case :   Border Router as DUT [PAN-KEY-TLS-2]
 # -----------------------------------------------------------------------
 # Description:  
 # This test case verifies the ability of the Border Router (DUT) to be 
 # configured with a PAN ID for PAN A and respond to PAN Advertisement 
 # Solicit frames from a joining node.
 # -----------------------------------------------------------------------
-TEST_CASE_NAME="PAN-PA-SELECT-2"
+TEST_CASE_NAME="PAN-KEY-TLS-2"
 
 
 
@@ -138,7 +138,7 @@ tshark -r ${node0_pti_cap_file} -T fields $EXTRACT_OPTIONS > ${LOG_PATH}/output_
 
 synchronize_node_cap_to_Br_cap ${LOG_PATH}/output_br.csv ${LOG_PATH}/output_node.csv
 
-# [PAN-PA-SELECT-2] Pass/Fail Criteria
+# [PAN-KEY-TLS-2] Pass/Fail Criteria
 # -------------------------------------------------------------------------------------------------
 # Step2 PASS: Wireshark capture shows transmission of PA from DUT before DISC_IMIN time passes after receiving the PAS.
 #       FAIL: PAN Advertisement frame fails to be transmitted from DUT within DISC_IMIN seconds of the PAS being received.

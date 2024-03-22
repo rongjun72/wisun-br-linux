@@ -323,7 +323,7 @@ function packet_receive_check
   #     -n  return numbers of to checked packets
   #     -$n return the {$n}-th checked packets/lines in csv 
   # $@ : parameters after MUST be paired like:
-  #     [collum number, key word], given key word like "**"
+  #     [collum number, key word], given key word like "bbb"
   #     we will find the non-empty lines
   #-----------------------------------------------
   # Return:
@@ -347,7 +347,7 @@ function packet_receive_check
   for idx in $(seq 3 2 $#); do
     search_col=$(eval echo \${${idx}}); search_key=$(eval echo \${$(($idx+1))});
     #echo "[collum, key_word] : $search_col , $search_key"
-    if [ "$search_key" = "**" ]; then
+    if [ "$search_key" = "bbb" ]; then
       # for input pattern "**", means find all non-empty lines
       # echo "=======";cat ${CaptureCsv} | cut -f $search_col | sed -n "/^\s*[^# \t].*$/=";
       searched_lines=($(cat ${CaptureCsv} | cut -f $search_col | sed -n "/^\s*[^# \t].*$/="));

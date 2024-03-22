@@ -122,9 +122,15 @@ echo "----------------------------------Test Pass/Fail Analysis-----------------
 #                   "Frame Type: Data (4)"                        - Data
 #                   "Frame Type: Acknowledgment (5)"              - ACK
 #                   "Frame Type: EAPOL (6)"                       - EAPOL
+# -------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
+# eapol.type:       "Type: EAP Packet (0)"           - 
+#                   "Type: Key (3)"                               - 
+# -------------------------------------------------------------------------------------------------
 echo "------------convert Border router packet captures to csv-------------------"
 # the first 2 options in EXTRACT_OPTIONS MUST be "-e frame.number -e frame.time_epoch"
 EXTRACT_OPTIONS="-e frame.number -e frame.time_epoch -e wpan.src64 -e wpan.dst64 -e frame.protocols -e wisun.uttie.type"
+EXTRACT_OPTIONS="$EXTRACT_OPTIONS -e eapol.type -e wlan_rsna_eapol.keydes.data"
 tshark -r ${wsbrd_cap_file} -T fields $EXTRACT_OPTIONS > ${LOG_PATH}/output_br.csv
 #cat output_br.csv
 
@@ -140,32 +146,40 @@ synchronize_node_cap_to_Br_cap ${LOG_PATH}/output_br.csv ${LOG_PATH}/output_node
 
 # [PAN-KEY-TLS-2] Pass/Fail Criteria
 # -------------------------------------------------------------------------------------------------
-# Step2 PASS: Wireshark capture shows transmission of PA from DUT before DISC_IMIN time passes after receiving the PAS.
-#       FAIL: PAN Advertisement frame fails to be transmitted from DUT within DISC_IMIN seconds of the PAS being received.
+# Step1 PASS:   Wireshark capture shows transmission of PA from DUT before DISC_IMIN time passes after receiving the PAS.
+#       FAIL:   PAN Advertisement frame fails to be transmitted from DUT within DISC_IMIN seconds of the PAS being received.
 # -------------------------------------------------------------------------------------------------
-# Step3 PASS: DUT Border Router PAN Advertisement frame observed
-#       FAIL: No DUT Border Router PAN Advertisement frames observed
+# Step2 PASS:   DUT Border Router PAN Advertisement frame observed
+#       FAIL:   No DUT Border Router PAN Advertisement frames observed
 # -------------------------------------------------------------------------------------------------
-time_DUT_receive_PAS=($(check_receive_message ${LOG_PATH}/output_node.csv $wsnode0_mac "" "wpan" 1));
-time_DUT_transmit_PA=($(check_receive_message ${LOG_PATH}/output_node.csv $BRRPI_mac "" "wpan" 0));
+# Step3 PASS:   Steps 1 to 12 of the test procedures are successfully performed
+#       FAIL:   Any of Steps 1 to 12 test procedures fail to complete.
+# -------------------------------------------------------------------------------------------------
+# Step4 PASS:   Wireshark capture shows EAP-TLS exchange.
+#       FAIL:   Server Hello is not issued from Border Router DUT
+# -------------------------------------------------------------------------------------------------
+step1_pass=0; step2_pass=0; step3_pass=0; step4_pass=0; step5_pass=0; step6_pass=0; step7_pass=0; 
+# Step 1-2 ----
+time_DUT_receive_PAS=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $wsnode0_mac 5 "wpan" 6 "1"));
+time_DUT_transmit_PA=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $BRRPI_mac 5 "wpan" 6 "0"));
 
 DUT_receive_PAS_num=${#time_DUT_receive_PAS[*]};
 DUT_transmit_PA_num=${#time_DUT_transmit_PA[*]};
 
 if [ $DUT_receive_PAS_num -eq 0 ]; then
-  echo "----TEST FAIL: DUT(BR) have not received PAS from test node"
+  echo "----Step1 FAIL: DUT(BR) have not received PAS from test node"
 elif [ $DUT_transmit_PA_num -eq 0 ]; then
-  echo "----TEST     : DUT(BR) received PAS from TBU..."
-  echo "----TEST FAIL: DUT(BR) have not send PA..."
+  setp1_pass=1; echo "----Step1 PASS: DUT(BR) received PAS from TBU..."
+  echo "----Step2 FAIL: DUT(BR) have not send PA..."
 else
-  echo "----TEST     : DUT(BR) transmitted/broadcasted PA..."
+  echo "----Step2     : DUT(BR) transmitted/broadcasted PA..."
   loop_break=0
   for pas_idx in $(seq 1 $DUT_receive_PAS_num)
   do 
     if [ $loop_break -ne 0 ]; then
       break;
     else
-      # extract abc.defgh to abc.d
+      #  change time precision to +/-0.1 Second
       time_pas=$(echo ${time_DUT_receive_PAS[$(($pas_idx-1))]} | sed 's/\([0-9]\+\.[0-9]\{1\}\).*/\1/' | sed 's/\.//')
       for pa_idx in $(seq 1 $DUT_transmit_PA_num)
       do 
@@ -175,14 +189,14 @@ else
         fi
         echo "The first PA send after PAS received..$time_pa - $time_pas.."
         time_between_PA_and_PAS=$(($time_pa - $time_pas));
-        echo "DUT send PA $(echo "$time_between_PA_and_PAS/10" | bc -l | sed 's/\([0-9]\+\.[0-9]\{1\}\).*/\1/')s after receive PAS"
+        echo "DUT send PA $(echo "$time_between_PA_and_PAS/10" | bc -l | sed 's/\([0-9]\+\.[0-9]\{1\}\).*/\1/')s after it receive PAS"
         ten_of_DISC_IMIN=$(($DISC_IMIN*10));
         if [ $time_between_PA_and_PAS -lt $ten_of_DISC_IMIN ]; then
-          echo "----TEST SUCCESS: PA, PAS observed and time delta available"
+          step2_pass=1; echo "----Step2 PASS: PA, PAS observed and time delta available"
           loop_break=1;
           break;
         else
-          echo "----TEST FAIL: PA, PAS observed, BUT too much time between PA and PAS"
+          echo "----Step2 FAIL: PA, PAS observed, BUT too much time between PA and PAS"
           loop_break=1;
           break;
         fi
@@ -190,6 +204,18 @@ else
     fi
   done
 fi
+
+# Step 3-4 ----
+time_DUT_receive_EAPOLEAP=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "3"));
+DUT_receive_EAPOLEAP=($(packet_receive_check ${LOG_PATH}/output_node.csv -0 3 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "3"));
+DUT_receive_EAPOLEAP_EAPOL_KEY=$(echo $DUT_receive_EAPOLEAP | cut -f 8);
+echo "DUT_receive_EAPOLEAP_EAPOL-KEY: $DUT_receive_EAPOLEAP_EAPOL_KEY"
+DUT_receive__EAPOLEAP_num=${#time_DUT_receive_PAS[*]};
+if [ $DUT_receive__EAPOLEAP_num -ge 0 ] && [ -n $DUT_receive_EAPOLEAP_EAPOL_KEY ]; then
+    step3_pass=1; echo "----Step3 PASS: Joiner issues a EAPOL-EAP frame: EAPOL-KEY Packet Type = 3 with EAPOL-KEY"
+fi
+
+
 
 
 echo "----TEST [$TEST_CASE_NAME] complete .............................................................."

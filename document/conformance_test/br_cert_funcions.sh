@@ -318,7 +318,11 @@ function packet_receive_check
   # ----------------------------------------------
   # $@: variable input sequences  
   # $1: the 1st parameter MUST be given csv file
-  #   : parameters after MUST be paired like:
+  # $2: return option, 
+  #     -t  return times corresponding to checked packets
+  #     -n  return numbers of to checked packets
+  #     -$n return the {$n}-th checked packets/lines in csv 
+  # $@ : parameters after MUST be paired like:
   #     [collum number, key word]
   #-----------------------------------------------
   # Return:
@@ -326,6 +330,8 @@ function packet_receive_check
   # : if exist, return the packet receiving times 
   #-----------------------------------------------
   local CaptureCsv=$1;
+  local return_option=$2;
+  local time_sequence=""
 
   #echo "number of input parameter: $#"
 
@@ -337,19 +343,20 @@ function packet_receive_check
   done
 
   # search for each input param: [col, key_word]
-  for idx in $(seq 2 2 $#); do
-    search_col=$(eval echo \$${idx}); search_key=$(eval echo \$$(($idx+1)));
+  for idx in $(seq 3 2 $#); do
+    search_col=$(eval echo \$${idx}); search_key=$(eval echo \${$(($idx+1))});
     #echo "[collum, key_word] : $search_col , $search_key"
     #cat ${CaptureCsv} | cut -f $search_col | sed -n "/${search_key}/p"
     #cat ${CaptureCsv} | cut -f $search_col | sed -n "/${search_key}/="
     searched_lines=($(cat ${CaptureCsv} | cut -f $search_col | sed -n "/${search_key}/="));
+    touch temp_${CURR_TIME}_${idx}.txt
     for tmp in ${searched_lines[@]}; do 
       echo $tmp >> temp_${CURR_TIME}_${idx}.txt; 
     done
 
     # paste the searched lines to temperary files
     # for the first 
-    if [ $idx -eq 2 ]; then
+    if [ $idx -eq 3 ]; then
       cp temp_${CURR_TIME}_${idx}.txt temp_${CURR_TIME}_$(($idx+1)).txt;
     else
       sort -n temp_${CURR_TIME}_${idx}.txt temp_${CURR_TIME}_$(($idx-1)).txt | uniq -d > temp_${CURR_TIME}_$(($idx+1)).txt;
@@ -362,12 +369,21 @@ function packet_receive_check
 
   # convert searched indice to array
   items=($(cat temp_${CURR_TIME}_$(($#)).txt));
-  items_num=${#items[*]}; items_num=$(($items_num-1))
+  items_num=${#items[*]}; items_num=$(($items_num-1));
   for idx in $(seq 0 $items_num); do
-    line_idx=${items[$idx]};
-    result[$idx]=$(cat ${CaptureCsv} | sed -n "${items[$idx]}p" | cut -f 2);
+    line_idx=${items[$idx]}; 
+    time_sequence[$idx]=$(cat ${CaptureCsv} | sed -n "${items[$idx]}p" | cut -f 2);
   done
-  echo ${result[@]}
+
+  if [ "$return_option" = "-t" ]; then
+    echo ${time_sequence[@]};
+  elif [ "$return_option" = "-n" ]; then
+    echo ${items[@]};
+  elif [[ $return_option =~ ^-[0-9]+$ ]]; then
+    idx=$(echo $return_option | sed 's/-//');
+    #l_def=$(for idx in ${items[@]}; do echo -n "${idx}p;"; done);
+    cat ${CaptureCsv} | sed -n "${items[$idx]}p"; 
+  fi
 
   # remove temperary files
   for idx in $(seq 0 $#); do

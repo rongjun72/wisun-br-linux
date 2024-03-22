@@ -175,7 +175,7 @@ else
         fi
         echo "The first PA send after PAS received..$time_pa - $time_pas.."
         time_between_PA_and_PAS=$(($time_pa - $time_pas));
-        echo "DUT send PA $(echo "$time_between_PA_and_PAS/10" | bc -l | sed 's/\([0-9]\+\.[0-9]\{1\}\).*/\1/')s after receive PAS"
+        echo "DUT send PA $(echo "$time_between_PA_and_PAS/10" | bc -l | sed 's/\([0-9]\+\.[0-9]\{1\}\).*/\1/')s after it receive PAS"
         ten_of_DISC_IMIN=$(($DISC_IMIN*10));
         if [ $time_between_PA_and_PAS -lt $ten_of_DISC_IMIN ]; then
           echo "----TEST SUCCESS: PA, PAS observed and time delta available"

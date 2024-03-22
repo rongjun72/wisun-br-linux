@@ -138,10 +138,16 @@ rm -f si_pti_discover.txt
 
 
 
-# test begin........
+# test begin....................
 source test_PAN-PA-SELECT-2.sh
 
-#source test_PAN-PA-SELECT-2.sh
+source test_PAN-KEY-TLS-2.sh
+
+
+
+
+
+
 
 
 # check session id of serial port and wsbrd(ssh RPi) and kill them

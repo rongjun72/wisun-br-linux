@@ -1,4 +1,16 @@
 source br_cert_funcions.sh
+# -----------------------------------------------------------------------
+# Test case :   Border Router as DUT [PAN-PA-SELECT-2]
+# -----------------------------------------------------------------------
+# Description:  
+# This test case verifies the ability of the Border Router (DUT) to be 
+# configured with a PAN ID for PAN A and respond to PAN Advertisement 
+# Solicit frames from a joining node.
+# -----------------------------------------------------------------------
+TEST_CASE_NAME="PAN-PA-SELECT-2"
+
+
+
 # ------------- global variables begin ----------------------------------
 # DO NOT change the global vars in this file
 # -----------------------------------------------------------------------
@@ -26,9 +38,10 @@ source br_cert_funcions.sh
 # ------------- global variables end ------------------------------------
 TEST_TIME=$(date "+%m%d_%H-%M");
 time_start_test=$(($(date +%s%N)/1000000)); 
-node0_pti_cap_file=${LOG_PATH}/Node0Cap_PAN-PA-SELECT-2_${TEST_TIME}.pcapng
-wsbrd_cap_file=${LOG_PATH}/BrCap_PAN-PA-SELECT-2_${TEST_TIME}.pcapng
+node0_pti_cap_file=${LOG_PATH}/Node0Cap_${TEST_CASE_NAME}_${TEST_TIME}.pcapng
+wsbrd_cap_file=${LOG_PATH}/BrCap_${TEST_CASE_NAME}_${TEST_TIME}.pcapng
 
+echo "----TEST [$TEST_CASE_NAME] start ..................................................................."
 # Wi-SUN network configurations:
 # ------------- test bed configurations begin ---------------------------
 #PAN_ID=35
@@ -179,5 +192,5 @@ else
 fi
 
 
-echo "----TEST [PAN-PA-SELECT-2] complete ..................................................................."
+echo "----TEST [$TEST_CASE_NAME] complete ..................................................................."
 

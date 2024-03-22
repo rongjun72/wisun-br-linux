@@ -286,7 +286,7 @@ function check_receive_message
   #-----------------------------------------------
   # Return:
   # ----------------------------------------------
-  # : if exist, return the packet receiving time 
+  # : if exist, return the packet receiving times 
   #-----------------------------------------------
   local CaptureCsv=$1;
   local source_mac=$2
@@ -307,3 +307,70 @@ function check_receive_message
   fi
 
 }
+
+function packet_receive_check
+{
+  # function description:
+  # check if given key words exit in given csv file
+  # 
+  # -----------------------------------------------------------------------------
+  # Input parameters:
+  # ----------------------------------------------
+  # $@: variable input sequences  
+  # $1: the 1st parameter MUST be given csv file
+  #   : parameters after MUST be paired like:
+  #     [collum number, key word]
+  #-----------------------------------------------
+  # Return:
+  # ----------------------------------------------
+  # : if exist, return the packet receiving times 
+  #-----------------------------------------------
+  local CaptureCsv=$1;
+
+  #echo "number of input parameter: $#"
+
+  # for tmp in ${sss[@]}; do echo $tmp >> temp.txt ; done; cat temp.txt | sort | uniq -d
+  # create a temperary file for search ,sort and repeated check
+  CURR_TIME=$(date "+%m%d_%H-%M");
+  for idx in $(seq 0 $#); do
+    rm -rf temp_${CURR_TIME}_${idx}.txt
+  done
+
+  # search for each input param: [col, key_word]
+  for idx in $(seq 2 2 $#); do
+    search_col=$(eval echo \$${idx}); search_key=$(eval echo \$$(($idx+1)));
+    #echo "[collum, key_word] : $search_col , $search_key"
+    #cat ${CaptureCsv} | cut -f $search_col | sed -n "/${search_key}/p"
+    #cat ${CaptureCsv} | cut -f $search_col | sed -n "/${search_key}/="
+    searched_lines=($(cat ${CaptureCsv} | cut -f $search_col | sed -n "/${search_key}/="));
+    for tmp in ${searched_lines[@]}; do 
+      echo $tmp >> temp_${CURR_TIME}_${idx}.txt; 
+    done
+
+    # paste the searched lines to temperary files
+    # for the first 
+    if [ $idx -eq 2 ]; then
+      cp temp_${CURR_TIME}_${idx}.txt temp_${CURR_TIME}_$(($idx+1)).txt;
+    else
+      sort -n temp_${CURR_TIME}_${idx}.txt temp_${CURR_TIME}_$(($idx-1)).txt | uniq -d > temp_${CURR_TIME}_$(($idx+1)).txt;
+    fi
+  done
+
+  #echo "--------------------"
+  #cat temp_${CURR_TIME}_$(($#)).txt
+  #echo "--------------------"
+
+  # convert searched indice to array
+  items=($(cat temp_${CURR_TIME}_$(($#)).txt));
+  items_num=${#items[*]}; items_num=$(($items_num-1))
+  for idx in $(seq 0 $items_num); do
+    line_idx=${items[$idx]};
+    result[$idx]=$(cat ${CaptureCsv} | sed -n "${items[$idx]}p" | cut -f 2);
+  done
+  echo ${result[@]}
+
+  # remove temperary files
+  for idx in $(seq 0 $#); do
+    rm -rf temp_${CURR_TIME}_${idx}.txt
+  done
+} 

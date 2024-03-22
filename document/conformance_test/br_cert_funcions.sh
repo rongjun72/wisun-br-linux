@@ -323,7 +323,8 @@ function packet_receive_check
   #     -n  return numbers of to checked packets
   #     -$n return the {$n}-th checked packets/lines in csv 
   # $@ : parameters after MUST be paired like:
-  #     [collum number, key word]
+  #     [collum number, key word], given key word like "**"
+  #     we will find the non-empty lines
   #-----------------------------------------------
   # Return:
   # ----------------------------------------------
@@ -344,11 +345,17 @@ function packet_receive_check
 
   # search for each input param: [col, key_word]
   for idx in $(seq 3 2 $#); do
-    search_col=$(eval echo \$${idx}); search_key=$(eval echo \${$(($idx+1))});
+    search_col=$(eval echo \${${idx}}); search_key=$(eval echo \${$(($idx+1))});
     #echo "[collum, key_word] : $search_col , $search_key"
-    #cat ${CaptureCsv} | cut -f $search_col | sed -n "/${search_key}/p"
-    #cat ${CaptureCsv} | cut -f $search_col | sed -n "/${search_key}/="
-    searched_lines=($(cat ${CaptureCsv} | cut -f $search_col | sed -n "/${search_key}/="));
+    if [ "$search_key" = "**" ]; then
+      # for input pattern "**", means find all non-empty lines
+      # echo "=======";cat ${CaptureCsv} | cut -f $search_col | sed -n "/^\s*[^# \t].*$/=";
+      searched_lines=($(cat ${CaptureCsv} | cut -f $search_col | sed -n "/^\s*[^# \t].*$/="));
+    else
+      #cat ${CaptureCsv} | cut -f $search_col | sed -n "/${search_key}/p"
+      #cat ${CaptureCsv} | cut -f $search_col | sed -n "/${search_key}/="
+      searched_lines=($(cat ${CaptureCsv} | cut -f $search_col | sed -n "/${search_key}/="));
+    fi
     touch temp_${CURR_TIME}_${idx}.txt
     for tmp in ${searched_lines[@]}; do 
       echo $tmp >> temp_${CURR_TIME}_${idx}.txt; 

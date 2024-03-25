@@ -388,8 +388,12 @@ function packet_receive_check
     echo ${items[@]};
   elif [[ $return_option =~ ^-[0-9]+$ ]]; then
     idx=$(echo $return_option | sed 's/-//');
-    #l_def=$(for idx in ${items[@]}; do echo -n "${idx}p;"; done);
-    cat ${CaptureCsv} | sed -n "${items[$idx]}p"; 
+    if [[ "$idx" -le "${#items[*]}" ]]; then
+      # return the number ${idx} packet if $idx within available range
+      cat ${CaptureCsv} | sed -n "${items[$idx]}p"; 
+    else
+      echo ""
+    fi
   fi
 
   # remove temperary files
@@ -397,3 +401,4 @@ function packet_receive_check
     rm -rf temp_${CURR_TIME}_${idx}.txt
   done
 } 
+

@@ -36,8 +36,8 @@ TEST_CASE_NAME="PAN-KEY-TLS-2"
 # DISC_IMIN=15
 # DISC_IMAX=2
 # ------------- global variables end ------------------------------------
-TEST_TIME=$(date "+%m%d_%H-%M");
-time_start_test=$(($(date +%s%N)/1000000)); 
+TEST_TIME=$(date "+%m%d_%H-%M"); #   TEST_TIME="0325_09-48";
+time_start_test=$(($(date +%s%N)/1000000));
 node0_pti_cap_file=${LOG_PATH}/Node0Cap_${TEST_CASE_NAME}_${TEST_TIME}.pcapng
 wsbrd_cap_file=${LOG_PATH}/BrCap_${TEST_CASE_NAME}_${TEST_TIME}.pcapng
 
@@ -130,7 +130,8 @@ echo "----------------------------------Test Pass/Fail Analysis-----------------
 echo "------------convert Border router packet captures to csv-------------------"
 # the first 2 options in EXTRACT_OPTIONS MUST be "-e frame.number -e frame.time_epoch"
 EXTRACT_OPTIONS="-e frame.number -e frame.time_epoch -e wpan.src64 -e wpan.dst64 -e frame.protocols -e wisun.uttie.type"
-EXTRACT_OPTIONS="$EXTRACT_OPTIONS -e eapol.type -e wlan_rsna_eapol.keydes.data"
+EXTRACT_OPTIONS="$EXTRACT_OPTIONS -e eapol.type -e wlan_rsna_eapol.keydes.data -e eap.code -e eap.type -e tls.handshake.type"
+EXTRACT_OPTIONS="$EXTRACT_OPTIONS -e tls.record.content_type"
 tshark -r ${wsbrd_cap_file} -T fields $EXTRACT_OPTIONS > ${LOG_PATH}/output_br.csv
 #cat output_br.csv
 
@@ -158,7 +159,8 @@ synchronize_node_cap_to_Br_cap ${LOG_PATH}/output_br.csv ${LOG_PATH}/output_node
 # Step4 PASS:   Wireshark capture shows EAP-TLS exchange.
 #       FAIL:   Server Hello is not issued from Border Router DUT
 # -------------------------------------------------------------------------------------------------
-step1_pass=0; step2_pass=0; step3_pass=0; step4_pass=0; step5_pass=0; step6_pass=0; step7_pass=0; 
+# initialize the pass/fail array, setps_pass[0] related to the whole test PASS/FAIL
+setps_pass=(); #setps_pass[0]=0;
 # Step 1-2 ----
 time_DUT_receive_PAS=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $wsnode0_mac 5 "wpan" 6 "1"));
 time_DUT_transmit_PA=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $BRRPI_mac 5 "wpan" 6 "0"));
@@ -167,10 +169,11 @@ DUT_receive_PAS_num=${#time_DUT_receive_PAS[*]};
 DUT_transmit_PA_num=${#time_DUT_transmit_PA[*]};
 
 if [ $DUT_receive_PAS_num -eq 0 ]; then
-  echo "----Step1 FAIL: DUT(BR) have not received PAS from test node"
+    setps_pass[1]=0;
+    echo "----Step1 FAIL: DUT(BR) have not received PAS from test node"
 elif [ $DUT_transmit_PA_num -eq 0 ]; then
-  setp1_pass=1; echo "----Step1 PASS: DUT(BR) received PAS from TBU..."
-  echo "----Step2 FAIL: DUT(BR) have not send PA..."
+    setps_pass[1]=1; echo "----Step1 PASS: DUT(BR) received PAS from TBU..."
+    setps_pass[2]=0; echo "----Step2 FAIL: DUT(BR) have not send PA..."
 else
   echo "----Step2     : DUT(BR) transmitted/broadcasted PA..."
   loop_break=0
@@ -192,11 +195,11 @@ else
         echo "DUT send PA $(echo "$time_between_PA_and_PAS/10" | bc -l | sed 's/\([0-9]\+\.[0-9]\{1\}\).*/\1/')s after it receive PAS"
         ten_of_DISC_IMIN=$(($DISC_IMIN*10));
         if [ $time_between_PA_and_PAS -lt $ten_of_DISC_IMIN ]; then
-          step2_pass=1; echo "----Step2 PASS: PA, PAS observed and time delta available"
+          setps_pass[2]=1; echo "----Step2 PASS: PA, PAS observed and time delta available"
           loop_break=1;
           break;
         else
-          echo "----Step2 FAIL: PA, PAS observed, BUT too much time between PA and PAS"
+          setps_pass[2]=0; echo "----Step2 FAIL: PA, PAS observed, BUT too much time between PA and PAS"
           loop_break=1;
           break;
         fi
@@ -205,19 +208,130 @@ else
   done
 fi
 
-# Step 3-4 ----
+# Step 3-5 ----
 time_DUT_receive_EAPOLEAP=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "3" 8 "bbb"));
 DUT_receive_EAPOLEAP=($(packet_receive_check ${LOG_PATH}/output_node.csv -0 3 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "3" 8 "bbb"));
 DUT_receive_EAPOLEAP_EAPOL_KEY=${DUT_receive_EAPOLEAP[7]};
 DUT_receive__EAPOLEAP_num=${#time_DUT_receive_EAPOLEAP[*]};
 if [[ $DUT_receive__EAPOLEAP_num -ge 0 && -n $DUT_receive_EAPOLEAP_EAPOL_KEY ]]; then
     echo "DUT_receive_EAPOLEAP_EAPOL-KEY: $DUT_receive_EAPOLEAP_EAPOL_KEY";
-    step3_pass=1; echo "----Step3 PASS: Joiner issues a EAPOL-EAP frame: EAPOL-KEY Packet Type = 3 with EAPOL-KEY"
+    setps_pass[3]=1; echo "----Step3 PASS: Joiner issues a EAPOL-EAP frame: EAPOL-KEY Packet Type = 3 with EAPOL-KEY"
+else
+    setps_pass[3]=0; echo "----Step3 FAIL: No EAPOL-EAP frame: EAPOL-KEY Packet Type = 3 with EAPOL-KEY found"
 fi
 
+time_DUT_send_EAP_Request_Identity=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "0" 9 "1" 10 "1"));
+DUT_send_EAP_Request_Identity=($(packet_receive_check ${LOG_PATH}/output_node.csv -0 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "0" 9 "1" 10 "1"));
+if [ -n $time_DUT_send_EAP_Request_Identity ]; then 
+    echo "find DUT_send EAP Request Identity @ time: ${DUT_send_EAP_Request_Identity[1]}"
+    #echo "${DUT_send_EAP_Request_Identity[@]} "
+    setps_pass[4]=1; echo "----Step4 PASS: Border Router DUT sends EAP Request Identity"
+else
+    setps_pass[4]=0; echo "----Step4 FAIL: Border Router DUT does NOT send EAP Request Identity"
+fi
 
+time_Joiner_sends_EAP_Response_Identity=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $wsnode0_mac 4 $BRRPI_mac 5 "wpan:eapol" 6 "6" 7 "0" 9 "2" 10 "1"));
+Joiner_sends_EAP_Response_Identity=($(packet_receive_check ${LOG_PATH}/output_node.csv -0 3 $wsnode0_mac 4 $BRRPI_mac 5 "wpan:eapol" 6 "6" 7 "0" 9 "2" 10 "1"));
+if [ -n $time_Joiner_sends_EAP_Response_Identity ]; then 
+    echo "find DUT_send EAP Request Identity @ time: ${Joiner_sends_EAP_Response_Identity[1]}"
+    #echo "${Joiner_sends_EAP_Response_Identity[@]} "
+    setps_pass[5]=1; echo "----Step5 PASS: Joiner sends EAP Response Identity"
+else
+    setps_pass[5]=0; echo "----Step5 FAIL: Joiner does NOT send EAP Response Identity"
+fi
 
+# Step 6-7 ----
+time_DUT_sends_EAP_Request_TLS_Start=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "0" 9 "1" 10 "13"));
+DUT_sends_EAP_Request_TLS_Start=($(packet_receive_check ${LOG_PATH}/output_node.csv -0 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "0" 9 "1" 10 "13"));
+if [ -n $time_DUT_sends_EAP_Request_TLS_Start ]; then 
+    echo "find DUT sends EAP Request TLS Start @ time: ${DUT_sends_EAP_Request_TLS_Start[1]}"
+    #echo "${DUT_sends_EAP_Request_TLS_Start[@]} "
+    setps_pass[6]=1; echo "----Step6 PASS: Border Router DUT sends EAP Request TLS Start"
+else
+    setps_pass[6]=0; echo "----Step6 FAIL: Border Router DUT does NOT send EAP Request TLS Start"
+fi
 
+time_Joiner_sends_EAP_Response_Hello=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $wsnode0_mac 4 $BRRPI_mac 5 "wpan:eapol:tls" 6 "6" 7 "0" 9 "2" 10 "13" 11 "1"));
+Joiner_sends_EAP_Response_Hello=($(packet_receive_check ${LOG_PATH}/output_node.csv -0 3 $wsnode0_mac 4 $BRRPI_mac 5 "wpan:eapol:tls" 6 "6" 7 "0" 9 "2" 10 "13" 11 "1"));
+if [ -n $time_Joiner_sends_EAP_Response_Hello ]; then 
+    echo "find Joiner_sends_EAP_Response_Hello @ time: ${Joiner_sends_EAP_Response_Hello[1]}"
+    #echo "${Joiner_sends_EAP_Response_Hello[@]} "
+    setps_pass[7]=1; echo "----Step7 PASS: Joiner sends EAP Response EAP-TLS Client Hello to Border Router DUT"
+else
+    setps_pass[7]=0; echo "----Step7 FAIL: Joiner does NOT send EAP Response EAP-TLS Client Hello to Border Router DUT"
+fi
+
+# Step 8-9 ----
+time_DUT_sends_EAP_Server_Hello=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol:tls" 6 "6" 7 "0" 9 "1" 10 "13" 11 "2"));
+DUT_sends_EAP_Server_Hello=($(packet_receive_check ${LOG_PATH}/output_node.csv -0 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol:tls" 6 "6" 7 "0" 9 "1" 10 "13" 11 "2"));
+if [ -n $time_DUT_sends_EAP_Server_Hello ]; then 
+    echo "find DUT sends sends EAP-TLS: Server Hello @ time: ${DUT_sends_EAP_Server_Hello[1]}"
+    #echo "${DUT_sends_EAP_Server_Hello[@]} "
+    setps_pass[8]=1; echo "----Step8 PASS: Border Router DUT sends EAP-TLS: Server Hello"
+else
+    setps_pass[8]=0; echo "----Step8 FAIL: Border Router DUT does NOT send EAP-TLS: Server Hello"
+fi
+
+time_Joiner_sends_EAP_Response_Certificate=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $wsnode0_mac 4 $BRRPI_mac 5 "wpan:eapol:tls" 6 "6" 7 "0" 9 "2" 10 "13" 11 "11"));
+Joiner_sends_EAP_Response_Certificate=($(packet_receive_check ${LOG_PATH}/output_node.csv -0 3 $wsnode0_mac 4 $BRRPI_mac 5 "wpan:eapol:tls" 6 "6" 7 "0" 9 "2" 10 "13" 11 "11"));
+if [ -n $time_Joiner_sends_EAP_Response_Certificate ]; then 
+    echo "find Joiner sends EAP Response Certificate, Client Key Exchange to BR DUT @ time: ${Joiner_sends_EAP_Response_Certificate[1]}"
+    #echo "${Joiner_sends_EAP_Response_Certificate[@]} "
+    setps_pass[9]=1; echo "----Step9 PASS: Joiner sends EAP Response EAP-TLS to BR DUT, Certificate, Client Key Exchange."
+else
+    setps_pass[9]=0; echo "----Step9 FAIL: Joiner does NOT send EAP Response EAP-TLS to BR DUT, Certificate, Client Key Exchange."
+fi
+
+# Step 10-12 ----
+time_DUT_sends_EAP_Change_Cipher=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol:tls" 6 "6" 7 "0" 9 "1" 10 "13" 12 "20"));
+DUT_sends_EAP_Change_Cipher=($(packet_receive_check ${LOG_PATH}/output_node.csv -0 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol:tls" 6 "6" 7 "0" 9 "1" 10 "13" 12 "20"));
+if [ -n $time_DUT_sends_EAP_Change_Cipher ]; then 
+    echo "find DUT sends sends EAP-TLS: Change Cipher Spec, Finished @ time: ${DUT_sends_EAP_Change_Cipher[1]}"
+    #echo "${DUT_sends_EAP_Change_Cipher[@]} "
+    setps_pass[10]=1; echo "----Step10 PASS: Border Router DUT sends EAP-TLS: Change Cipher Spec, Finished"
+else
+    setps_pass[10]=0; echo "----Step10 FAIL: BR DUT does NOT send EAP-TLS: Change Cipher Spec, Finished"
+fi
+
+time_Joiner_sends_EAP_Response=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $wsnode0_mac 4 $BRRPI_mac 5 "wpan:eapol" 6 "6" 7 "0" 9 "2" 10 "13"));
+Joiner_sends_EAP_Response=($(packet_receive_check ${LOG_PATH}/output_node.csv -0 3 $wsnode0_mac 4 $BRRPI_mac 5 "wpan:eapol" 6 "6" 7 "0" 9 "2" 10 "13"));
+if [ -n $time_Joiner_sends_EAP_Response ]; then
+    for time_item in ${time_Joiner_sends_EAP_Response[@]}; do
+        greate_test=$(echo "$time_item > $time_DUT_sends_EAP_Change_Cipher" | bc -l);
+        if [ "$greate_test" -eq 1 ]; then
+            time_delay=$(echo "$time_item - $time_DUT_sends_EAP_Change_Cipher" | bc -l | sed 's/\([0-9]\+\.[0-9]\{6\}\).*/\1/');
+            echo "Joiner sends EAP-Response ${time_delay}s after DUT send EAP-TLS: Change Cipher Spec";
+            setps_pass[11]=1; echo "----Step11 PASS: Joiner sends EAP-Response after DUT send EAP-TLS: Change Cipher Spec, Finished"
+            break;
+        fi
+    done
+    #echo "${time_Joiner_sends_EAP_Response[@]} "
+else
+    setps_pass[11]=0; echo "----Step11 FAIL: Joiner dos NOT send EAP-Response after DUT send EAP-TLS: Change Cipher Spec, Finished"
+fi
+
+time_DUT_sends_EAP_Success=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "0" 9 "3"));
+DUT_sends_EAP_Success=($(packet_receive_check ${LOG_PATH}/output_node.csv -0 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "0" 9 "3"));
+if [ -n $time_DUT_sends_EAP_Success ]; then 
+    echo "find DUT sends EAP-Success @ time: ${DUT_sends_EAP_Success[1]}"
+    #echo "${DUT_sends_EAP_Success[@]} "
+    setps_pass[12]=1; echo "----Step12 PASS: Border Router DUT sends EAP-Success"
+else
+    setps_pass[12]=0; echo "----Step12 FAIL: Border Router DUT does NOT send EAP-Success"
+fi
+
+test_passfail=1;
+for passfail in ${steps_pass[@]}; do
+    if [ "$passfail" -eq "0" ]; then
+        test_passfail=0;
+        break;
+    fi 
+done
+if [ "$test_passfail" -ne "0" ]; then 
+    echo "----TEST [$TEST_CASE_NAME] : all test items PASS";
+else
+    echo "----TEST [$TEST_CASE_NAME] : FAIL";
+fi
 echo "----TEST [$TEST_CASE_NAME] complete .............................................................."
 echo ""
 echo ""

@@ -150,6 +150,7 @@ source test_PAN-KEY-TLS-2.sh
 
 
 
+sudo rm -f ${LOG_PATH}/sed*.*
 # check session id of serial port and wsbrd(ssh RPi) and kill them
 node0_id=$(ps -u | grep 'minicom -D' | grep $wsnode0 | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
 node1_id=$(ps -u | grep 'minicom -D' | grep $wsnode1 | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')

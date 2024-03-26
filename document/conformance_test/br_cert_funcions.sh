@@ -48,15 +48,23 @@ function wisun_br_config
   local wisun_class=$4
   local gdk0=""
 
-  # find "domain = XX" and replace with "domain = YY #XX", mean while delete possible comment symbol #
-  sed -i "s/^.*domain =/domain = $wisun_domain #/" $Fwsbrd
-  sed -i "s/^.*mode =/mode = $wisun_mode #/" $Fwsbrd
-  sed -i "s/^.*class =/class = $wisun_class #/" $Fwsbrd
-  sed -i "s/^.*unicast_dwell_interval =/unicast_dwell_interval = 15 #/" $Fwsbrd
+  ##### find "domain = XX" and replace with "domain = YY #XX", mean while delete possible comment symbol #
+  ####sed -i "s/^.*domain =/domain = $wisun_domain #/" $Fwsbrd
+  ####sed -i "s/^.*mode =/mode = $wisun_mode #/" $Fwsbrd
+  ####sed -i "s/^.*class =/class = $wisun_class #/" $Fwsbrd
+  ####sed -i "s/^.*unicast_dwell_interval =/unicast_dwell_interval = 15 #/" $Fwsbrd
+  ##### Channel Function for both devices are set to Fixed Channel 0
+  ####sed -i "s/^.*allowed_channels =/allowed_channels = 0 #/" $Fwsbrd
+  ##### set expected GTKs 
+  #####sed -i "s/^.*gtk[0] =/gtk[0] =/" $Fwsbrd
+
+  sed -i "s/^.*domain =.*/domain = $wisun_domain/" $Fwsbrd
+  sed -i "s/^.*mode =.*/mode = $wisun_mode/" $Fwsbrd
+  sed -i "s/^.*class =.*/class = $wisun_class/" $Fwsbrd
+  sed -i "s/^.*unicast_dwell_interval =.*/unicast_dwell_interval = 15/" $Fwsbrd
   # Channel Function for both devices are set to Fixed Channel 0
-  sed -i "s/^.*allowed_channels =/allowed_channels = 0 #/" $Fwsbrd
-  # set expected GTKs 
-  #sed -i "s/^.*gtk[0] =/gtk[0] =/" $Fwsbrd
+  sed -i "s/^.*allowed_channels =.*/allowed_channels = 0/" $Fwsbrd
+
 }
 
 

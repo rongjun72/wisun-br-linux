@@ -37,7 +37,7 @@ TEST_CASE_NAME="PAN-KEY-TLS-4"
 # DISC_IMAX=2
 # ------------- global variables end ------------------------------------
 TEST_TIME="0326_14-13";
-####TEST_TIME=$(date "+%m%d_%H-%M");
+TEST_TIME=$(date "+%m%d_%H-%M");
 
 time_start_test=$(($(date +%s%N)/1000000));
 node0_pti_cap_file=${LOG_PATH}/Node0Cap_${TEST_CASE_NAME}_${TEST_TIME}.pcapng
@@ -60,55 +60,55 @@ echo "--------------------------------------------------------------------------
 
 
 
-##### TBUs config setting........
-####wisun_node_set $wsnode0 $wisun_domain $wisun_mode $wisun_class
-####wisun_node_set $wsnode1 $wisun_domain $wisun_mode $wisun_class
-####wisun_node_set $wsnode2 $wisun_domain $wisun_mode $wisun_class
-#####echo "wisun mac_allow $wsnode1_mac" > $wsnode0
-#####echo "wisun mac_allow $wsnode2_mac" > $wsnode1
-####
-##### check the thread number of wsbrd
-####ssh_check_and_kill_wsbrd $BRRPI_usr $BRRPI_ip;
-####
-##### get/modify/overwrite the wsbrd.conf file before start wsbrd application in RPi
-####scp ${BRRPI_usr}@${BRRPI_ip}:$BRRPI_path/wsbrd.conf ${LOG_PATH}/wsbrd.conf
-####wisun_br_config ${LOG_PATH}/wsbrd.conf $wisun_domain $wisun_mode $wisun_class
-####scp ${LOG_PATH}/wsbrd.conf ${BRRPI_usr}@${BRRPI_ip}:$BRRPI_path/wsbrd.conf
-####rm -f ${LOG_PATH}/wsbrd.conf
-####
-####echo "----------------------------start wsbrd application on Raspberry Pi...-------"
-####TIME_START_WSBRD=$(($(date +%s%N)/1000000 - $time_start_test)) # uint in ms
-####echo "start wsbrd at time: $(($TIME_START_WSBRD/1000)).$(echo $(($TIME_START_WSBRD%1000+1000)) | sed 's/^1//')"
-####ssh_start_wsbrd_window $BRRPI_usr $BRRPI_ip $wisun_domain $wisun_mode $wisun_class
-####
-####
-####capture_time=200
-####echo "----------------------------start wsnode packet capture, for ${capture_time}s---"
-####echo "start wsnode packet capture, for ${capture_time}s..."
-####gnome-terminal --window --title="Node Capture" --geometry=90x24+200+0 -- \
-####  sudo java -jar $silabspti -ip=$wsnode0_netif -time=$(($capture_time*1000)) -format=pcapng_wisun -out=${node0_pti_cap_file}
-####
-##### ------start wsnode join_fan10-------
-####echo "----------------------------start wsnode0 join_fan10------------------------"
-####time_0=$(date +%s%N); echo "wisun disconnect" > $wsnode0 
-####time_1=$(date +%s%N); echo "send disconnect: $((($time_1 - $time_0)/1000000))ms"; echo "wisun join_fan10" > $wsnode0 
-####time_2=$(date +%s%N); echo "send join_fan10: $((($time_2 - $time_1)/1000000))ms";
-####TIME_JOIN_FAN10=$(($time_2/1000000-$time_start_test))
-####echo "node0 start wsnode join_fan10 at: $(($TIME_JOIN_FAN10/1000)).$(echo $(($TIME_JOIN_FAN10%1000+1000)) | sed 's/^1//')"
-####echo "-----------------------------------------------------------------------------"
-####
-####
-####
-####
-####display_wait_progress $(($capture_time/10));
-##### check session id of serial port and wsbrd(ssh RPi) and kill them
-####wsbrd_id=$(ps -u | grep cd | grep 'sudo wsbrd -F' | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
-####echo "kill wsbrd window: $wsbrd_id, actually wsbrd is still running on remote RPi"; kill $wsbrd_id;
-##### -------------------------------------------------------------------------------------------------
-##### copy border router host/rcp received message pcapng file from RapspberryPi
-##### prerequiste is uncomment "pcap_file = /tmp/wisun_dump.pcapng" in wsbrd.conf in RPi
-##### -------------------------------------------------------------------------------------------------
-####scp ${BRRPI_usr}@${BRRPI_ip}:/tmp/wisun_dump.pcapng ${wsbrd_cap_file}
+# TBUs config setting........
+wisun_node_set $wsnode0 $wisun_domain $wisun_mode $wisun_class
+wisun_node_set $wsnode1 $wisun_domain $wisun_mode $wisun_class
+wisun_node_set $wsnode2 $wisun_domain $wisun_mode $wisun_class
+#echo "wisun mac_allow $wsnode1_mac" > $wsnode0
+#echo "wisun mac_allow $wsnode2_mac" > $wsnode1
+
+# check the thread number of wsbrd
+ssh_check_and_kill_wsbrd $BRRPI_usr $BRRPI_ip;
+
+# get/modify/overwrite the wsbrd.conf file before start wsbrd application in RPi
+scp ${BRRPI_usr}@${BRRPI_ip}:$BRRPI_path/wsbrd.conf ${LOG_PATH}/wsbrd.conf
+wisun_br_config ${LOG_PATH}/wsbrd.conf $wisun_domain $wisun_mode $wisun_class
+scp ${LOG_PATH}/wsbrd.conf ${BRRPI_usr}@${BRRPI_ip}:$BRRPI_path/wsbrd.conf
+rm -f ${LOG_PATH}/wsbrd.conf
+
+echo "----------------------------start wsbrd application on Raspberry Pi...-------"
+TIME_START_WSBRD=$(($(date +%s%N)/1000000 - $time_start_test)) # uint in ms
+echo "start wsbrd at time: $(($TIME_START_WSBRD/1000)).$(echo $(($TIME_START_WSBRD%1000+1000)) | sed 's/^1//')"
+ssh_start_wsbrd_window $BRRPI_usr $BRRPI_ip $wisun_domain $wisun_mode $wisun_class
+
+
+capture_time=200
+echo "----------------------------start wsnode packet capture, for ${capture_time}s---"
+echo "start wsnode packet capture, for ${capture_time}s..."
+gnome-terminal --window --title="Node Capture" --geometry=90x24+200+0 -- \
+  sudo java -jar $silabspti -ip=$wsnode0_netif -time=$(($capture_time*1000)) -format=pcapng_wisun -out=${node0_pti_cap_file}
+
+# ------start wsnode join_fan10-------
+echo "----------------------------start wsnode0 join_fan10------------------------"
+time_0=$(date +%s%N); echo "wisun disconnect" > $wsnode0 
+time_1=$(date +%s%N); echo "send disconnect: $((($time_1 - $time_0)/1000000))ms"; echo "wisun join_fan10" > $wsnode0 
+time_2=$(date +%s%N); echo "send join_fan10: $((($time_2 - $time_1)/1000000))ms";
+TIME_JOIN_FAN10=$(($time_2/1000000-$time_start_test))
+echo "node0 start wsnode join_fan10 at: $(($TIME_JOIN_FAN10/1000)).$(echo $(($TIME_JOIN_FAN10%1000+1000)) | sed 's/^1//')"
+echo "-----------------------------------------------------------------------------"
+
+
+
+
+display_wait_progress $(($capture_time/10));
+# check session id of serial port and wsbrd(ssh RPi) and kill them
+wsbrd_id=$(ps -u | grep cd | grep 'sudo wsbrd -F' | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
+echo "kill wsbrd window: $wsbrd_id, actually wsbrd is still running on remote RPi"; kill $wsbrd_id;
+# -------------------------------------------------------------------------------------------------
+# copy border router host/rcp received message pcapng file from RapspberryPi
+# prerequiste is uncomment "pcap_file = /tmp/wisun_dump.pcapng" in wsbrd.conf in RPi
+# -------------------------------------------------------------------------------------------------
+scp ${BRRPI_usr}@${BRRPI_ip}:/tmp/wisun_dump.pcapng ${wsbrd_cap_file}
 
 
 
@@ -350,12 +350,12 @@ else
 fi
 
 #---------- PAN-KEY-TLS-4 ananlysis really start here
-# Step 13-14 ---- 4WH analysis ---------------------------------------
+# Step 13-16 ---- 4WH analysis ---------------------------------------
 time_4WH_DUT_ISSUE_PACKET=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "3"));
 STEP13_DUT_ISSUE_PACKET=($(packet_receive_check ${LOG_PATH}/output_node.csv -0 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "3"));
 echo "time_4WH_DUT_ISSUE_PACKET: ${time_4WH_DUT_ISSUE_PACKET[@]}"
 time_DUT_1st_4WH=${time_4WH_DUT_ISSUE_PACKET[0]};
-if [ -n $time_4WH_DUT_ISSUE_PACKET ]; then 
+if [ -n $time_DUT_1st_4WH ]; then 
     echo "find DUT issues EAPOL-KEY to Joiner @ time: ${STEP13_DUT_ISSUE_PACKET[1]}"
     ##echo "${STEP13_DUT_ISSUE_PACKET[@]} "
     eapol_keydes_key_info=${STEP13_DUT_ISSUE_PACKET[12]};
@@ -399,7 +399,8 @@ for idx in $(seq 0 ${#time_4WH_JOINER_SEND_PACKET[@]}); do
 done
 echo "time_4WH_JOINER_SEND_PACKET: ${time_4WH_JOINER_SEND_PACKET[@]}"
 STEP14_JOINER_SEND_PACKET=($(packet_receive_check ${LOG_PATH}/output_node.csv -${index_JOINER_1st_4WH} 3 $wsnode0_mac 4 $BRRPI_mac 5 "wpan:eapol" 6 "6" 7 "3"));
-if [ -n $time_4WH_JOINER_SEND_PACKET ]; then 
+time_JOINER_1st_4WH=${time_4WH_JOINER_SEND_PACKET[$index_JOINER_1st_4WH]};
+if [ -n $time_JOINER_1st_4WH ]; then 
     echo "find Joiner sends to BR an EAPOL-KEY0 @ time: ${STEP14_JOINER_SEND_PACKET[1]}"
     ##echo "${STEP14_JOINER_SEND_PACKET[@]} "
     eapol_keydes_key_info=${STEP14_JOINER_SEND_PACKET[12]};
@@ -417,7 +418,7 @@ if [ -n $time_4WH_JOINER_SEND_PACKET ]; then
     if [ ${#eapol_keydes_nonce} -eq 0 ];        then steps_pass[14]=0; echo "----Step14 FAIL: No Border Router generated ANonce found"; fi
     if [ $eapol_keydes_key_iv -ne 0 ];          then steps_pass[14]=0; echo "----Step14 FAIL: EAPOL-Key IV NOT 0"; fi
     if [ $eapol_keydes_rsc -ne 0 ];             then steps_pass[14]=0; echo "----Step14 FAIL: Key RSC NOT 0"; fi
-    if [ ${#eapol_keydes_mic} -eq 0 ];          then steps_pass[14]=0; echo "----Step14 FAIL: No Key generated RIC found"; fi
+    if [ ${#eapol_keydes_mic} -eq 0 ];          then steps_pass[14]=0; echo "----Step14 FAIL: No Key generated MIC found"; fi
     if [ $eapol_keydes_data_len -ne 0 ];        then steps_pass[14]=0; echo "----Step14 FAIL: Key Data Length  NOT 0"; fi
     
     if [ ${steps_pass[14]} -eq 1 ]; then echo "----Step14 PASS: Joiner node sends to Border Router an EAPOL-KEY."; fi
@@ -425,11 +426,9 @@ else
     steps_pass[14]=0; echo "----Step14 FAIL: Joiner node does NOT send to Border Router an EAPOL-KEY."
 fi
 
-time_STEP15_DUT_ISSUE_PACKET=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "3"));
-STEP15_DUT_ISSUE_PACKET=($(packet_receive_check ${LOG_PATH}/output_node.csv -0 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "3"));
-echo "time_STEP15_DUT_ISSUE_PACKET: ${time_STEP15_DUT_ISSUE_PACKET[@]}"
-time_DUT_1st_4WH=${time_STEP15_DUT_ISSUE_PACKET[0]};
-if [ -n $time_STEP15_DUT_ISSUE_PACKET ]; then 
+STEP15_DUT_ISSUE_PACKET=($(packet_receive_check ${LOG_PATH}/output_node.csv -1 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "3"));
+time_DUT_2nd_4WH=${time_4WH_DUT_ISSUE_PACKET[1]};
+if [ -n $time_DUT_2nd_4WH ]; then 
     echo "find DUT issues EAPOL-KEY to Joiner @ time: ${STEP15_DUT_ISSUE_PACKET[1]}"
     ##echo "${STEP15_DUT_ISSUE_PACKET[@]} "
     eapol_keydes_key_info=${STEP15_DUT_ISSUE_PACKET[12]};
@@ -441,20 +440,79 @@ if [ -n $time_STEP15_DUT_ISSUE_PACKET ]; then
     eapol_keydes_mic=${STEP15_DUT_ISSUE_PACKET[18]};
     eapol_keydes_data_len=${STEP15_DUT_ISSUE_PACKET[19]};
     steps_pass[15]=1;
-    if [ "$eapol_keydes_key_info" != "0x008a" ];then steps_pass[15]=0; echo "----Step15 FAIL: Key Information: $eapol_keydes_key_info NOT 0x008a"; fi
+    if [ "$eapol_keydes_key_info" != "0x13ca" ];then steps_pass[15]=0; echo "----Step15 FAIL: Key Information: $eapol_keydes_key_info NOT 0x13ca"; fi
     if [ $eapol_keydes_key_len -ne 16 ];        then steps_pass[15]=0; echo "----Step15 FAIL: Key Length NOT 16"; fi
-    if [ $eapol_keydes_replay_counter -ne 0 ];  then steps_pass[15]=0; echo "----Step15 FAIL: Key Replay Counter NOT 0"; fi
+    if [ $eapol_keydes_replay_counter -ne 1 ];  then steps_pass[15]=0; echo "----Step15 FAIL: Key Replay Counter NOT 1"; fi
     if [ ${#eapol_keydes_nonce} -eq 0 ];        then steps_pass[15]=0; echo "----Step15 FAIL: No Border Router generated ANonce found"; fi
     if [ $eapol_keydes_key_iv -ne 0 ];          then steps_pass[15]=0; echo "----Step15 FAIL: EAPOL-Key IV NOT 0"; fi
     if [ $eapol_keydes_rsc -ne 0 ];             then steps_pass[15]=0; echo "----Step15 FAIL: Key RSC NOT 0"; fi
-    if [ $eapol_keydes_mic -ne 0 ];             then steps_pass[15]=0; echo "----Step15 FAIL: Key RIC NOT 0"; fi
-    if [ $eapol_keydes_data_len -ne 22 ];       then steps_pass[15]=0; echo "----Step15 FAIL: Key Data Length  NOT 22"; fi
+    if [ ${#eapol_keydes_mic} -eq 0 ];          then steps_pass[15]=0; echo "----Step15 FAIL: No Key generated MIC found"; fi
+    if [ $eapol_keydes_data_len -ne 56 ];       then steps_pass[15]=0; echo "----Step15 FAIL: Key Data Length  NOT 56"; fi
     
     if [ ${steps_pass[15]} -eq 1 ]; then echo "----Step15 PASS: Border Router DUT issues EAPOL-KEY to Joiner."; fi
 else
     steps_pass[15]=0; echo "----Step15 FAIL: Border Router DUT does NOT issue EAPOL-KEY to Joiner."
 fi
 
+index_JOINER_2nd_4WH=$(($index_JOINER_1st_4WH+1));
+STEP16_JOINER_SEND_PACKET=($(packet_receive_check ${LOG_PATH}/output_node.csv -${index_JOINER_2nd_4WH} 3 $wsnode0_mac 4 $BRRPI_mac 5 "wpan:eapol" 6 "6" 7 "3"));
+time_JOINER_2nd_4WH=${time_4WH_JOINER_SEND_PACKET[$index_JOINER_2nd_4WH]};
+if [ -n $time_JOINER_2nd_4WH ]; then 
+    echo "find Joiner sends to BR an EAPOL-KEY0 @ time: ${STEP16_JOINER_SEND_PACKET[1]}"
+    ##echo "${STEP16_JOINER_SEND_PACKET[@]} "
+    eapol_keydes_key_info=${STEP16_JOINER_SEND_PACKET[12]};
+    eapol_keydes_key_len=${STEP16_JOINER_SEND_PACKET[13]};
+    eapol_keydes_replay_counter=${STEP16_JOINER_SEND_PACKET[14]};
+    eapol_keydes_nonce=${STEP16_JOINER_SEND_PACKET[15]};
+    eapol_keydes_key_iv=${STEP16_JOINER_SEND_PACKET[16]};
+    eapol_keydes_rsc=${STEP16_JOINER_SEND_PACKET[17]};
+    eapol_keydes_mic=${STEP16_JOINER_SEND_PACKET[18]};
+    eapol_keydes_data_len=${STEP16_JOINER_SEND_PACKET[19]};
+    steps_pass[16]=1;
+    if [ "$eapol_keydes_key_info" != "0x030a" ];then steps_pass[16]=0; echo "----Step16 FAIL: Key Information: $eapol_keydes_key_info NOT 0x030a"; fi
+    if [ $eapol_keydes_key_len -ne 0 ];         then steps_pass[16]=0; echo "----Step16 FAIL: Key Length NOT 0"; fi
+    if [ $eapol_keydes_replay_counter -ne 1 ];  then steps_pass[16]=0; echo "----Step16 FAIL: Key Replay Counter NOT 0"; fi
+    if [ ${#eapol_keydes_nonce} -eq 0 ];        then steps_pass[16]=0; echo "----Step16 FAIL: No Border Router generated ANonce found"; fi
+    if [ $eapol_keydes_key_iv -ne 0 ];          then steps_pass[16]=0; echo "----Step16 FAIL: EAPOL-Key IV NOT 0"; fi
+    if [ $eapol_keydes_rsc -ne 0 ];             then steps_pass[16]=0; echo "----Step16 FAIL: Key RSC NOT 0"; fi
+    if [ ${#eapol_keydes_mic} -eq 0 ];          then steps_pass[16]=0; echo "----Step16 FAIL: No Key generated MIC found"; fi
+    if [ $eapol_keydes_data_len -ne 0 ];        then steps_pass[16]=0; echo "----Step16 FAIL: Key Data Length  NOT 0"; fi
+    
+    if [ ${steps_pass[16]} -eq 1 ]; then echo "----Step16 PASS: Joiner node sends to Border Router an EAPOL-KEY."; fi
+else
+    steps_pass[16]=0; echo "----Step16 FAIL: Joiner node does NOT send to Border Router an EAPOL-KEY."
+fi
+
+# Step 17-18 PAN Configuration Solicit and PAN Configuration transactions between joiner and DUT(BR)
+time_Joiner_sends_PCS=0; steps_pass[17]=1;
+time_array=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $wsnode0_mac 4 "--" 5 "wpan" 6 "3"));
+for time_item in ${time_array[@]}; do
+    greate_test=$(echo "$time_item > $time_JOINER_2nd_4WH" | bc -l);
+    if [ $greate_test -eq 1 ]; then
+        time_Joiner_sends_PCS=$time_item;
+        break;
+    fi
+done
+if [ "$time_Joiner_sends_PCS" != "0" ]; then 
+    echo "find Joiner node sends a PAN Configuration Solicit @ time: ${time_Joiner_sends_PCS}"
+    steps_pass[17]=1; echo "----Step17 PASS: Joiner node May send a PAN Configuration Solicit"
+fi
+
+time_DUT_issue_PC=0;
+time_array=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $BRRPI_mac 4 "--" 5 "wpan" 6 "2"));
+for time_item in ${time_array[@]}; do
+    greate_test=$(echo "$time_item > $time_JOINER_2nd_4WH" | bc -l);
+    if [ $greate_test -eq 1 ]; then
+        time_DUT_issue_PC=$time_item;
+        break;
+    fi
+done
+if [ "$time_DUT_issue_PC" != "0" ]; then 
+    echo "find Border Router DUT sends a PAN Configuration frame @ time: ${time_DUT_issue_PC}"
+    steps_pass[18]=1; echo "----Step18 PASS: Border Router DUT sends a PAN Configuration frame"
+else
+    steps_pass[18]=0; echo "----Step18 FAIL: Border Router DUT does NOT send PAN Configuration frame"
+fi
 
 
 

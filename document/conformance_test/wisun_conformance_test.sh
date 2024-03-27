@@ -139,9 +139,9 @@ rm -f si_pti_discover.txt
 
 
 # test begin....................
-#source test_PAN-PA-SELECT-2.sh
+source test_PAN-PA-SELECT-2.sh
 
-#source test_PAN-KEY-TLS-2.sh
+source test_PAN-KEY-TLS-2.sh
 
 source test_PAN-KEY-TLS-4.sh
 

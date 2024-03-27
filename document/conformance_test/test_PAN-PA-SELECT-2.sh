@@ -126,7 +126,7 @@ echo "------------convert Border router packet captures to csv------------------
 # the first 2 options in EXTRACT_OPTIONS MUST be "-e frame.number -e frame.time_epoch"
 EXTRACT_OPTIONS="-e frame.number -e frame.time_epoch -e wpan.src64 -e wpan.dst64 -e frame.protocols -e wisun.uttie.type"
 tshark -r ${wsbrd_cap_file} -T fields $EXTRACT_OPTIONS > ${LOG_PATH}/output_br.csv
-#cat output_br.csv
+tshark_mod ${LOG_PATH}/output_br.csv  ${LOG_PATH}/output_br.csv
 
 
 echo "-------------convert Node router packet captures to csv---------------------"
@@ -134,7 +134,7 @@ echo "-------------convert Node router packet captures to csv-------------------
 # -n : output file format of pcapng not default pcap format
 # -l : link-layer type number; default is 1 (Ethernet). see https://www.tcpdump.org/linktypes.html for other
 tshark -r ${node0_pti_cap_file} -T fields $EXTRACT_OPTIONS > ${LOG_PATH}/output_node.csv
-#cat output_node.csv
+tshark_mod ${LOG_PATH}/output_node.csv  ${LOG_PATH}/output_node.csv
 
 synchronize_node_cap_to_Br_cap ${LOG_PATH}/output_br.csv ${LOG_PATH}/output_node.csv
 
@@ -146,49 +146,50 @@ synchronize_node_cap_to_Br_cap ${LOG_PATH}/output_br.csv ${LOG_PATH}/output_node
 # Step3 PASS: DUT Border Router PAN Advertisement frame observed
 #       FAIL: No DUT Border Router PAN Advertisement frames observed
 # -------------------------------------------------------------------------------------------------
-time_DUT_receive_PAS=($(check_receive_message ${LOG_PATH}/output_node.csv $wsnode0_mac "" "wpan" 1));
-time_DUT_transmit_PA=($(check_receive_message ${LOG_PATH}/output_node.csv $BRRPI_mac "" "wpan" 0));
+time_DUT_receive_PAS=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $wsnode0_mac 5 "wpan" 6 "1"));
+time_DUT_transmit_PA=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $BRRPI_mac   5 "wpan" 6 "0"));
 
 DUT_receive_PAS_num=${#time_DUT_receive_PAS[*]};
 DUT_transmit_PA_num=${#time_DUT_transmit_PA[*]};
 
 if [ $DUT_receive_PAS_num -eq 0 ]; then
-  echo "----TEST FAIL: DUT(BR) have not received PAS from test node"
+    steps_pass[1]=0;
+    echo "----Step1 FAIL: DUT(BR) have not received PAS from test node"
 elif [ $DUT_transmit_PA_num -eq 0 ]; then
-  echo "----TEST     : DUT(BR) received PAS from TBU..."
-  echo "----TEST FAIL: DUT(BR) have not send PA..."
+    steps_pass[2]=0; echo "----Step2 FAIL: DUT(BR) have not send PA..."
 else
-  echo "----TEST     : DUT(BR) transmitted/broadcasted PA..."
-  loop_break=0
-  for pas_idx in $(seq 1 $DUT_receive_PAS_num)
-  do 
-    if [ $loop_break -ne 0 ]; then
-      break;
-    else
-      # extract abc.defgh to abc.d
-      time_pas=$(echo ${time_DUT_receive_PAS[$(($pas_idx-1))]} | sed 's/\([0-9]\+\.[0-9]\{1\}\).*/\1/' | sed 's/\.//')
-      for pa_idx in $(seq 1 $DUT_transmit_PA_num)
-      do 
-        time_pa=$(echo ${time_DUT_transmit_PA[$(($pa_idx-1))]} | sed 's/\([0-9]\+\.[0-9]\{1\}\).*/\1/' | sed 's/\.//')
-        if [ $time_pa -lt $time_pas ]; then
-          continue;
-        fi
-        echo "The first PA send after PAS received..$time_pa - $time_pas.."
-        time_between_PA_and_PAS=$(($time_pa - $time_pas));
-        echo "DUT send PA $(echo "$time_between_PA_and_PAS/10" | bc -l | sed 's/\([0-9]\+\.[0-9]\{1\}\).*/\1/')s after it receive PAS"
-        ten_of_DISC_IMIN=$(($DISC_IMIN*10));
-        if [ $time_between_PA_and_PAS -lt $ten_of_DISC_IMIN ]; then
-          echo "----TEST SUCCESS: PA, PAS observed and time delta available"
-          loop_break=1;
+    steps_pass[1]=1; echo "----Step1 PASS: DUT(BR) received PAS from TBU..."
+    echo "----Step2     : DUT(BR) transmitted/broadcasted PA..."
+    loop_break=0
+    for pas_idx in $(seq 1 $DUT_receive_PAS_num)
+    do 
+        if [ $loop_break -ne 0 ]; then
           break;
         else
-          echo "----TEST FAIL: PA, PAS observed, BUT too much time between PA and PAS"
-          loop_break=1;
-          break;
+            #  change time precision to +/-0.1 Second
+            time_pas=$(echo ${time_DUT_receive_PAS[$(($pas_idx-1))]} | sed 's/\([0-9]\+\.[0-9]\{1\}\).*/\1/' | sed 's/\.//')
+            for pa_idx in $(seq 1 $DUT_transmit_PA_num)
+            do 
+                time_pa=$(echo ${time_DUT_transmit_PA[$(($pa_idx-1))]} | sed 's/\([0-9]\+\.[0-9]\{1\}\).*/\1/' | sed 's/\.//')
+                if [ $time_pa -lt $time_pas ]; then
+                    continue;
+                fi
+                echo "The first PA send after PAS received..$time_pa - $time_pas.."
+                time_between_PA_and_PAS=$(($time_pa - $time_pas));
+                echo "DUT send PA $(echo "$time_between_PA_and_PAS/10" | bc -l | sed 's/\([0-9]\+\.[0-9]\{1\}\).*/\1/')s after it receive PAS"
+                ten_of_DISC_IMIN=$(($DISC_IMIN*10));
+                if [ $time_between_PA_and_PAS -lt $ten_of_DISC_IMIN ]; then
+                    steps_pass[2]=1; echo "----Step2 PASS: PA, PAS observed and time delta available"
+                    loop_break=1;
+                    break;
+                else
+                    steps_pass[2]=0; echo "----Step2 FAIL: PA, PAS observed, BUT too much time between PA and PAS"
+                    loop_break=1;
+                    break;
+                fi
+            done
         fi
-      done
-    fi
-  done
+    done
 fi
 
 

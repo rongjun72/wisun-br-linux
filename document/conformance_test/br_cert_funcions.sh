@@ -181,7 +181,7 @@ function compensate_node_csv_time
   local time_offset=$1
   local NodeCsv=$2
 
-  time_offset=$(echo "$time_offset / 1000 + 0.000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/')
+  time_offset=$(echo "$time_offset / 1000 + 0.000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{9\}\).*/\1/')
   echo "compensate time_offset: $time_offset, according to Br capture time"
 
   for line_idx in $(seq 1 $(sed -n '$=' $NodeCsv))
@@ -331,7 +331,7 @@ function packet_receive_check
   #     -n  return numbers of to checked packets
   #     -$n return the {$n}-th checked packets/lines in csv 
   # $@ : parameters after MUST be paired like:
-  #     [collum number, key word], given key word like "bbb"
+  #     [collum number, key word], given key word like "xxxx"
   #     we will find the non-empty lines
   #-----------------------------------------------
   # Return:
@@ -355,7 +355,7 @@ function packet_receive_check
   for idx in $(seq 3 2 $#); do
     search_col=$(eval echo \${${idx}}); search_key=$(eval echo \${$(($idx+1))});
     #echo "[collum, key_word] : $search_col , $search_key"
-    if [ "$search_key" = "bbb" ]; then
+    if [ "$search_key" = "xxxx" ]; then
       # for input pattern "**", means find all non-empty lines
       # echo "=======";cat ${CaptureCsv} | cut -f $search_col | sed -n "/^\s*[^# \t].*$/=";
       searched_lines=($(cat ${CaptureCsv} | cut -f $search_col | sed -n "/^\s*[^# \t].*$/="));
@@ -410,3 +410,29 @@ function packet_receive_check
   done
 } 
 
+
+function tshark_mod
+{
+  # function description:
+  # modify tshark csv file, replace empty items with "--" 
+  # and replace 0[64], 0[32], 0[16], 0[8] with single "0" 
+  # 
+  # -----------------------------------------------------------------------------
+  # Input parameters:
+  # ----------------------------------------------
+  # $1: input csv file with path 
+  # $2: output csv file with path 
+  #-----------------------------------------------
+  input_csv_file=$1;
+  output_csv_file=$2;
+  cat ${input_csv_file} | sed 's/\t/\t--/g' \
+  | sed 's/--0/0/g' | sed 's/--1/1/g' | sed 's/--2/2/g' | sed 's/--3/3/g' | sed 's/--4/4/g' \
+  | sed 's/--5/5/g' | sed 's/--6/6/g' | sed 's/--7/7/g' | sed 's/--8/8/g' | sed 's/--9/9/g' \
+  | sed 's/--a/a/g' | sed 's/--b/b/g' | sed 's/--c/c/g' | sed 's/--d/d/g' | sed 's/--e/e/g' | sed 's/--f/f/g' | sed 's/--g/g/g' \
+  | sed 's/--h/h/g' | sed 's/--i/i/g' | sed 's/--j/j/g' | sed 's/--k/k/g' | sed 's/--l/l/g' | sed 's/--m/m/g' | sed 's/--n/n/g' \
+  | sed 's/--o/o/g' | sed 's/--p/p/g' | sed 's/--q/q/g' | sed 's/--r/r/g' | sed 's/--s/s/g' | sed 's/--t/t/g' | sed 's/--u/u/g' \
+  | sed 's/--v/v/g' | sed 's/--w/w/g' | sed 's/--x/x/g' | sed 's/--y/y/g' | sed 's/--z/z/g' \
+  | sed 's/0000000000000000000000000000000000000000000000000000000000000000/0/g' \
+  | sed 's/00000000000000000000000000000000/0/g' | sed 's/0000000000000000/0/g' \
+  | sed 's/00000000/0/g' > $output_csv_file;
+}

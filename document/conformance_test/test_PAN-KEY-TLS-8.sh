@@ -442,7 +442,7 @@ fi
 
 # Step 17: Joiner node Test Bed Device E sends EAPOL frame to Test Bed Device A Router with EAP-Response Identity
 time_TBD1_send_EAP_REQ_ID=($(packet_receive_check ${NodeCsvFile} -t 3 $wsnode1_mac 4 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "0" 12 "2" 13 "1"));
-TBD1_send_EAP_REQ_ID=($(packet_receive_check ${NodeCsvFile} -0 3 $wsnode1_mac 4 $wsnode0_mac 5 $protocol_tag 6 "6" 7 "0" 12 "2" 13 "1"));
+TBD1_send_EAP_REQ_ID=($(packet_receive_check ${NodeCsvFile} -0 3 $wsnode1_mac 4 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "0" 12 "2" 13 "1"));
 echo "time_TBD1_send_EAP_Request_Identity: ${time_TBD1_send_EAP_REQ_ID[@]}";
 TBD1_send_EAP_REQ_ID_num=${#time_TBD1_send_EAP_REQ_ID[*]};
 if [ $TBD1_send_EAP_REQ_ID_num -ge 1 ]; then
@@ -452,8 +452,43 @@ else
     steps_pass[17]=0; echo "----Step17 FAIL: TBD E does NOT send EAPOL frame to TBD A Router with EAP-Response ID"
 fi
 
+# Step 18: Test Bed Device A Router sends EAPOL-RELAY to Border Router DUT with SUP EUI-64 of Joiner node 
+protocol_tag="wpan:6lowpan:data:ipv6:ipv6.hopopts:ipv6:udp:wisun.eapol_relay:eapol"
+time_TBU0_send_EAP_RELAY=($(packet_receive_check ${NodeCsvFile} -t 3 $wsnode0_mac 4 $BRRPI_mac 5 $protocol_tag 6 "4" 7 "0" 12 "2" 13 "1"));
+TBU0_send_EAP_RELAY=($(packet_receive_check ${NodeCsvFile} -0 3 $wsnode0_mac 4 $BRRPI_mac 5 $protocol_tag 6 "4" 7 "0" 12 "2" 13 "1"));
+echo "time_DUT_send_EAP_Request_Identity: ${time_TBU0_send_EAP_RELAY[@]}";
+TBU0_send_EAP_RELAY_num=${#time_TBU0_send_EAP_RELAY[*]};
+if [ $TBU0_send_EAP_RELAY_num -ge 1 ]; then
+    echo "find TBD A Router sends EAPOL-RELAY to BR DUT with SUP EUI-64 of Joiner node @ time: ${TBU0_send_EAP_RELAY[1]}"
+    eapol_relay_sup=${TBU0_send_EAP_RELAY[20]};
+    eapol_relay_kmp_id=${TBU0_send_EAP_RELAY[21]}
+    steps_pass[18]=1;
+    if [ "$eapol_relay_sup" != "$wsnode1_mac" ];then steps_pass[18]=0; echo "----Step18 FAIL: SUP is NOT EUI-64 of TBD E Joiner"; fi
+    if [ $eapol_relay_kmp_id -ne 1 ];           then steps_pass[18]=0; echo "----Step18 FAIL: KMP ID of NOT 1"; fi
 
+    if [ ${steps_pass[18]} -eq 1 ]; then echo "----Step18 PASS: TBD A Router sends EAPOL-RELAY to BR DUT with SUP EUI-64 of Joiner node."; fi
+else
+    steps_pass[18]=0; echo "----Step18 FAIL: TBD A Router does NOT send EAPOL-RELAY to BR DUT with SUP EUI-64 of Joiner node"
+fi
 
+# Step 19: Border Router DUT sends via EAPOL-RELAY EAP Request TLS Start to Test Bed Device A Router
+protocol_tag="wpan:6lowpan:ipv6:udp:wisun.eapol_relay:eapol"
+time_DUT_send_EAP_RELAY=($(packet_receive_check ${NodeCsvFile} -t 3 $BRRPI_mac 4 $wsnode0_mac 5 $protocol_tag 6 "4" 7 "0" 12 "1" 13 "13"));
+DUT_send_EAP_RELAY=($(packet_receive_check ${NodeCsvFile} -0 3 $BRRPI_mac 4 $wsnode0_mac 5 $protocol_tag 6 "4" 7 "0" 12 "1" 13 "13"));
+echo "time_DUT_send_EAP_RELAY: ${time_DUT_send_EAP_RELAY[@]}";
+DUT_send_EAP_RELAY_num=${#time_DUT_send_EAP_RELAY[*]};
+if [ $DUT_send_EAP_RELAY_num -ge 1 ]; then
+    echo "find BR DUT sends via EAPOL-RELAY EAP Request TLS Start to TBD A Router @ time: ${DUT_send_EAP_RELAY[1]}"
+    eapol_relay_sup=${DUT_send_EAP_RELAY[20]};
+    eapol_relay_kmp_id=${DUT_send_EAP_RELAY[21]}
+    steps_pass[19]=1;
+    if [ "$eapol_relay_sup" != "$wsnode1_mac" ];then steps_pass[19]=0; echo "----Step19 FAIL: SUP is NOT EUI-64 of TBD E Joiner"; fi
+    if [ $eapol_relay_kmp_id -ne 1 ];           then steps_pass[19]=0; echo "----Step19 FAIL: KMP ID of NOT 1"; fi
+
+    if [ ${steps_pass[19]} -eq 1 ]; then echo "----Step19 PASS: BR DUT sends via EAPOL-RELAY EAP Request TLS Start to TBD A Router."; fi
+else
+    steps_pass[19]=0; echo "----Step19 FAIL: BR DUT does NOT send via EAPOL-RELAY EAP Request TLS Start to TBD A Router"
+fi
 
 
 

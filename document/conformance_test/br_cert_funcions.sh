@@ -358,11 +358,11 @@ function packet_receive_check
     if [ "$search_key" = "xxxx" ]; then
       # for input pattern "**", means find all non-empty lines
       # echo "=======";cat ${CaptureCsv} | cut -f $search_col | sed -n "/^\s*[^# \t].*$/=";
-      searched_lines=($(cat ${CaptureCsv} | cut -f $search_col | sed -n "/^\s*[^# \t].*$/="));
+      searched_lines=($(cat ${CaptureCsv} | cut -f $search_col | sed 's/--//' | sed -n "/^\s*[^# \t].*$/="));
     else
       #cat ${CaptureCsv} | cut -f $search_col | sed -n "/${search_key}/p"
       #cat ${CaptureCsv} | cut -f $search_col | sed -n "/${search_key}/="
-      searched_lines=($(cat ${CaptureCsv} | cut -f $search_col | sed -n "/${search_key}/="));
+      searched_lines=($(cat ${CaptureCsv} | cut -f $search_col | sed -n "/^${search_key}$/="));
     fi
     touch temp_${CURR_TIME}_${idx}.txt
     for tmp in ${searched_lines[@]}; do 

@@ -242,7 +242,7 @@ time_DUT_receive_EAPOLEAP=($(packet_receive_check ${LOG_PATH}/output_node.csv -t
 DUT_receive_EAPOLEAP=($(packet_receive_check ${LOG_PATH}/output_node.csv -0 3 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "3" 8 "xxxx"));
 DUT_receive_EAPOLEAP_EAPOL_KEY=${DUT_receive_EAPOLEAP[7]};
 DUT_receive__EAPOLEAP_num=${#time_DUT_receive_EAPOLEAP[*]};
-if [[ $DUT_receive__EAPOLEAP_num -ge 0 && -n $DUT_receive_EAPOLEAP_EAPOL_KEY ]]; then
+if [[ $DUT_receive__EAPOLEAP_num -ge 1 && -n $DUT_receive_EAPOLEAP_EAPOL_KEY ]]; then
     echo "DUT_receive_EAPOLEAP_EAPOL-KEY: $DUT_receive_EAPOLEAP_EAPOL_KEY";
     steps_pass[3]=1; echo "----Step3 PASS: Joiner issues a EAPOL-EAP frame: EAPOL-KEY Packet Type = 3 with EAPOL-KEY"
 else

@@ -50,6 +50,8 @@ time_start_test=$(($(date +%s%N)/1000000));
 nodes_pti_cap_file=${LOG_PATH}/NodesCap_${TEST_CASE_NAME}_${TEST_TIME}.pcapng
 wsbrd_cap_file=${LOG_PATH}/BrCap_${TEST_CASE_NAME}_${TEST_TIME}.pcapng
 NodeCsvFile=${LOG_PATH}/output_node.csv;
+time_checked=0;
+packet_checked="";
 
 echo "----TEST [$TEST_CASE_NAME] start ..................................................................."
 # Wi-SUN network configurations:
@@ -150,37 +152,35 @@ echo "----------------------------------Test Pass/Fail Analysis-----------------
 # eapol.type:       "Type: EAP Packet (0)"           - 
 #                   "Type: Key (3)"                               - 
 # -------------------------------------------------------------------------------------------------
-# :
-# 3:  wpan.src64                                      22: wisun.eapol_relay.kmp_id
-# 4:  wpan.dst64                                      23: wisun.eaie.eui
-# 5:  frame.protocols                                 24:
-# 6:  wisun.uttie.type
-# 7:  eapol.type
-# 8:  wlan_rsna_eapol.keydes.data
-# 9:  tls.record.content_type
-# 10: wlan_rsna_eapol.keydes.key_info
-# 11: eapol.keydes.key_len
-# 12: eap.code
-# 13: eap.type
-# 14: tls.handshake.type
-# 15: eapol.keydes.replay_counter
-# 16: wlan_rsna_eapol.keydes.nonce
-# 17: eapol.keydes.key_iv
-# 18: wlan_rsna_eapol.keydes.rsc
-# 19: wlan_rsna_eapol.keydes.mic
-# 20: wlan_rsna_eapol.keydes.data_len
-# 21: wisun.eapol_relay.sup
+# output.csv Packet Fields:
+# # the 1st 2 options in CSV_PACKET_FIELD_TABLE MUST be "-e frame.number -e frame.time_epoch"
+# -------------------------------------------------------------------------------------------------
+CSV_PACKET_FIELD_TABLE=(
+ 1:  frame.number                                    2:  frame.time_epoch                          
+ 3:  wpan.src64                                      4:  wpan.dst64                                
+ 5:  frame.protocols                                 6:  wisun.uttie.type                          
+ 7:  eapol.type                                      8:  wlan_rsna_eapol.keydes.data               
+ 9:  tls.record.content_type                         10: wlan_rsna_eapol.keydes.key_info           
+ 11: eapol.keydes.key_len                            12: eap.code                                  
+ 13: eap.type                                        14: tls.handshake.type                        
+ 15: eapol.keydes.replay_counter                     16: wlan_rsna_eapol.keydes.nonce              
+ 17: eapol.keydes.key_iv                             18: wlan_rsna_eapol.keydes.rsc                
+ 19: wlan_rsna_eapol.keydes.mic                      20: wlan_rsna_eapol.keydes.data_len           
+ 21: wisun.eapol_relay.sup                           22: wisun.eapol_relay.kmp_id                  
+ 23: wisun.eaie.eui                                  24: --                                        
+ 25: --                                              26: --                                        
+ 27: --                                              28: --                                        
+ 29: --                                              30: --                                        ); 
+ 
 # -------------------------------------------------------------------------------------------------
 echo "------------convert Border router packet captures to csv-------------------"
-# the first 2 options in EXTRACT_OPTIONS MUST be "-e frame.number -e frame.time_epoch"
-EXTRACT_OPTIONS="-e frame.number -e frame.time_epoch -e wpan.src64 -e wpan.dst64 -e frame.protocols";       #1-5
-EXTRACT_OPTIONS="$EXTRACT_OPTIONS -e wisun.uttie.type -e eapol.type -e wlan_rsna_eapol.keydes.data";        #6-8
-EXTRACT_OPTIONS="$EXTRACT_OPTIONS -e tls.record.content_type -e wlan_rsna_eapol.keydes.key_info";           #9-10
-EXTRACT_OPTIONS="$EXTRACT_OPTIONS -e eapol.keydes.key_len -e eap.code -e eap.type -e tls.handshake.type";   #11-14
-EXTRACT_OPTIONS="$EXTRACT_OPTIONS -e eapol.keydes.replay_counter -e wlan_rsna_eapol.keydes.nonce";          #15-16 
-EXTRACT_OPTIONS="$EXTRACT_OPTIONS -e eapol.keydes.key_iv -e wlan_rsna_eapol.keydes.rsc";                    #17-18
-EXTRACT_OPTIONS="$EXTRACT_OPTIONS -e wlan_rsna_eapol.keydes.mic -e wlan_rsna_eapol.keydes.data_len";        #19-20
-EXTRACT_OPTIONS="$EXTRACT_OPTIONS -e wisun.eapol_relay.sup -e wisun.eapol_relay.kmp_id -e wisun.eaie.eui";  #21-23
+EXTRACT_OPTIONS="";
+for idx in $(seq 1 2 ${#CSV_PACKET_FIELD_TABLE[@]}); do
+    field=${CSV_PACKET_FIELD_TABLE[$idx]};
+    if [ "$field" != "--" ]; then 
+        EXTRACT_OPTIONS="$EXTRACT_OPTIONS -e $field";
+    fi
+done
 
 tshark -r ${wsbrd_cap_file} -T fields $EXTRACT_OPTIONS > ${LOG_PATH}/output_br.csv;
 tshark_mod ${LOG_PATH}/output_br.csv  ${LOG_PATH}/output_br.csv
@@ -210,7 +210,7 @@ synchronize_node_cap_to_Br_cap ${LOG_PATH}/output_br.csv ${LOG_PATH}/output_node
 #       FAIL:   Server Hello is not issued from Border Router DUT
 # -------------------------------------------------------------------------------------------------
 # initialize the pass/fail array, steps_pass[0] related to the whole test PASS/FAIL
-steps_pass=(); #steps_pass[0]=0;
+steps_pass=(); steps_pass[0]=1;
 # Step 1-2 ----
 time_DUT_receive_PAS=($(packet_receive_check ${NodeCsvFile} -t 3 $wsnode0_mac 5 "wpan" 6 "1"));
 time_DUT_transmit_PA=($(packet_receive_check ${NodeCsvFile} -t 3 $BRRPI_mac   5 "wpan" 6 "0"));
@@ -343,12 +343,13 @@ else
     steps_pass[10]=0; echo "----Step10 FAIL: BR DUT does NOT send EAP-TLS: Change Cipher Spec, Finished"
 fi
 
+steps_pass[11]=1; # here is some thing wrong in this step!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 time_Joiner_sends_EAP_Response=($(packet_receive_check ${NodeCsvFile} -t 3 $wsnode0_mac 4 $BRRPI_mac 5 "wpan:eapol" 6 "6" 7 "0" 9 "2" 10 "13"));
 Joiner_sends_EAP_Response=($(packet_receive_check ${NodeCsvFile} -0 3 $wsnode0_mac 4 $BRRPI_mac 5 "wpan:eapol" 6 "6" 7 "0" 9 "2" 10 "13"));
 if [ -n $time_Joiner_sends_EAP_Response ]; then
     for time_item in ${time_Joiner_sends_EAP_Response[@]}; do
-        greate_test=$(echo "$time_item > $time_DUT_sends_EAP_Change_Cipher" | bc -l);
-        if [ "$greate_test" -eq 1 ]; then
+        great_test=$(echo "$time_item > $time_DUT_sends_EAP_Change_Cipher" | bc -l);
+        if [ "$great_test" -eq 1 ]; then
             time_delay=$(echo "$time_item - $time_DUT_sends_EAP_Change_Cipher" | bc -l | sed 's/\([0-9]\+\.[0-9]\{6\}\).*/\1/');
             echo "Joiner sends EAP-Response ${time_delay}s after DUT send EAP-TLS: Change Cipher Spec";
             steps_pass[11]=1; echo "----Step11 PASS: Joiner sends EAP-Response after DUT send EAP-TLS: Change Cipher Spec, Finished"
@@ -377,207 +378,169 @@ echo "";echo "---- EAP-TLS Multi-hop  PAN-KEY-TLS-8 ananlysis begin ------------
 # Step 13-16 ---- ] EAP-TLS Multi-hop  analysis ---------------------------------------
 time_TBD1_send_PAS=($(packet_receive_check ${NodeCsvFile} -t 3 $wsnode1_mac 5 "wpan" 6 "1"));
 
-# Step 13: Test Bed Device E Joiner issues a EAPOL-EAP frame
-time_TBD1_send_EAPOL_EAP=($(packet_receive_check ${NodeCsvFile} -t 3 $wsnode1_mac 4 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "3" 8 "xxxx"));
-TBD1_send_EAPOL_EAP=($(packet_receive_check ${NodeCsvFile} -0 3 $wsnode1_mac 4 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "3" 8 "xxxx"));
-#echo "time_TBD1_send_EAPOL_EAP: ${time_TBD1_send_EAPOL_EAP[@]}"
-TBD1_send_EAPOL_EAP_num=${#time_TBD1_send_EAPOL_EAP[*]};
-if [ $TBD1_send_EAPOL_EAP_num -ge 1 ]; then
-    TBD1_send_EAPOL_EAP_KEY=${TBD1_send_EAPOL_EAP[7]};
-    echo "TBD1_send_EAPOL_EAP-KEY: ${TBD1_send_EAPOL_EAP_KEY}";
-    steps_pass[13]=1; echo "----Step13 PASS: TBD E Joiner issues a EAPOL-EAP frame: EAPOL-KEY Packet Type = 3 with EAPOL-KEY"
-else
-    steps_pass[13]=0; echo "----Step13 FAIL: TBD E Joiner does NOT send EAPOL-EAP frame, or EAPOL-KEY NOT found"
-fi
 
-# Step 14: Test Bed Device A Router sends EAPOL-RELAY
-protocol_tag="wpan:6lowpan:data:ipv6:ipv6.hopopts:ipv6:udp:wisun.eapol_relay:eapol"
-time_TBD0_send_EAPOL_RELAY=($(packet_receive_check ${NodeCsvFile} -t 3 $wsnode0_mac 4 $BRRPI_mac 5 $protocol_tag 6 "4" 7 "3" 8 $TBD1_send_EAPOL_EAP_KEY));
-TBD0_send_EAPOL_RELAY=($(packet_receive_check ${NodeCsvFile} -0 3 $wsnode0_mac 4 $BRRPI_mac 5 $protocol_tag 6 "4" 7 "3" 8 $TBD1_send_EAPOL_EAP_KEY));
-echo "time_TBD0_send_EAPOL_RELAY: ${time_TBD0_send_EAPOL_RELAY[@]}";
-TBD0_send_EAPOL_RELAY_num=${#time_TBD0_send_EAPOL_RELAY[*]};
-if [ $TBD0_send_EAPOL_RELAY_num -ge 1 ]; then
-    echo "find Test Bed Device A Router sends EAPOL-RELAY @ time: ${TBD0_send_EAPOL_RELAY[1]}"
-    eapol_relay_sup=${TBD0_send_EAPOL_RELAY[20]};
-    eapol_relay_kmp_id=${TBD0_send_EAPOL_RELAY[21]}
-    steps_pass[14]=1;
-    if [ "$eapol_relay_sup" != "$wsnode1_mac" ];then steps_pass[14]=0; echo "----Step14 FAIL: SUP is NOT EUI-64 of TBD E Joiner"; fi
-    if [ $eapol_relay_kmp_id -ne 1 ];           then steps_pass[14]=0; echo "----Step14 FAIL: KMP ID of NOT 1"; fi
+# ---------------------
+time_checked=${DUT_sends_EAP_Success[1]}
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+STEP_PASSFAIL_Criteria=(
+"output csv file:"  ${NodeCsvFile}                                                          
+"Step number:"      "Step13"
+"Step Description:" "Test Bed Device E Joiner issues a EAPOL-EAP frame" 
+"time range:"       $time_checked               $(echo "$time_checked + 400.000000" | bc -l)
+"match items:"      "wpan.src64"                $wsnode1_mac
+"match items:"      "wpan.dst64"                $wsnode0_mac
+"match items:"      "frame.protocols"           "wpan:eapol"
+"match items:"      "wisun.uttie.type"          6
+"match items:"      "eapol.type"                3
+"match items:"      "wlan_rsna_eapol.keydes.data"  "xxxx"
+);
+step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
+packet_checked=(${packet_checked[@]})
+TBD1_send_EAPOL_EAP_KEY=${packet_checked[7]};
 
-    if [ ${steps_pass[14]} -eq 1 ]; then echo "----Step14 PASS: TBD A Router sends EAPOL-RELAY with EAPOL PDU of EAPOL-KEY."; fi
-else
-    steps_pass[14]=0; echo "----Step14 FAIL: TBD E Joiner does NOT send EAPOL-EAP frame, or EAPOL-KEY NOT found"
-fi
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+STEP_PASSFAIL_Criteria=(
+"output csv file:"  ${NodeCsvFile}                                                          
+"Step number:"      "Step14"
+"Step Description:" "TBD E Joiner issues a EAPOL-EAP frame: EAPOL-KEY Packet Type = 3 with EAPOL-KEY" 
+"time range:"       $time_checked               $(echo "$time_checked + 10.000000" | bc -l)
+"match items:"      "wpan.src64"                $wsnode0_mac
+"match items:"      "wpan.dst64"                $BRRPI_mac
+"match items:"      "frame.protocols"           "wpan:6lowpan:data:ipv6:ipv6.hopopts:ipv6:udp:wisun.eapol_relay:eapol"
+"match items:"      "wisun.uttie.type"          4
+"match items:"      "eapol.type"                3
+"match items:"      "wlan_rsna_eapol.keydes.data"  $TBD1_send_EAPOL_EAP_KEY
+"match items:"      "wisun.eapol_relay.sup"     $wsnode1_mac
+"match items:"      "wisun.eapol_relay.kmp_id"  1
+);
+step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 
-# Step 15: DUT sends EAP Request Identity to Test Bed Device A via EAPOL-RELAY
-protocol_tag="wpan:6lowpan:ipv6:udp:wisun.eapol_relay:eapol"
-time_DUT_send_EAP_REQ_ID=($(packet_receive_check ${NodeCsvFile} -t 3 $BRRPI_mac 4 $wsnode0_mac 5 $protocol_tag 6 "4" 7 "0" 12 "1" 13 "1"));
-DUT_send_EAP_REQ_ID=($(packet_receive_check ${NodeCsvFile} -0 3 $BRRPI_mac 4 $wsnode0_mac 5 $protocol_tag 6 "4" 7 "0" 12 "1" 13 "1"));
-echo "time_DUT_send_EAP_Request_Identity: ${time_DUT_send_EAP_REQ_ID[@]}";
-DUT_send_EAP_REQ_ID_num=${#time_DUT_send_EAP_REQ_ID[*]};
-if [ $DUT_send_EAP_REQ_ID_num -ge 1 ]; then
-    echo "find DUT sends EAP Request Identity to TBD A @ time: ${DUT_send_EAP_REQ_ID[1]}"
-    eapol_relay_sup=${DUT_send_EAP_REQ_ID[20]};
-    eapol_relay_kmp_id=${DUT_send_EAP_REQ_ID[21]}
-    steps_pass[15]=1;
-    if [ "$eapol_relay_sup" != "$wsnode1_mac" ];then steps_pass[15]=0; echo "----Step15 FAIL: SUP is NOT EUI-64 of TBD E Joiner"; fi
-    if [ $eapol_relay_kmp_id -ne 1 ];           then steps_pass[15]=0; echo "----Step15 FAIL: KMP ID of NOT 1"; fi
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+STEP_PASSFAIL_Criteria=(
+"output csv file:"  ${NodeCsvFile}                                                          
+"Step number:"      "Step15"
+"Step Description:" "DUT sends EAP Request Identity to Test Bed Device A via EAPOL-RELAY" 
+"time range:"       $time_checked               $(echo "$time_checked + 10.000000" | bc -l)
+"match items:"      "wpan.src64"                $BRRPI_mac
+"match items:"      "wpan.dst64"                $wsnode0_mac
+"match items:"      "frame.protocols"           "wpan:6lowpan:ipv6:udp:wisun.eapol_relay:eapol"
+"match items:"      "wisun.uttie.type"          4
+"match items:"      "eapol.type"                0
+"match items:"      "eap.code"                  1
+"match items:"      "eap.type"                  1
+"match items:"      "wisun.eapol_relay.sup"     $wsnode1_mac
+"match items:"      "wisun.eapol_relay.kmp_id"  1
+);
+step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 
-    if [ ${steps_pass[15]} -eq 1 ]; then echo "----Step15 PASS: DUT sends EAP Request Identity to TBD A."; fi
-else
-    steps_pass[15]=0; echo "----Step15 FAIL: DUT does NOT send EAP Request Identity to TBD A"
-fi
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+STEP_PASSFAIL_Criteria=(
+"output csv file:"  ${NodeCsvFile}                                                          
+"Step number:"      "Step16"
+"Step Description:" "TBD A Router sends to Joiner device TBD E via EAPOL Frame" 
+"time range:"       $time_checked               $(echo "$time_checked + 10.000000" | bc -l)
+"match items:"      "wpan.src64"                $wsnode0_mac
+"match items:"      "wpan.dst64"                $wsnode1_mac
+"match items:"      "frame.protocols"           "wpan:eapol"
+"match items:"      "wisun.uttie.type"          6
+"match items:"      "eapol.type"                0
+"match items:"      "eap.code"                  1
+"match items:"      "eap.type"                  1
+"match items:"      "wisun.eaie.eui"            $BRRPI_mac
+);
+step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 
-# Step 16: Test Bed Device A Router sends to Joiner device Test Bed Device E via EAPOL Frame
-time_TBD0_send_EAP_REQ_ID=($(packet_receive_check ${NodeCsvFile} -t 3 $wsnode0_mac 4 $wsnode1_mac 5 "wpan:eapol" 6 "6" 7 "0" 12 "1" 13 "1" 23 $BRRPI_mac));
-TBD0_send_EAP_REQ_ID=($(packet_receive_check ${NodeCsvFile} -0 3 $wsnode0_mac 4 $wsnode1_mac 5 $protocol_tag 6 "6" 7 "0" 12 "1" 13 "1" 23 $BRRPI_mac));
-echo "time_TBD0_send_EAP_Request_Identity: ${time_TBD0_send_EAP_REQ_ID[@]}";
-TBD0_send_EAP_REQ_ID_num=${#time_TBD0_send_EAP_REQ_ID[*]};
-if [ $TBD0_send_EAP_REQ_ID_num -ge 1 ]; then
-    echo "TBD A Router sends to TBD E via EAPOL Frame @ time: ${TBD0_send_EAP_REQ_ID[1]}"
-    steps_pass[16]=1; echo "----Step16 PASS: TBD A Router sends to Joiner device TBD E via EAPOL Frame";
-else
-    steps_pass[16]=0; echo "----Step16 FAIL: TBD A Router does NOT send to Joiner device TBD E via EAPOL Frame"
-fi
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+STEP_PASSFAIL_Criteria=(
+"output csv file:"  ${NodeCsvFile}                                                          
+"Step number:"      "Step17"
+"Step Description:" "TBD E sends EAPOL frame to TBD A Router with EAP-Response ID" 
+"time range:"       $time_checked               $(echo "$time_checked + 10.000000" | bc -l)
+"match items:"      "wpan.src64"                $wsnode1_mac
+"match items:"      "wpan.dst64"                $wsnode0_mac
+"match items:"      "frame.protocols"           "wpan:eapol"
+"match items:"      "wisun.uttie.type"          6
+"match items:"      "eapol.type"                0
+"match items:"      "eap.code"                  2
+"match items:"      "eap.type"                  1
+);
+step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 
-# Step 17: Joiner node Test Bed Device E sends EAPOL frame to Test Bed Device A Router with EAP-Response Identity
-time_TBD1_send_EAP_REQ_ID=($(packet_receive_check ${NodeCsvFile} -t 3 $wsnode1_mac 4 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "0" 12 "2" 13 "1"));
-TBD1_send_EAP_REQ_ID=($(packet_receive_check ${NodeCsvFile} -0 3 $wsnode1_mac 4 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "0" 12 "2" 13 "1"));
-echo "time_TBD1_send_EAP_Request_Identity: ${time_TBD1_send_EAP_REQ_ID[@]}";
-TBD1_send_EAP_REQ_ID_num=${#time_TBD1_send_EAP_REQ_ID[*]};
-if [ $TBD1_send_EAP_REQ_ID_num -ge 1 ]; then
-    echo "find TBD E sends EAPOL frame to TBD A Router with EAP-Response ID @ time: ${TBD1_send_EAP_REQ_ID[1]}"
-    steps_pass[17]=1; echo "----Step17 PASS: TBD E sends EAPOL frame to TBD A Router with EAP-Response ID";
-else
-    steps_pass[17]=0; echo "----Step17 FAIL: TBD E does NOT send EAPOL frame to TBD A Router with EAP-Response ID"
-fi
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+STEP_PASSFAIL_Criteria=(
+"output csv file:"  ${NodeCsvFile}                                                          
+"Step number:"      "Step18"
+"Step Description:" "TBD A Router sends EAPOL-RELAY to BR DUT with SUP EUI-64 of Joiner node" 
+"time range:"       $time_checked               $(echo "$time_checked + 10.000000" | bc -l)
+"match items:"      "wpan.src64"                $wsnode0_mac
+"match items:"      "wpan.dst64"                $BRRPI_mac
+"match items:"      "frame.protocols"           "wpan:6lowpan:data:ipv6:ipv6.hopopts:ipv6:udp:wisun.eapol_relay:eapol"
+"match items:"      "wisun.uttie.type"          4
+"match items:"      "eapol.type"                0
+"match items:"      "eap.code"                  2
+"match items:"      "eap.type"                  1
+"match items:"      "wisun.eapol_relay.sup"     $wsnode1_mac
+"match items:"      "wisun.eapol_relay.kmp_id"  1
+);
+step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 
-# Step 18: Test Bed Device A Router sends EAPOL-RELAY to Border Router DUT with SUP EUI-64 of Joiner node 
-protocol_tag="wpan:6lowpan:data:ipv6:ipv6.hopopts:ipv6:udp:wisun.eapol_relay:eapol"
-time_TBU0_send_EAP_RELAY=($(packet_receive_check ${NodeCsvFile} -t 3 $wsnode0_mac 4 $BRRPI_mac 5 $protocol_tag 6 "4" 7 "0" 12 "2" 13 "1"));
-TBU0_send_EAP_RELAY=($(packet_receive_check ${NodeCsvFile} -0 3 $wsnode0_mac 4 $BRRPI_mac 5 $protocol_tag 6 "4" 7 "0" 12 "2" 13 "1"));
-echo "time_DUT_send_EAP_Request_Identity: ${time_TBU0_send_EAP_RELAY[@]}";
-TBU0_send_EAP_RELAY_num=${#time_TBU0_send_EAP_RELAY[*]};
-if [ $TBU0_send_EAP_RELAY_num -ge 1 ]; then
-    echo "find TBD A Router sends EAPOL-RELAY to BR DUT with SUP EUI-64 of Joiner node @ time: ${TBU0_send_EAP_RELAY[1]}"
-    eapol_relay_sup=${TBU0_send_EAP_RELAY[20]};
-    eapol_relay_kmp_id=${TBU0_send_EAP_RELAY[21]}
-    steps_pass[18]=1;
-    if [ "$eapol_relay_sup" != "$wsnode1_mac" ];then steps_pass[18]=0; echo "----Step18 FAIL: SUP is NOT EUI-64 of TBD E Joiner"; fi
-    if [ $eapol_relay_kmp_id -ne 1 ];           then steps_pass[18]=0; echo "----Step18 FAIL: KMP ID of NOT 1"; fi
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+STEP_PASSFAIL_Criteria=(
+"output csv file:"  ${NodeCsvFile}                                                          
+"Step number:"      "Step19"
+"Step Description:" "BR DUT sends via EAPOL-RELAY EAP Request TLS Start to TBD A Router" 
+"time range:"       $time_checked               $(echo "$time_checked + 10.000000" | bc -l)
+"match items:"      "wpan.src64"                $BRRPI_mac
+"match items:"      "wpan.dst64"                $wsnode0_mac
+"match items:"      "frame.protocols"           "wpan:6lowpan:ipv6:udp:wisun.eapol_relay:eapol"
+"match items:"      "wisun.uttie.type"          4
+"match items:"      "eapol.type"                0
+"match items:"      "eap.code"                  1
+"match items:"      "eap.type"                  13
+"match items:"      "wisun.eapol_relay.sup"     $wsnode1_mac
+"match items:"      "wisun.eapol_relay.kmp_id"  1
+);
+step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 
-    if [ ${steps_pass[18]} -eq 1 ]; then echo "----Step18 PASS: TBD A Router sends EAPOL-RELAY to BR DUT with SUP EUI-64 of Joiner node."; fi
-else
-    steps_pass[18]=0; echo "----Step18 FAIL: TBD A Router does NOT send EAPOL-RELAY to BR DUT with SUP EUI-64 of Joiner node"
-fi
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+STEP_PASSFAIL_Criteria=(
+"output csv file:"  ${NodeCsvFile}                                                          
+"Step number:"      "Step20"
+"Step Description:" "Test Bed Device A Router sends EAPOL Frame to Test Bed Device E Joine" 
+"time range:"       $time_checked      $(echo "$time_checked + 10.000000" | bc -l)
+"match items:"      "wpan.src64"        $wsnode0_mac
+"match items:"      "wpan.dst64"        $wsnode1_mac
+"match items:"      "frame.protocols"   "wpan:eapol"
+"match items:"      "wisun.uttie.type"  6
+"match items:"      "eapol.type"        0
+"match items:"      "eap.code"          1
+"match items:"      "eap.type"          13
+);
+step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 
-# Step 19: Border Router DUT sends via EAPOL-RELAY EAP Request TLS Start to Test Bed Device A Router
-protocol_tag="wpan:6lowpan:ipv6:udp:wisun.eapol_relay:eapol"
-time_DUT_send_EAP_RELAY=($(packet_receive_check ${NodeCsvFile} -t 3 $BRRPI_mac 4 $wsnode0_mac 5 $protocol_tag 6 "4" 7 "0" 12 "1" 13 "13"));
-DUT_send_EAP_RELAY=($(packet_receive_check ${NodeCsvFile} -0 3 $BRRPI_mac 4 $wsnode0_mac 5 $protocol_tag 6 "4" 7 "0" 12 "1" 13 "13"));
-echo "time_DUT_send_EAP_RELAY: ${time_DUT_send_EAP_RELAY[@]}";
-DUT_send_EAP_RELAY_num=${#time_DUT_send_EAP_RELAY[*]};
-if [ $DUT_send_EAP_RELAY_num -ge 1 ]; then
-    echo "find BR DUT sends via EAPOL-RELAY EAP Request TLS Start to TBD A Router @ time: ${DUT_send_EAP_RELAY[1]}"
-    eapol_relay_sup=${DUT_send_EAP_RELAY[20]};
-    eapol_relay_kmp_id=${DUT_send_EAP_RELAY[21]}
-    steps_pass[19]=1;
-    if [ "$eapol_relay_sup" != "$wsnode1_mac" ];then steps_pass[19]=0; echo "----Step19 FAIL: SUP is NOT EUI-64 of TBD E Joiner"; fi
-    if [ $eapol_relay_kmp_id -ne 1 ];           then steps_pass[19]=0; echo "----Step19 FAIL: KMP ID of NOT 1"; fi
-
-    if [ ${steps_pass[19]} -eq 1 ]; then echo "----Step19 PASS: BR DUT sends via EAPOL-RELAY EAP Request TLS Start to TBD A Router."; fi
-else
-    steps_pass[19]=0; echo "----Step19 FAIL: BR DUT does NOT send via EAPOL-RELAY EAP Request TLS Start to TBD A Router"
-fi
-
-
-
-
-####
-####
-####
-####time_GDK_DUT_ISSUE_PACKET=($(packet_receive_check ${NodeCsvFile} -t 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "3" 13 "0x1382"));
-####STEP13_DUT_ISSUE_PACKET=($(packet_receive_check ${NodeCsvFile} -0 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "3" 13 "0x1382"));
-####echo "time_GDK_DUT_ISSUE_PACKET: ${time_GDK_DUT_ISSUE_PACKET[@]}"
-####time_DUT_1st_GDK=${time_GDK_DUT_ISSUE_PACKET[0]};
-####if [ -n $time_DUT_1st_GDK ]; then 
-####    echo "find DUT issues EAPOL-KEY to Joiner @ time: ${STEP13_DUT_ISSUE_PACKET[1]}"
-####    ##echo "${STEP13_DUT_ISSUE_PACKET[@]} "
-####    eapol_keydes_key_info=${STEP13_DUT_ISSUE_PACKET[12]};
-####    eapol_keydes_key_len=${STEP13_DUT_ISSUE_PACKET[13]};
-####    eapol_keydes_replay_counter=${STEP13_DUT_ISSUE_PACKET[14]};
-####    eapol_keydes_nonce=${STEP13_DUT_ISSUE_PACKET[15]};
-####    eapol_keydes_key_iv=${STEP13_DUT_ISSUE_PACKET[16]};
-####    eapol_keydes_rsc=${STEP13_DUT_ISSUE_PACKET[17]};
-####    eapol_keydes_mic=${STEP13_DUT_ISSUE_PACKET[18]};
-####    eapol_keydes_data_len=${STEP13_DUT_ISSUE_PACKET[19]};
-####    steps_pass[13]=1;
-####    if [ "$eapol_keydes_key_info" != "0x1382" ];then steps_pass[13]=0; echo "----Step13 FAIL: Key Information: $eapol_keydes_key_info NOT 0x1382"; fi
-####    if [ $eapol_keydes_key_len -ne 0 ];         then steps_pass[13]=0; echo "----Step13 FAIL: Key Length NOT 16"; fi
-####    if [ $eapol_keydes_replay_counter -lt 2 ];  then steps_pass[13]=0; echo "----Step13 FAIL: Key Replay Counter LESS than 2"; fi
-####    if [ ${#eapol_keydes_nonce} -eq 0 ];        then steps_pass[13]=0; echo "----Step13 FAIL: No Border Router generated ANonce found"; fi
-####    if [ $eapol_keydes_key_iv -ne 0 ];          then steps_pass[13]=0; echo "----Step13 FAIL: EAPOL-Key IV NOT 0"; fi
-####    if [ $eapol_keydes_rsc -ne 0 ];             then steps_pass[13]=0; echo "----Step13 FAIL: Key RSC NOT 0"; fi
-####    if [ ${#eapol_keydes_mic} -eq 0 ];          then steps_pass[13]=0; echo "----Step13 FAIL: Key MIC not found"; fi
-####    if [ $eapol_keydes_data_len -ne 56 ];       then steps_pass[13]=0; echo "----Step13 FAIL: Key Data Length  NOT 22"; fi
-####    
-####    if [ ${steps_pass[13]} -eq 1 ]; then echo "----Step13 PASS: Border Router DUT issues EAPOL-KEY with GTK to Joiner."; fi
-####else
-####    steps_pass[13]=0; echo "----Step13 FAIL: Border Router DUT does NOT issue EAPOL-KEY with GDK to Joiner."
-####fi
-####
-####time_GDK_JOINER_SEND_PACKET=($(packet_receive_check ${NodeCsvFile} -t 3 $wsnode0_mac 4 $BRRPI_mac 5 "wpan:eapol" 6 "6" 7 "3" 13 "0x0302"));
-####echo "time_GDK_JOINER_SEND_PACKET: ${time_GDK_JOINER_SEND_PACKET[@]}"
-##### get the index of first packet joiner send after it receive DUT(BR)'s 1st 4WH packet
-##### remove items before this time 
-####index_JOINER_1st_GDK=0;
-####for idx in $(seq 0 ${#time_GDK_JOINER_SEND_PACKET[@]}); do
-####    greate_test=$(echo "${time_GDK_JOINER_SEND_PACKET[$idx]} > $time_DUT_1st_GDK" | bc -l);
-####    if [ $greate_test -eq 1 ]; then
-####        time_DUT_1st_GDK=${time_GDK_JOINER_SEND_PACKET[$idx]};
-####        index_JOINER_1st_GDK=$idx;
-####        echo "index_JOINER_1st_GDK: $index_JOINER_1st_GDK"
-####        break;
-####    else
-####        unset time_GDK_JOINER_SEND_PACKET[$idx];
-####    fi
-####done
-####echo "time_GDK_JOINER_SEND_PACKET: ${time_GDK_JOINER_SEND_PACKET[@]}"
-####STEP14_JOINER_SEND_PACKET=($(packet_receive_check ${NodeCsvFile} -${index_JOINER_1st_GDK} 3 $wsnode0_mac 4 $BRRPI_mac 5 "wpan:eapol" 6 "6" 7 "3" 13 "0x0302"));
-####time_JOINER_1st_GDK=${time_GDK_JOINER_SEND_PACKET[$index_JOINER_1st_GDK]};
-####if [ -n $time_JOINER_1st_GDK ]; then 
-####    echo "find Joiner sends to BR an EAPOL-KEY0 @ time: ${STEP14_JOINER_SEND_PACKET[1]}"
-####    ##echo "${STEP14_JOINER_SEND_PACKET[@]} "
-####    eapol_keydes_key_info=${STEP14_JOINER_SEND_PACKET[12]};
-####    eapol_keydes_key_len=${STEP14_JOINER_SEND_PACKET[13]};
-####    eapol_keydes_replay_counter=${STEP14_JOINER_SEND_PACKET[14]};
-####    eapol_keydes_nonce=${STEP14_JOINER_SEND_PACKET[15]};
-####    eapol_keydes_key_iv=${STEP14_JOINER_SEND_PACKET[16]};
-####    eapol_keydes_rsc=${STEP14_JOINER_SEND_PACKET[17]};
-####    eapol_keydes_mic=${STEP14_JOINER_SEND_PACKET[18]};
-####    eapol_keydes_data_len=${STEP14_JOINER_SEND_PACKET[19]};
-####    steps_pass[14]=1;
-####    if [ "$eapol_keydes_key_info" != "0x0302" ];then steps_pass[14]=0; echo "----Step14 FAIL: Key Information: $eapol_keydes_key_info NOT 0x0302"; fi
-####    if [ $eapol_keydes_key_len -ne 0 ];         then steps_pass[14]=0; echo "----Step14 FAIL: Key Length NOT 0"; fi
-####    if [ $eapol_keydes_replay_counter -lt 2 ];  then steps_pass[14]=0; echo "----Step14 FAIL: Key Replay Counter LESS than 2"; fi
-####    if [ ${#eapol_keydes_nonce} -eq 0 ];        then steps_pass[14]=0; echo "----Step14 FAIL: No Border Router generated ANonce found"; fi
-####    if [ $eapol_keydes_key_iv -ne 0 ];          then steps_pass[14]=0; echo "----Step14 FAIL: EAPOL-Key IV NOT 0"; fi
-####    if [ $eapol_keydes_rsc -ne 0 ];             then steps_pass[14]=0; echo "----Step14 FAIL: Key RSC NOT 0"; fi
-####    if [ ${#eapol_keydes_mic} -eq 0 ];          then steps_pass[14]=0; echo "----Step14 FAIL: No Key generated MIC found"; fi
-####    if [ $eapol_keydes_data_len -ne 0 ];        then steps_pass[14]=0; echo "----Step14 FAIL: Key Data Length  NOT 0"; fi
-####    
-####    if [ ${steps_pass[14]} -eq 1 ]; then echo "----Step14 PASS: Joiner node sends to BR an EAPOL-KEY with GDK."; fi
-####else
-####    steps_pass[14]=0; echo "----Step14 FAIL: Joiner node does NOT send to BR an EAPOL-KEY with GDK."
-####fi
-####
-####
+echo "-----------$time_checked"
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+STEP_PASSFAIL_Criteria=(
+"output csv file:"  ${NodeCsvFile}                                                          
+"Step number:"      "Step21"
+"Step Description:" "Test Bed Device A Router sends EAPOL Frame to Test Bed Device E Joine" 
+"time range:"       $time_checked       $(echo "$time_checked + 10.000000" | bc -l)
+"match items:"      "wpan.src64"        $wsnode0_mac
+"match items:"      "wpan.dst64"        $wsnode1_mac
+"match items:"      "frame.protocols"   "wpan:eapol"
+"match items:"      "wisun.uttie.type"  6
+"match items:"      "eapol.type"        0
+"match items:"      "eap.code"          1
+"match items:"      "eap.type"          13
+);
+step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 
 
 
 
 
 
+echo "Total: ${#steps_pass[@]} test steps done"
 test_passfail=1;
 for passfail in ${steps_pass[@]}; do
     if [ "$passfail" -eq "0" ]; then

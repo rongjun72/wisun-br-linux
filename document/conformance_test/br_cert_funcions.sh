@@ -410,6 +410,86 @@ function packet_receive_check
   done
 } 
 
+function step_pass_fail_check
+{
+  # function description:
+  # pass fail check for input step discription array 
+  # 
+  # -----------------------------------------------------------------------------
+  # Input parameters:
+  # ----------------------------------------------
+  # $1: step discription array with much information
+  # the format of input array/information is:
+  # array[0]  = "output csv file:"  array[1] = ${NodeCsvFile}                                                          
+  # array[2]  = "Step number:"      array[3] = step value
+  # array[4]  = "Step Description:" array[5] = description sentence 
+  # array[6]  = "time range:"       array[7]  = range start  array[8]  = range
+  # array[9]  = "match items:"      array[10] = match name   array[11] = match value
+  # array[12] = "match items:"      array[13] = match name   array[14] = match value
+  # ......
+  # $2: CSV_PACKET_FIELD_TABLE
+  #-----------------------------------------------
+  local -n step_passfail_Criteria=$1;
+  local -n csv_packet_field_table=$2;
+  local param1_num=${#step_passfail_Criteria[@]};
+  local packet_field_num=${#csv_packet_field_table[@]};
+  if [ $param1_num -lt 12 ]; then
+    return 33; # too few parameters input...
+  fi
+  local csv_file=${step_passfail_Criteria[1]};
+  local step_val=${step_passfail_Criteria[3]};
+  local step_descrption=${step_passfail_Criteria[5]};
+  local time_range_start=${step_passfail_Criteria[7]};
+  local time_range_end=${step_passfail_Criteria[8]};
+
+  #echo "input array element number: $param1_num"
+
+  local match_options=""
+  for idx in $(seq 9 3 $(($param1_num-1))); do
+    local match_name=${step_passfail_Criteria[$(($idx+1))]};
+    for idx0 in $(seq 1 2 $(($packet_field_num-1))); do
+      local check_str=${csv_packet_field_table[$idx0]};
+      if [ "$match_name" = "$check_str" ]; then
+        break;
+      fi 
+    done
+    local match_val=${step_passfail_Criteria[$(($idx+2))]};
+    match_options="$match_options $((($idx0+1)/2)) $match_val";
+  done
+
+  #echo "packet_receive_check $csv_file -t $match_options"
+  local time_PACKET_FOUND=($(packet_receive_check ${csv_file} -t ${match_options}));
+  local time_PACKET_FOUND_num=${#time_PACKET_FOUND[@]};
+  local PACKET_FOUND=($(packet_receive_check ${csv_file} -0 ${match_options}));
+  #echo "time_PACKET_FOUND: ${time_PACKET_FOUND[@]}";
+  #echo "PACKET_FOUND: ${PACKET_FOUND[@]}";
+
+  time_checked="";
+  if [ -n "$time_range_start" ] && [ -n "$time_range_end" ] && [ $time_PACKET_FOUND_num -gt 0 ]; then 
+    for idx in $(seq 0 $(($time_PACKET_FOUND_num-1))); do
+      #echo "$time_range_start < ${time_PACKET_FOUND[$idx]} && ${time_PACKET_FOUND[$idx]} < $time_range_end"
+      local great_test=$(echo "$time_range_start < ${time_PACKET_FOUND[$idx]} && ${time_PACKET_FOUND[$idx]} < $time_range_end" | bc -l);
+      #echo "great_test: $great_test"
+      if [ $great_test -eq 1 ]; then
+        time_checked=${time_PACKET_FOUND[$idx]};
+        packet_checked=${PACKET_FOUND[@]};
+        #echo "packet_checked: ${packet_checked[@]}"
+        break;
+      fi
+    done
+  fi
+
+  if [ -n "$time_checked" ]; then
+    echo "$step_val PASS: $step_descrption @: $time_checked";
+    steps_pass[${#steps_pass[@]}]=1;
+    return 1
+  else
+    echo "$step_val FAIL: NO - $step_descrption"
+    steps_pass[${#steps_pass[@]}]=0;
+    return 0
+  fi
+}
+
 
 function tshark_mod
 {

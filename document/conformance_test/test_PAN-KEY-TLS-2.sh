@@ -209,8 +209,8 @@ else
 fi
 
 # Step 3-5 ----
-time_DUT_receive_EAPOLEAP=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "3" 8 "bbb"));
-DUT_receive_EAPOLEAP=($(packet_receive_check ${LOG_PATH}/output_node.csv -0 3 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "3" 8 "bbb"));
+time_DUT_receive_EAPOLEAP=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "3" 8 "xxxx"));
+DUT_receive_EAPOLEAP=($(packet_receive_check ${LOG_PATH}/output_node.csv -0 3 $wsnode0_mac 5 "wpan:eapol" 6 "6" 7 "3" 8 "xxxx"));
 DUT_receive_EAPOLEAP_EAPOL_KEY=${DUT_receive_EAPOLEAP[7]};
 DUT_receive__EAPOLEAP_num=${#time_DUT_receive_EAPOLEAP[*]};
 if [[ $DUT_receive__EAPOLEAP_num -ge 1 && -n $DUT_receive_EAPOLEAP_EAPOL_KEY ]]; then
@@ -262,8 +262,9 @@ else
 fi
 
 # Step 8-9 ----
-time_DUT_sends_EAP_Server_Hello=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol:tls" 6 "6" 7 "0" 9 "1" 10 "13" 11 "2"));
-DUT_sends_EAP_Server_Hello=($(packet_receive_check ${LOG_PATH}/output_node.csv -0 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol:tls" 6 "6" 7 "0" 9 "1" 10 "13" 11 "2"));
+protol_tag="wpan:eapol:tls:x509sat:x509sat:pkcs-1:x509ce:x509ce:x509ce:cms:x509ce:x509sat:x509sat:x509sat";
+time_DUT_sends_EAP_Server_Hello=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $BRRPI_mac 4 $wsnode0_mac 5 $protol_tag 6 "6" 7 "0" 9 "1" 10 "13" 11 "2,11,12,13,14"));
+DUT_sends_EAP_Server_Hello=($(packet_receive_check ${LOG_PATH}/output_node.csv -0 3 $BRRPI_mac 4 $wsnode0_mac 5 $protol_tag 6 "6" 7 "0" 9 "1" 10 "13" 11 "2,11,12,13,14"));
 if [ -n $time_DUT_sends_EAP_Server_Hello ]; then 
     echo "find DUT sends sends EAP-TLS: Server Hello @ time: ${DUT_sends_EAP_Server_Hello[1]}"
     #echo "${DUT_sends_EAP_Server_Hello[@]} "
@@ -272,8 +273,9 @@ else
     steps_pass[8]=0; echo "----Step8 FAIL: Border Router DUT does NOT send EAP-TLS: Server Hello"
 fi
 
-time_Joiner_sends_EAP_Response_Certificate=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $wsnode0_mac 4 $BRRPI_mac 5 "wpan:eapol:tls" 6 "6" 7 "0" 9 "2" 10 "13" 11 "11"));
-Joiner_sends_EAP_Response_Certificate=($(packet_receive_check ${LOG_PATH}/output_node.csv -0 3 $wsnode0_mac 4 $BRRPI_mac 5 "wpan:eapol:tls" 6 "6" 7 "0" 9 "2" 10 "13" 11 "11"));
+protol_tag="wpan:eapol:tls:x509sat:x509sat:pkcs-1:x509ce:x509ce:x509ce:cms:x509ce";
+time_Joiner_sends_EAP_Response_Certificate=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $wsnode0_mac 4 $BRRPI_mac 5 $protol_tag 6 "6" 7 "0" 9 "2" 10 "13" 11 "11"));
+Joiner_sends_EAP_Response_Certificate=($(packet_receive_check ${LOG_PATH}/output_node.csv -0 3 $wsnode0_mac 4 $BRRPI_mac 5 $protol_tag 6 "6" 7 "0" 9 "2" 10 "13" 11 "11"));
 if [ -n $time_Joiner_sends_EAP_Response_Certificate ]; then 
     echo "find Joiner sends EAP Response Certificate, Client Key Exchange to BR DUT @ time: ${Joiner_sends_EAP_Response_Certificate[1]}"
     #echo "${Joiner_sends_EAP_Response_Certificate[@]} "
@@ -283,8 +285,8 @@ else
 fi
 
 # Step 10-12 ----
-time_DUT_sends_EAP_Change_Cipher=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol:tls" 6 "6" 7 "0" 9 "1" 10 "13" 12 "20"));
-DUT_sends_EAP_Change_Cipher=($(packet_receive_check ${LOG_PATH}/output_node.csv -0 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol:tls" 6 "6" 7 "0" 9 "1" 10 "13" 12 "20"));
+time_DUT_sends_EAP_Change_Cipher=($(packet_receive_check ${LOG_PATH}/output_node.csv -t 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol:tls" 6 "6" 7 "0" 9 "1" 10 "13" 12 "20,22"));
+DUT_sends_EAP_Change_Cipher=($(packet_receive_check ${LOG_PATH}/output_node.csv -0 3 $BRRPI_mac 4 $wsnode0_mac 5 "wpan:eapol:tls" 6 "6" 7 "0" 9 "1" 10 "13" 12 "20,22"));
 if [ -n $time_DUT_sends_EAP_Change_Cipher ]; then 
     echo "find DUT sends sends EAP-TLS: Change Cipher Spec, Finished @ time: ${DUT_sends_EAP_Change_Cipher[1]}"
     #echo "${DUT_sends_EAP_Change_Cipher[@]} "

@@ -464,7 +464,8 @@ function step_pass_fail_check
   #echo "time_PACKET_FOUND: ${time_PACKET_FOUND[@]}";
   #echo "PACKET_FOUND: ${PACKET_FOUND[@]}";
 
-  time_checked="";
+  time_checked="-1.0000";
+  #echo "[ -n "$time_range_start" ] && [ -n "$time_range_end" ] && [ $time_PACKET_FOUND_num -gt 0 ]"
   if [ -n "$time_range_start" ] && [ -n "$time_range_end" ] && [ $time_PACKET_FOUND_num -gt 0 ]; then 
     for idx in $(seq 0 $(($time_PACKET_FOUND_num-1))); do
       #echo "$time_range_start < ${time_PACKET_FOUND[$idx]} && ${time_PACKET_FOUND[$idx]} < $time_range_end"
@@ -479,7 +480,8 @@ function step_pass_fail_check
     done
   fi
 
-  if [ -n "$time_checked" ]; then
+  great_test=$(echo "$time_checked > 0.0000" | bc -l);
+  if [ $great_test -eq 1 ]; then
     echo "$step_val PASS: $step_descrption @: $time_checked";
     steps_pass[${#steps_pass[@]}]=1;
     return 1

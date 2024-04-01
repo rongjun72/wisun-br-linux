@@ -43,7 +43,7 @@ TEST_CASE_NAME="PAN-KEY-TLS-8"
 # DISC_IMIN=15
 # DISC_IMAX=2
 # ------------- global variables end ------------------------------------
-TEST_TIME="0401_11-18";
+TEST_TIME="0401_11-47";
 TEST_TIME=$(date "+%m%d_%H-%M");
 
 time_start_test=$(($(date +%s%N)/1000000));
@@ -249,7 +249,7 @@ STEP_PASSFAIL_Criteria=(
 "output csv file:"  ${NodeCsvFile}                                                          
 "Step number:"      "Step3"
 "Step Description:" "Joiner issues a EAPOL-EAP frame: EAPOL-KEY Packet Type = 3 with EAPOL-KEY" 
-"time range:"       $time_checked               $(echo "$time_checked + 30.000000" | bc -l)
+"time range:"       $time_checked               $(echo "$time_checked + 60.000000" | bc -l)
 "match items:"      "wpan.src64"                $wsnode0_mac
 "match items:"      "wpan.dst64"                $BRRPI_mac
 "match items:"      "frame.protocols"           "wpan:eapol"

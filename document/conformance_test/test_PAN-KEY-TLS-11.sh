@@ -47,7 +47,7 @@ TEST_CASE_NAME="PAN-KEY-TLS-11"
 # DISC_IMAX=2
 # ------------- global variables end ------------------------------------
 TEST_TIME="0401_15-22";
-###TEST_TIME=$(date "+%m%d_%H-%M");
+TEST_TIME=$(date "+%m%d_%H-%M");
 
 time_start_test=$(($(date +%s%N)/1000000));
 nodes_pti_cap_file=${LOG_PATH}/NodesCap_${TEST_CASE_NAME}_${TEST_TIME}.pcapng
@@ -71,68 +71,68 @@ echo "Node 0 wisun_class:  $wisun_class"
 echo "-----------------------------------------------------------------------------"
 
 
-##
-##
-### TBUs config setting........
-##wisun_node_set $wsnode0 $wisun_domain $wisun_mode $wisun_class
-##wisun_node_set $wsnode1 $wisun_domain $wisun_mode $wisun_class
-##wisun_node_set $wsnode2 $wisun_domain $wisun_mode $wisun_class
-###echo "wisun mac_allow $wsnode1_mac" > $wsnode0
-###echo "wisun mac_allow $wsnode2_mac" > $wsnode1
-##
-### check the thread number of wsbrd
-##ssh_check_and_kill_wsbrd $BRRPI_usr $BRRPI_ip;
-##
-### get/modify/overwrite the wsbrd.conf file before start wsbrd application in RPi
-##scp ${BRRPI_usr}@${BRRPI_ip}:$BRRPI_path/wsbrd.conf ${LOG_PATH}/wsbrd.conf
-##wisun_br_config ${LOG_PATH}/wsbrd.conf $wisun_domain $wisun_mode $wisun_class
-##scp ${LOG_PATH}/wsbrd.conf ${BRRPI_usr}@${BRRPI_ip}:$BRRPI_path/wsbrd.conf
-##rm -f ${LOG_PATH}/wsbrd.conf
-##
-##echo "----------------------------start wsbrd application on Raspberry Pi...-------"
-##TIME_START_WSBRD=$(($(date +%s%N)/1000000 - $time_start_test)); # uint in ms
-##TIME_START_WSBRD=$(echo "$TIME_START_WSBRD / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
-###echo "start wsbrd at time: $(($TIME_START_WSBRD/1000)).$(echo $(($TIME_START_WSBRD%1000+1000)) | sed 's/^1//')"
-##echo "start wsbrd at time: $$TIME_START_WSBRD"
-##ssh_start_wsbrd_window $BRRPI_usr $BRRPI_ip $wisun_domain $wisun_mode $wisun_class
-##
-##
-##capture_time=400
-##echo "----------------------------start wsnode packet capture, for ${capture_time}s---"
-##echo "start wsnode packet capture, for ${capture_time}s..."
-##gnome-terminal --window --title="Node Capture" --geometry=90x24+200+0 -- \
-##  sudo java -jar $silabspti -ip=$wsnode0_netif,$wsnode1_netif -time=$(($capture_time*1000)) -format=pcapng_wisun -out=${nodes_pti_cap_file}
-##
-### ------start wsnode join_fan10-------
-##echo "----------------------------start wsnode0 join_fan10------------------------"
-##time_0=$(date +%s%N); echo "wisun join_fan10" > $wsnode0 
-##time_1=$(date +%s%N); echo "send wsnode0 join_fan10: $((($time_1 - $time_0)/1000000))ms";
-##TIME_JOIN_FAN10=$(($time_1/1000000-$time_start_test))
-##TIME_NODE0_JOIN_FAN10=$(echo "$TIME_JOIN_FAN10 / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
-###echo "node0 start wisun join_fan10 at: $(($TIME_JOIN_FAN10/1000)).$(echo $(($TIME_JOIN_FAN10%1000+1000)) | sed 's/^1//')"
-##echo "node0 start wisun join_fan10 at: $TIME_NODE0_JOIN_FAN10"
-##display_wait_progress $(($capture_time/10/2));
-##echo "-----------------------------------------------------------------------------"
-##echo "----------------------------start wsnode1 join_fan10------------------------"
-##time_0=$(date +%s%N); echo "wisun join_fan10" > $wsnode1 
-##time_1=$(date +%s%N); echo "send wsnode1 join_fan10: $((($time_1 - $time_0)/1000000))ms";
-##TIME_JOIN_FAN10=$(($time_1/1000000-$time_start_test));
-##TIME_NODE1_JOIN_FAN10=$(echo "$TIME_JOIN_FAN10 / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
-##echo "node1 start wisun join_fan10 at: $TIME_NODE1_JOIN_FAN10"
-##display_wait_progress $(($capture_time/10/2));
-##
-##
-##
-##
-### check session id of serial port and wsbrd(ssh RPi) and kill them
-##wsbrd_id=$(ps -u | grep cd | grep 'sudo wsbrd -F' | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
-##echo "kill wsbrd window: $wsbrd_id, actually wsbrd is still running on remote RPi"; kill $wsbrd_id;
-### -------------------------------------------------------------------------------------------------
-### copy border router host/rcp received message pcapng file from RapspberryPi
-### prerequiste is uncomment "pcap_file = /tmp/wisun_dump.pcapng" in wsbrd.conf in RPi
-### -------------------------------------------------------------------------------------------------
-##scp ${BRRPI_usr}@${BRRPI_ip}:/tmp/wisun_dump.pcapng ${wsbrd_cap_file}
-##
+
+
+# TBUs config setting........
+wisun_node_set $wsnode0 $wisun_domain $wisun_mode $wisun_class
+wisun_node_set $wsnode1 $wisun_domain $wisun_mode $wisun_class
+wisun_node_set $wsnode2 $wisun_domain $wisun_mode $wisun_class
+#echo "wisun mac_allow $wsnode1_mac" > $wsnode0
+#echo "wisun mac_allow $wsnode2_mac" > $wsnode1
+
+# check the thread number of wsbrd
+ssh_check_and_kill_wsbrd $BRRPI_usr $BRRPI_ip;
+
+# get/modify/overwrite the wsbrd.conf file before start wsbrd application in RPi
+scp ${BRRPI_usr}@${BRRPI_ip}:$BRRPI_path/wsbrd.conf ${LOG_PATH}/wsbrd.conf
+wisun_br_config ${LOG_PATH}/wsbrd.conf $wisun_domain $wisun_mode $wisun_class
+scp ${LOG_PATH}/wsbrd.conf ${BRRPI_usr}@${BRRPI_ip}:$BRRPI_path/wsbrd.conf
+rm -f ${LOG_PATH}/wsbrd.conf
+
+echo "----------------------------start wsbrd application on Raspberry Pi...-------"
+TIME_START_WSBRD=$(($(date +%s%N)/1000000 - $time_start_test)); # uint in ms
+TIME_START_WSBRD=$(echo "$TIME_START_WSBRD / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
+#echo "start wsbrd at time: $(($TIME_START_WSBRD/1000)).$(echo $(($TIME_START_WSBRD%1000+1000)) | sed 's/^1//')"
+echo "start wsbrd at time: $$TIME_START_WSBRD"
+ssh_start_wsbrd_window $BRRPI_usr $BRRPI_ip $wisun_domain $wisun_mode $wisun_class
+
+
+capture_time=400
+echo "----------------------------start wsnode packet capture, for ${capture_time}s---"
+echo "start wsnode packet capture, for ${capture_time}s..."
+gnome-terminal --window --title="Node Capture" --geometry=90x24+200+0 -- \
+  sudo java -jar $silabspti -ip=$wsnode0_netif,$wsnode1_netif -time=$(($capture_time*1000)) -format=pcapng_wisun -out=${nodes_pti_cap_file}
+
+# ------start wsnode join_fan10-------
+echo "----------------------------start wsnode0 join_fan10------------------------"
+time_0=$(date +%s%N); echo "wisun join_fan10" > $wsnode0 
+time_1=$(date +%s%N); echo "send wsnode0 join_fan10: $((($time_1 - $time_0)/1000000))ms";
+TIME_JOIN_FAN10=$(($time_1/1000000-$time_start_test))
+TIME_NODE0_JOIN_FAN10=$(echo "$TIME_JOIN_FAN10 / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
+#echo "node0 start wisun join_fan10 at: $(($TIME_JOIN_FAN10/1000)).$(echo $(($TIME_JOIN_FAN10%1000+1000)) | sed 's/^1//')"
+echo "node0 start wisun join_fan10 at: $TIME_NODE0_JOIN_FAN10"
+display_wait_progress $(($capture_time/10/2));
+echo "-----------------------------------------------------------------------------"
+echo "----------------------------start wsnode1 join_fan10------------------------"
+time_0=$(date +%s%N); echo "wisun join_fan10" > $wsnode1 
+time_1=$(date +%s%N); echo "send wsnode1 join_fan10: $((($time_1 - $time_0)/1000000))ms";
+TIME_JOIN_FAN10=$(($time_1/1000000-$time_start_test));
+TIME_NODE1_JOIN_FAN10=$(echo "$TIME_JOIN_FAN10 / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
+echo "node1 start wisun join_fan10 at: $TIME_NODE1_JOIN_FAN10"
+display_wait_progress $(($capture_time/10/2));
+
+
+
+
+# check session id of serial port and wsbrd(ssh RPi) and kill them
+wsbrd_id=$(ps -u | grep cd | grep 'sudo wsbrd -F' | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
+echo "kill wsbrd window: $wsbrd_id, actually wsbrd is still running on remote RPi"; kill $wsbrd_id;
+# -------------------------------------------------------------------------------------------------
+# copy border router host/rcp received message pcapng file from RapspberryPi
+# prerequiste is uncomment "pcap_file = /tmp/wisun_dump.pcapng" in wsbrd.conf in RPi
+# -------------------------------------------------------------------------------------------------
+scp ${BRRPI_usr}@${BRRPI_ip}:/tmp/wisun_dump.pcapng ${wsbrd_cap_file}
+
 
 
 

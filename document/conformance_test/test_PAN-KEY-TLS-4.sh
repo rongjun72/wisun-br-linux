@@ -100,7 +100,7 @@ echo "--------------------------------------------------------------------------
 
 
 
-display_wait_progress $(($capture_time/10));
+display_wait_progress $capture_time;
 # check session id of serial port and wsbrd(ssh RPi) and kill them
 wsbrd_id=$(ps -u | grep cd | grep 'sudo wsbrd -F' | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
 echo "kill wsbrd window: $wsbrd_id, actually wsbrd is still running on remote RPi"; kill $wsbrd_id;

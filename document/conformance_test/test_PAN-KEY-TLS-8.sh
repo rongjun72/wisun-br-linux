@@ -108,7 +108,7 @@ TIME_JOIN_FAN10=$(($time_1/1000000-$time_start_test))
 TIME_NODE0_JOIN_FAN10=$(echo "$TIME_JOIN_FAN10 / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
 #echo "node0 start wisun join_fan10 at: $(($TIME_JOIN_FAN10/1000)).$(echo $(($TIME_JOIN_FAN10%1000+1000)) | sed 's/^1//')"
 echo "node0 start wisun join_fan10 at: $TIME_NODE0_JOIN_FAN10"
-display_wait_progress $(($capture_time/10/2));
+display_wait_progress $(($capture_time/2));
 echo "-----------------------------------------------------------------------------"
 echo "----------------------------start wsnode1 join_fan10------------------------"
 time_0=$(date +%s%N); echo "wisun join_fan10" > $wsnode1 
@@ -116,7 +116,7 @@ time_1=$(date +%s%N); echo "send wsnode1 join_fan10: $((($time_1 - $time_0)/1000
 TIME_JOIN_FAN10=$(($time_1/1000000-$time_start_test));
 TIME_NODE1_JOIN_FAN10=$(echo "$TIME_JOIN_FAN10 / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
 echo "node1 start wisun join_fan10 at: $TIME_NODE1_JOIN_FAN10"
-display_wait_progress $(($capture_time/10/2));
+display_wait_progress $(($capture_time/2));
 
 
 

@@ -67,6 +67,53 @@ function wisun_br_config
 
 }
 
+function wisun_br_config_new
+{
+  # Input parameters:
+  # -------------------------------------------------
+  # $1: wsbrd.conf file to be modified
+  # $2: input configuration table like:
+  #       item_name1 item_val1  
+  #       item_name2 item_val2
+  #       ......
+  # config table like:
+  #   (domain NA    mode  1a    class 1   
+  #   unicast_dwell_interval  15
+  #   allowed_channels 0
+  #   ...
+  #   )
+  #--------------------------------------------------
+  local Fwsbrd=$1;
+  local -n config_table=$2;
+  local config_num=${#config_table[@]};
+  # too few parameters input...
+  if [ $config_num -lt 2 ]; then return 33; fi
+  # input configuration table should be in pairs...
+  if [ $(($config_num%2)) -ne 0 ]; then return 34; fi
+  
+  #echo "input array element number: $config_num"
+
+  for idx in $(seq 0 2 $(($config_num-1))); do
+    local config_name=${config_table[$idx]};
+    local config_val=${config_table[$(($idx+1))]};
+    #echo "configuration --: $config_name - $config_val";
+    if [[ "$config_name" =~ "--" ]]; then
+      config_name=$(echo $config_name | sed "s/--//");
+      sed -i "/^${config_name} = ${config_val}/d" $Fwsbrd;
+      local temp_lines=$(sed -n "/^.*${config_name} =.*/=" $Fwsbrd);
+      temp_lines=($temp_lines);
+      #echo "{temp_lines[@]}: ${#temp_lines[@]}"
+      if [ ${#temp_lines[@]} -gt 0 ]; then
+        local last_line=${temp_lines[$((${#temp_lines[@]}-1))]};
+        #echo "insert line after line.${last_line}"
+        sed -i "${last_line} a\\${config_name} = ${config_val}" $Fwsbrd;
+      fi
+    else 
+      sed -i "s/^.*${config_name} =.*/${config_name} = ${config_val}/" $Fwsbrd;
+    fi
+  done
+}
+
 
 function join_fan10
 {
@@ -143,7 +190,7 @@ function display_wait_progress
   # -----------------------------------------
   # $1: wait time in second 
   #------------------------------------------
-  local wait_sec=$1
+  local wait_sec=$(($1/10));
   for wait_idx in $(seq 0 $wait_sec)
   do
     #echo $(date)

@@ -1,23 +1,23 @@
 source br_cert_funcions.sh
 # -----------------------------------------------------------------------
-# Test case :   Border Router as DUT [PAN-KEY-TLS-11]
+# Test case :   Border Router as DUT [DHCPv6-SERVER]
 # -----------------------------------------------------------------------
 # Description:  
-# This test case verifies the ability of Border Router DUT to exchange 
-# EAPOL frames with Joiner node to perform key exchange 
-# (4-Way and 2-Way handshakes) and generate a pairwise transient key 
-# (PTK) and group transient key (GTK) while packets are forwarded 
-# through a router..
+# The DHCPv6 test cases incorporate the Startup (Discovery), Security 
+# Bootstrapping and the ROLL RPL Route Establishment test cases and 
+# assume successful execution by the Border Router DUT and test bed 
+# Joiners before invoking this procedure
 # -----------------------------------------------------------------------
 # Test Bed Configuration:
 # Border Router (DUT) is configured to work with a RADIUS authentication 
 # server. Test Bed Device A Router has joined the PAN.
 # The test bed is configured as follows:
-#   d. Border router DUT configured for PAN A
-#   e. Device A joined to PAN A at Rank 1
-#   f. Device E introduced at Rank 2 in join state 1
+#   a. Border router DUT configured for PAN A with DHCPv6 Server or 
+#      DHCPv6 Relay to a WAN based DHCPv6 Server
+#   b. Devices A, B, C joined to PAN A at Rank 1.
+#   c. Device E is at Rank 2 in join state 1.  
 # -----------------------------------------------------------------------
-TEST_CASE_NAME="PAN-KEY-TLS-11"
+TEST_CASE_NAME="DHCPv6-SERVER"
 
 
 
@@ -46,7 +46,7 @@ TEST_CASE_NAME="PAN-KEY-TLS-11"
 # DISC_IMIN=15
 # DISC_IMAX=2
 # ------------- global variables end ------------------------------------
-TEST_TIME="0401_15-22";
+TEST_TIME="0402_15-07";
 TEST_TIME=$(date "+%m%d_%H-%M");
 
 time_start_test=$(($(date +%s%N)/1000000));
@@ -70,22 +70,24 @@ echo "Node 0 wisun_mode:   $wisun_mode"
 echo "Node 0 wisun_class:  $wisun_class"
 echo "-----------------------------------------------------------------------------"
 
-
-
-
 # TBUs config setting........
 wisun_node_set $wsnode0 $wisun_domain $wisun_mode $wisun_class
 wisun_node_set $wsnode1 $wisun_domain $wisun_mode $wisun_class
 wisun_node_set $wsnode2 $wisun_domain $wisun_mode $wisun_class
-#echo "wisun mac_allow $wsnode1_mac" > $wsnode0
-#echo "wisun mac_allow $wsnode2_mac" > $wsnode1
+echo "wisun mac_allow $BRRPI_mac" > $wsnode0;   sleep 0.5;
+echo "wisun mac_allow $wsnode1_mac" > $wsnode0; sleep 0.5;
+echo "wisun mac_allow $wsnode0_mac" > $wsnode1; sleep 0.5;
+#echo "wisun mac_allow $wsnode2_mac" > $wsnode1; sleep 0.5;
+#echo "wisun mac_allow $wsnode1_mac" > $wsnode2; sleep 0.5;
 
 # check the thread number of wsbrd
 ssh_check_and_kill_wsbrd $BRRPI_usr $BRRPI_ip;
 
 # get/modify/overwrite the wsbrd.conf file before start wsbrd application in RPi
 scp ${BRRPI_usr}@${BRRPI_ip}:$BRRPI_path/wsbrd.conf ${LOG_PATH}/wsbrd.conf
-wisun_br_config ${LOG_PATH}/wsbrd.conf $wisun_domain $wisun_mode $wisun_class
+WISUN_BR_CONFIG=("domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
+"unicast_dwell_interval" 15 "allowed_channels" 0 "allowed_mac64--" $wsnode0_mac);
+wisun_br_config_new ${LOG_PATH}/wsbrd.conf WISUN_BR_CONFIG
 scp ${LOG_PATH}/wsbrd.conf ${BRRPI_usr}@${BRRPI_ip}:$BRRPI_path/wsbrd.conf
 rm -f ${LOG_PATH}/wsbrd.conf
 
@@ -95,12 +97,12 @@ TIME_START_WSBRD=$(echo "$TIME_START_WSBRD / 1000" | bc -l | sed 's/\([0-9]\+\.[
 echo "start wsbrd at time: $TIME_START_WSBRD"
 ssh_start_wsbrd_window $BRRPI_usr $BRRPI_ip $wisun_domain $wisun_mode $wisun_class
 
-
-capture_time=400
+step1_time=300;step2_time=300;
+capture_time=$(($step1_time + $step2_time))
 echo "----------------------------start wsnode packet capture, for ${capture_time}s---"
 echo "start wsnode packet capture, for ${capture_time}s..."
 gnome-terminal --window --title="Node Capture" --geometry=90x24+200+0 -- \
-  sudo java -jar $silabspti -ip=$wsnode0_netif,$wsnode1_netif -time=$(($capture_time*1000)) -format=pcapng_wisun -out=${nodes_pti_cap_file}
+  sudo java -jar $silabspti -ip=$wsnode0_netif,$wsnode1_netif,$wsnode2_netif -time=$(($capture_time*1000)) -format=pcapng_wisun -out=${nodes_pti_cap_file}
 
 # ------start wsnode join_fan10-------
 echo "----------------------------start wsnode0 join_fan10------------------------"
@@ -110,7 +112,7 @@ TIME_JOIN_FAN10=$(($time_1/1000000-$time_start_test))
 TIME_NODE0_JOIN_FAN10=$(echo "$TIME_JOIN_FAN10 / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
 #echo "node0 start wisun join_fan10 at: $(($TIME_JOIN_FAN10/1000)).$(echo $(($TIME_JOIN_FAN10%1000+1000)) | sed 's/^1//')"
 echo "node0 start wisun join_fan10 at: $TIME_NODE0_JOIN_FAN10"
-display_wait_progress $(($capture_time/2));
+display_wait_progress $step1_time;
 echo "-----------------------------------------------------------------------------"
 echo "----------------------------start wsnode1 join_fan10------------------------"
 time_0=$(date +%s%N); echo "wisun join_fan10" > $wsnode1 
@@ -118,7 +120,7 @@ time_1=$(date +%s%N); echo "send wsnode1 join_fan10: $((($time_1 - $time_0)/1000
 TIME_JOIN_FAN10=$(($time_1/1000000-$time_start_test));
 TIME_NODE1_JOIN_FAN10=$(echo "$TIME_JOIN_FAN10 / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
 echo "node1 start wisun join_fan10 at: $TIME_NODE1_JOIN_FAN10"
-display_wait_progress $(($capture_time/2));
+display_wait_progress $step2_time;
 
 
 
@@ -197,7 +199,7 @@ tshark_mod ${LOG_PATH}/output_node.csv  ${LOG_PATH}/output_node.csv
 
 synchronize_node_cap_to_Br_cap ${LOG_PATH}/output_br.csv ${LOG_PATH}/output_node.csv
 
-# [PAN-KEY-TLS-11] Pass/Fail Criteria
+# [DHCPv6-SERVER] Pass/Fail Criteria
 # -------------------------------------------------------------------------------------------------
 # Step1 PASS:   Wireshark capture shows transmission of PA from DUT before DISC_IMIN time passes after receiving the PAS.
 #       FAIL:   PAN Advertisement frame fails to be transmitted from DUT within DISC_IMIN seconds of the PAS being received.
@@ -565,8 +567,8 @@ STEP_PASSFAIL_Criteria=(
 );
 step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 
-#---------- EAP-TLS Multi-hop  PAN-KEY-TLS-11 ananlysis really start here
-echo "";echo "---- EAP-TLS Multi-hop  PAN-KEY-TLS-11 ananlysis begin ----------------"
+#---------- EAP-TLS Multi-hop  DHCPv6-SERVER ananlysis really start here
+echo "";echo "---- EAP-TLS Multi-hop  DHCPv6-SERVER ananlysis begin ----------------"
 echo "-----------------"
 STEP_PASSFAIL_Criteria=(
 "output csv file:"  ${NodeCsvFile}                                                          
@@ -749,6 +751,8 @@ STEP_PASSFAIL_Criteria=(
 );
 step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 
+#---------- DHCPv6 Address Assignment DHCPv6-SERVER ananlysis really start here
+echo "";echo "---- DHCPv6 Address Assignment DHCPv6-SERVER ananlysis begin ----------------"
 
 
 

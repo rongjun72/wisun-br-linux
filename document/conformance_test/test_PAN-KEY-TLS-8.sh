@@ -89,8 +89,7 @@ rm -f ${LOG_PATH}/wsbrd.conf
 echo "----------------------------start wsbrd application on Raspberry Pi...-------"
 TIME_START_WSBRD=$(($(date +%s%N)/1000000 - $time_start_test)); # uint in ms
 TIME_START_WSBRD=$(echo "$TIME_START_WSBRD / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
-#echo "start wsbrd at time: $(($TIME_START_WSBRD/1000)).$(echo $(($TIME_START_WSBRD%1000+1000)) | sed 's/^1//')"
-echo "start wsbrd at time: $$TIME_START_WSBRD"
+echo "start wsbrd at time: $TIME_START_WSBRD"
 ssh_start_wsbrd_window $BRRPI_usr $BRRPI_ip $wisun_domain $wisun_mode $wisun_class
 
 

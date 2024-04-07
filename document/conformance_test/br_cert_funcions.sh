@@ -406,6 +406,11 @@ function packet_receive_check
       # for input pattern "**", means find all non-empty lines
       # echo "=======";cat ${CaptureCsv} | cut -f $search_col | sed -n "/^\s*[^# \t].*$/=";
       searched_lines=($(cat ${CaptureCsv} | cut -f $search_col | sed 's/--//' | sed -n "/^\s*[^# \t].*$/="));
+    elif [[ $search_key =~ "----"$ ]]; then
+      # for fe80::----, fd00::---- means prefix search
+      search_key=$(echo $search_key | sed 's/----//'); 
+      #echo "===search_key: $search_key===="; #cat ${CaptureCsv} | cut -f $search_col | sed -n "/^${search_key}/="
+      searched_lines=($(cat ${CaptureCsv} | cut -f $search_col | sed -n "/^${search_key}/="));
     else
       #cat ${CaptureCsv} | cut -f $search_col | sed -n "/${search_key}/p"
       #cat ${CaptureCsv} | cut -f $search_col | sed -n "/${search_key}/="
@@ -423,6 +428,10 @@ function packet_receive_check
     else
       sort -n temp_${CURR_TIME}_${idx}.txt temp_${CURR_TIME}_$(($idx-1)).txt | uniq -d > temp_${CURR_TIME}_$(($idx+1)).txt;
     fi
+
+    # parsing: for each keyword, if found
+    # TBD
+
   done
 
   #echo "--------------------"
@@ -469,7 +478,9 @@ function step_pass_fail_check
   # the format of input array/information is:
   # array[0]  = "output csv file:"  array[1] = ${NodeCsvFile}                                                          
   # array[2]  = "Step number:"      array[3] = step value
-  # array[4]  = "Step Description:" array[5] = description sentence 
+  # array[4]  = "Step Description:" array[5] = description sentences 
+  #   if description in array[5] start with "OPTIONAL-PASS:", this step is 
+  #   optionally pass/fail and steps_pass[] will be always "1" 
   # array[6]  = "time range:"       array[7]  = range start  array[8]  = range
   # array[9]  = "match items:"      array[10] = match name   array[11] = match value
   # array[12] = "match items:"      array[13] = match name   array[14] = match value
@@ -488,6 +499,7 @@ function step_pass_fail_check
   local step_descrption=${step_passfail_Criteria[5]};
   local time_range_start=${step_passfail_Criteria[7]};
   local time_range_end=${step_passfail_Criteria[8]};
+  local optional_pass=$(echo $step_descrption | sed -n "/^OPTIONAL-PASS:/=" | wc -l);
 
   #echo "input array element number: $param1_num"
 
@@ -534,7 +546,11 @@ function step_pass_fail_check
     return 1
   else
     echo "$step_val FAIL: NO - $step_descrption"
-    steps_pass[${#steps_pass[@]}]=0;
+    if [ $optional_pass -eq 1 ]; then
+      steps_pass[${#steps_pass[@]}]=1;
+    else
+      steps_pass[${#steps_pass[@]}]=0;
+    fi
     return 0
   fi
 }

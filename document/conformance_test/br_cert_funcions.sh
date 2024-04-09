@@ -33,6 +33,76 @@ function wisun_node_set
   sleep 0.5
 }
 
+function wisun_node_set_new
+{
+  # Input parameters:
+  # ---------------------------------------------
+  # $1: serial port device name of Wi-SUN node
+  # $2: expected Wi-SUN domain, like NA,EU,CN
+  # $3: expected Wi-SUN mode
+  # $4: expected Wi-SUN class
+  #----------------------------------------------
+
+  # Input parameters:
+  # -------------------------------------------------
+  # $1: serial port device name of Wi-SUN node
+  # $2: input configuration table like:
+  #       item_name1 item_val1  
+  #       item_name2 item_val2
+  #       ......
+  # config table like:
+  #   (domain NA    mode  1a    class 1   
+  #   unicast_dwell_interval  15
+  #   allowed_channels 0
+  #   ...
+  #   )
+  #--------------------------------------------------
+  local seria_port=$1
+  local -n config_table=$2; #-n: input an array
+  local config_num=${#config_table[@]};
+  # too few parameters input...
+  if [ $config_num -lt 2 ]; then return 33; fi
+  # input configuration table MUST be in pairs...
+  if [ $(($config_num%2)) -ne 0 ]; then return 34; fi
+  #echo "input array element number: $config_num"
+  echo "wisun mac_allow FF:FF:FF:FF:FF:FF:FF:FF" > $seria_port
+
+  for idx in $(seq 0 2 $(($config_num-1))); do
+    local config_name=${config_table[$idx]};
+    local config_val=${config_table[$(($idx+1))]};
+    #echo "configuration --: $config_name - $config_val";
+    case "$config_name" in
+      disconnect)
+        if [ "$config_val" = "yes" ]; then echo "wisun disconnect" > $seria_port; fi
+        ;;
+      domain)
+        echo "wisun set wisun.regulatory_domain $config_val" > $seria_port
+        ;;
+      class)
+        echo "wisun set wisun.operating_class $config_val" > $seria_port
+        ;;
+      mode)
+        echo "wisun set wisun.operating_mode $config_val" > $seria_port
+        ;;
+      unicast_dwell_interval)
+        echo "wisun set wisun.unicast_dwell_interval $config_val" > $seria_port
+        ;;
+      allowed_channels)
+        echo "wisun set wisun.allowed_channels $config_val" > $seria_port
+        ;;
+      allowed_mac64)
+        echo "wisun mac_allow $config_val" > $seria_port
+        ;;
+      *)
+        ;;
+    esac
+    sleep 0.2
+  done
+  echo "wisun save" > $seria_port;
+  sleep 0.5
+
+}
+
 function wisun_br_config
 {
   # Input parameters:
@@ -47,16 +117,6 @@ function wisun_br_config
   local wisun_mode=$3
   local wisun_class=$4
   local gdk0=""
-
-  ##### find "domain = XX" and replace with "domain = YY #XX", mean while delete possible comment symbol #
-  ####sed -i "s/^.*domain =/domain = $wisun_domain #/" $Fwsbrd
-  ####sed -i "s/^.*mode =/mode = $wisun_mode #/" $Fwsbrd
-  ####sed -i "s/^.*class =/class = $wisun_class #/" $Fwsbrd
-  ####sed -i "s/^.*unicast_dwell_interval =/unicast_dwell_interval = 15 #/" $Fwsbrd
-  ##### Channel Function for both devices are set to Fixed Channel 0
-  ####sed -i "s/^.*allowed_channels =/allowed_channels = 0 #/" $Fwsbrd
-  ##### set expected GTKs 
-  #####sed -i "s/^.*gtk[0] =/gtk[0] =/" $Fwsbrd
 
   sed -i "s/^.*domain =.*/domain = $wisun_domain/" $Fwsbrd
   sed -i "s/^.*mode =.*/mode = $wisun_mode/" $Fwsbrd
@@ -104,7 +164,9 @@ function wisun_br_config_new
       temp_lines=($temp_lines);
       #echo "{temp_lines[@]}: ${#temp_lines[@]}"
       if [ ${#temp_lines[@]} -gt 0 ]; then
-        local last_line=${temp_lines[$((${#temp_lines[@]}-1))]};
+        #local last_line=${temp_lines[$((${#temp_lines[@]}-1))]};
+        local temp=$((${#temp_lines[@]}-1)); 
+        local last_line=${temp_lines[$temp]};
         #echo "insert line after line.${last_line}"
         sed -i "${last_line} a\\${config_name} = ${config_val}" $Fwsbrd;
       fi
@@ -258,7 +320,7 @@ function synchronize_node_cap_to_Br_cap
   local NodeCsv=$2;
   local MAX_FAILs=20;
   local fail_cnt=0;
-  local SUCCESS_HITs=120;
+  local SUCCESS_HITs=30;
   local hit_cnt=0;
   local br_search_line=0
   local node_search_line=0
@@ -283,6 +345,7 @@ function synchronize_node_cap_to_Br_cap
     #found_matrix_node=$(sed -n "/${search_str}/p" $NodeCsv);
     time_array_node=($(sed -n "/${search_str}/p" $NodeCsv | cut -f 2 | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/' | sed 's/\.//g'));
     found_lines_node=$(sed -n "/${search_str}/=" $NodeCsv | sed -n '$=');
+    if [ -z "$found_lines_node" ]; then found_lines_node=0; fi
     time_offset=("");
     #echo "[$found_lines_br == $found_lines_node]"
     # calculate time offset between BrCsv and NodeCsv
@@ -309,7 +372,7 @@ function synchronize_node_cap_to_Br_cap
 
       if [ $time_offset_var -lt $VAR_THRESHOLD ]; then
         hit_cnt=$(($hit_cnt + $found_lines_br));
-        #echo "hit count increase: $hit_cnt"
+        echo "hit count increase: $hit_cnt"
         total_time_offset_avg=$(($total_time_offset_avg*($hit_cnt-$found_lines_br) + $time_offset_avg*$found_lines_br));
         total_time_offset_avg=$(($total_time_offset_avg/$hit_cnt));
       fi
@@ -357,7 +420,7 @@ function check_receive_message
   #echo "check_item = $check_item"
   #echo "check_item_num = $check_item_num"
   
-  if [ -n $check_item_num ]; then
+  if [ -n "$check_item_num" ]; then
     echo $(sed -n "/${source_mac}\t${dest_mac}\t${protocol}\t${wisun_uttie_type}/p" ${CaptureCsv} | cut -f 2)
   fi
 

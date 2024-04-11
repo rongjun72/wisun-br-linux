@@ -586,6 +586,7 @@ function step_pass_fail_check
   #echo "time_PACKET_FOUND: ${time_PACKET_FOUND[@]}";
   #echo "PACKET_FOUND: ${PACKET_FOUND[@]}";
 
+  local time_origin=$time_checked;
   time_checked="-1.0000";
   #echo "[ -n "$time_range_start" ] && [ -n "$time_range_end" ] && [ $time_PACKET_FOUND_num -gt 0 ]"
   if [ -n "$time_range_start" ] && [ -n "$time_range_end" ] && [ $time_PACKET_FOUND_num -gt 0 ]; then 
@@ -608,6 +609,7 @@ function step_pass_fail_check
     steps_pass[${#steps_pass[@]}]=1;
     return 1
   else
+    time_checked=$time_origin;
     echo "$step_val FAIL: NO - $step_descrption"
     if [ $optional_pass -eq 1 ]; then
       steps_pass[${#steps_pass[@]}]=1;

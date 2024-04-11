@@ -45,7 +45,7 @@ TEST_CASE_NAME="6LO-ND-LBR-1"
 # DISC_IMIN=15
 # DISC_IMAX=2
 # ------------- global variables end ------------------------------------
-TEST_TIME="0407_18-13";
+TEST_TIME="0408_17-40";
 TEST_TIME=$(date "+%m%d_%H-%M");
 
 time_start_test=$(($(date +%s%N)/1000000));

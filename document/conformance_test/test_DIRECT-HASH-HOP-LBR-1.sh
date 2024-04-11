@@ -46,95 +46,99 @@ TEST_CASE_NAME="DIRECT-HASH-HOP-LBR-1"
 # DISC_IMIN=15
 # DISC_IMAX=2
 # ------------- global variables end ------------------------------------
-TEST_TIME="0409_11-34";
-####TEST_TIME=$(date "+%m%d_%H-%M");
+TEST_TIME="0411_10-12";
+debug_option="nDEBUG_ANALYSIS";
+TEST_TIME=$(date "+%m%d_%H-%M");
 
 time_start_test=$(($(date +%s%N)/1000000));
 nodes_pti_cap_file=${LOG_PATH}/NodesCap_${TEST_CASE_NAME}_${TEST_TIME}.pcapng
 wsbrd_cap_file=${LOG_PATH}/BrCap_${TEST_CASE_NAME}_${TEST_TIME}.pcapng
 NodeCsvFile=${LOG_PATH}/output_node.csv;
+BRcsvFile=${LOG_PATH}/output_br.csv
 time_checked=0;
 packet_checked="";
+step1_time=150; step2_time=450;
+
 
 echo "----TEST [$TEST_CASE_NAME] start ..................................................................."
-# Wi-SUN network configurations:
-# ------------- test bed configurations begin ---------------------------
-#PAN_ID=35
-#network_name="Wi-SUN test"
-wisun_domain="NA"; wisun_mode="0x1b"; wisun_class="1"
-wisun_domain="NA"; wisun_mode="5"; wisun_class="3"
-# ------------- test bed configurations end ------------------------------
-echo "----------------------------Test Configuration------------------------------"
-echo "Node 0 wisun_domain: $wisun_domain"
-echo "Node 0 wisun_mode:   $wisun_mode"
-echo "Node 0 wisun_class:  $wisun_class"
-echo "-----------------------------------------------------------------------------"
+if [ "$debug_option" = "DEBUG_ANALYSIS" ]; then
+    echo "skip TBUs and DUTs configurations..."
+else
+    # Wi-SUN network configurations:
+    # ------------- test bed configurations begin ---------------------------
+    #PAN_ID=35
+    #network_name="Wi-SUN test"
+    wisun_domain="NA"; wisun_mode="0x1b"; wisun_class="1"
+    wisun_domain="NA"; wisun_mode="5"; wisun_class="3"
+    # ------------- test bed configurations end ------------------------------
+    echo "----------------------------Test Configuration------------------------------"
+    echo "Node 0 wisun_domain: $wisun_domain"
+    echo "Node 0 wisun_mode:   $wisun_mode"
+    echo "Node 0 wisun_class:  $wisun_class"
+    echo "-----------------------------------------------------------------------------"
 
-##### TBUs config setting........
-####WISUN_NODE0_CONFIG=("disconnect" "yes" "domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
-####    "unicast_dwell_interval" 255 "allowed_channels" "0-255" "allowed_mac64" $BRRPI_mac "allowed_mac64" $wsnode1_mac);
-####WISUN_NODE1_CONFIG=("disconnect" "yes" "domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
-####    "unicast_dwell_interval" 255 "allowed_channels" "0-255" "allowed_mac64" $wsnode0_mac "allowed_mac64" $wsnode2_mac);
-####WISUN_NODE2_CONFIG=("disconnect" "yes" "domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
-####    "unicast_dwell_interval" 255 "allowed_channels" "0-255" "allowed_mac64" $wsnode1_mac );
-####wisun_node_set_new $wsnode0 WISUN_NODE0_CONFIG
-####wisun_node_set_new $wsnode1 WISUN_NODE1_CONFIG
-####wisun_node_set_new $wsnode2 WISUN_NODE2_CONFIG
-####
-##### check the thread number of wsbrd
-####ssh_check_and_kill_wsbrd $BRRPI_usr $BRRPI_ip;
-####
-##### get/modify/overwrite the wsbrd.conf file before start wsbrd application in RPi
-####scp ${BRRPI_usr}@${BRRPI_ip}:$BRRPI_path/wsbrd.conf ${LOG_PATH}/wsbrd.conf
-####WISUN_BR_CONFIG=("domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
-####"unicast_dwell_interval" 255 "allowed_channels" "0-255" "allowed_mac64--" $wsnode0_mac);
-####wisun_br_config_new ${LOG_PATH}/wsbrd.conf WISUN_BR_CONFIG
-####scp ${LOG_PATH}/wsbrd.conf ${BRRPI_usr}@${BRRPI_ip}:$BRRPI_path/wsbrd.conf
-####rm -f ${LOG_PATH}/wsbrd.conf
-####
-####echo "----------------------------start wsbrd application on Raspberry Pi...-------"
-####TIME_START_WSBRD=$(($(date +%s%N)/1000000 - $time_start_test)); # uint in ms
-####TIME_START_WSBRD=$(echo "$TIME_START_WSBRD / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
-####echo "start wsbrd at time: $TIME_START_WSBRD"
-####ssh_start_wsbrd_window $BRRPI_usr $BRRPI_ip $wisun_domain $wisun_mode $wisun_class
-####
-####step1_time=300;step2_time=300;
-####capture_time=$(($step1_time + $step2_time))
-####echo "----------------------------start wsnode packet capture, for ${capture_time}s---"
-####echo "start wsnode packet capture, for ${capture_time}s..."
-####gnome-terminal --window --title="Node Capture" --geometry=90x24+200+0 -- \
-####  sudo java -jar $silabspti -ip=$wsnode0_netif,$wsnode1_netif,$wsnode2_netif -time=$(($capture_time*1000)) -format=pcapng_wisun -out=${nodes_pti_cap_file}
-####
-##### ------start wsnode join_fan10-------
-####echo "----------------------------start wsnode0 join_fan10------------------------"
-####time_0=$(date +%s%N); echo "wisun join_fan10" > $wsnode0 
-####time_1=$(date +%s%N); echo "send wsnode0 join_fan10: $((($time_1 - $time_0)/1000000))ms";
-####TIME_JOIN_FAN10=$(($time_1/1000000-$time_start_test))
-####TIME_NODE0_JOIN_FAN10=$(echo "$TIME_JOIN_FAN10 / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
-#####echo "node0 start wisun join_fan10 at: $(($TIME_JOIN_FAN10/1000)).$(echo $(($TIME_JOIN_FAN10%1000+1000)) | sed 's/^1//')"
-####echo "node0 start wisun join_fan10 at: $TIME_NODE0_JOIN_FAN10"
-####display_wait_progress $step1_time;
-####echo "-----------------------------------------------------------------------------"
-####echo "----------------------------start wsnode1 join_fan10------------------------"
-####time_0=$(date +%s%N); echo "wisun join_fan10" > $wsnode1 
-####time_1=$(date +%s%N); echo "send wsnode1 join_fan10: $((($time_1 - $time_0)/1000000))ms";
-####TIME_JOIN_FAN10=$(($time_1/1000000-$time_start_test));
-####TIME_NODE1_JOIN_FAN10=$(echo "$TIME_JOIN_FAN10 / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
-####echo "node1 start wisun join_fan10 at: $TIME_NODE1_JOIN_FAN10"
-####display_wait_progress $step2_time;
-####
-####
-####
-####
-##### check session id of serial port and wsbrd(ssh RPi) and kill them
-####wsbrd_id=$(ps -u | grep cd | grep 'sudo wsbrd -F' | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
-####echo "kill wsbrd window: $wsbrd_id, actually wsbrd is still running on remote RPi"; kill $wsbrd_id;
-##### -------------------------------------------------------------------------------------------------
-##### copy border router host/rcp received message pcapng file from RapspberryPi
-##### prerequiste is uncomment "pcap_file = /tmp/wisun_dump.pcapng" in wsbrd.conf in RPi
-##### -------------------------------------------------------------------------------------------------
-####scp ${BRRPI_usr}@${BRRPI_ip}:/tmp/wisun_dump.pcapng ${wsbrd_cap_file}
+    # TBUs config setting........
+    WISUN_NODE0_CONFIG=("disconnect" "yes" "domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
+        "unicast_dwell_interval" 255 "allowed_channels" "0-255" "allowed_mac64" $BRRPI_mac "allowed_mac64" $wsnode1_mac);
+    WISUN_NODE1_CONFIG=("disconnect" "yes" "domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
+        "unicast_dwell_interval" 255 "allowed_channels" "0-255" "allowed_mac64" $wsnode0_mac "allowed_mac64" $wsnode2_mac);
+    WISUN_NODE2_CONFIG=("disconnect" "yes" "domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
+        "unicast_dwell_interval" 255 "allowed_channels" "0-255" "allowed_mac64" $wsnode1_mac );
+    wisun_node_set_new $wsnode0 WISUN_NODE0_CONFIG
+    wisun_node_set_new $wsnode1 WISUN_NODE1_CONFIG
+    wisun_node_set_new $wsnode2 WISUN_NODE2_CONFIG
 
+    # check the thread number of wsbrd
+    ssh_check_and_kill_wsbrd $BRRPI_usr $BRRPI_ip;
+
+    # get/modify/overwrite the wsbrd.conf file before start wsbrd application in RPi
+    scp ${BRRPI_usr}@${BRRPI_ip}:$BRRPI_path/wsbrd.conf ${LOG_PATH}/wsbrd.conf
+    WISUN_BR_CONFIG=("domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
+    "unicast_dwell_interval" 255 "allowed_channels" "0-255" "allowed_mac64--" $wsnode0_mac);
+    wisun_br_config_new ${LOG_PATH}/wsbrd.conf WISUN_BR_CONFIG
+    scp ${LOG_PATH}/wsbrd.conf ${BRRPI_usr}@${BRRPI_ip}:$BRRPI_path/wsbrd.conf
+    rm -f ${LOG_PATH}/wsbrd.conf
+
+    echo "----------------------------start wsbrd application on Raspberry Pi...-------"
+    TIME_START_WSBRD=$(($(date +%s%N)/1000000 - $time_start_test)); # uint in ms
+    TIME_START_WSBRD=$(echo "$TIME_START_WSBRD / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
+    echo "start wsbrd at time: $TIME_START_WSBRD"
+    ssh_start_wsbrd_window $BRRPI_usr $BRRPI_ip $wisun_domain $wisun_mode $wisun_class
+    sleep 20
+
+    capture_time=$(($step1_time + $step2_time))
+    echo "----------------------------start wsnode packet capture, for ${capture_time}s---"
+    echo "start wsnode packet capture, for ${capture_time}s..."
+    gnome-terminal --window --title="Node Capture" --geometry=90x24+200+0 -- \
+      sudo java -jar $silabspti -ip=$wsnode0_netif,$wsnode1_netif,$wsnode2_netif -time=$(($capture_time*1000)) -format=pcapng_wisun -out=${nodes_pti_cap_file}
+
+    # ------start wsnode join_fan10-------
+    echo "----------------------------start wsnode0 join_fan10------------------------"
+    time_0=$(date +%s%N); echo "wisun join_fan10" > $wsnode0 
+    time_1=$(date +%s%N); echo "send wsnode0 join_fan10: $((($time_1 - $time_0)/1000000))ms";
+    TIME_JOIN_FAN10=$(($time_1/1000000-$time_start_test))
+    TIME_NODE0_JOIN_FAN10=$(echo "$TIME_JOIN_FAN10 / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
+    #echo "node0 start wisun join_fan10 at: $(($TIME_JOIN_FAN10/1000)).$(echo $(($TIME_JOIN_FAN10%1000+1000)) | sed 's/^1//')"
+    echo "node0 start wisun join_fan10 at: $TIME_NODE0_JOIN_FAN10"
+    display_wait_progress $step1_time;
+    echo "-----------------------------------------------------------------------------"
+    echo "----------------------------start wsnode1 join_fan10------------------------"
+    time_0=$(date +%s%N); echo "wisun join_fan10" > $wsnode1 
+    time_1=$(date +%s%N); echo "send wsnode1 join_fan10: $((($time_1 - $time_0)/1000000))ms";
+    TIME_JOIN_FAN10=$(($time_1/1000000-$time_start_test));
+    TIME_NODE1_JOIN_FAN10=$(echo "$TIME_JOIN_FAN10 / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
+    echo "node1 start wisun join_fan10 at: $TIME_NODE1_JOIN_FAN10"
+    display_wait_progress $step2_time;
+
+    # check session id of serial port and wsbrd(ssh RPi) and kill them
+    wsbrd_id=$(ps -u | grep cd | grep 'sudo wsbrd -F' | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
+    echo "kill wsbrd window: $wsbrd_id, actually wsbrd is still running on remote RPi"; kill $wsbrd_id;
+    # -------------------------------------------------------------------------------------------------
+    # copy border router host/rcp received message pcapng file from RapspberryPi
+    # prerequiste is uncomment "pcap_file = /tmp/wisun_dump.pcapng" in wsbrd.conf in RPi
+    # -------------------------------------------------------------------------------------------------
+    scp ${BRRPI_usr}@${BRRPI_ip}:/tmp/wisun_dump.pcapng ${wsbrd_cap_file}
+fi
 
 
 
@@ -188,17 +192,17 @@ CSV_PACKET_FIELD_TABLE=(
  49: icmpv6.rpl.opt.prefix.length                    50: icmpv6.rpl.opt.prefix.flag                                 
  51: icmpv6.rpl.opt.prefix.valid_lifetime            52: icmpv6.rpl.opt.prefix.preferred_lifetime                                       
  53: icmpv6.rpl.opt.reserved                         54: icmpv6.rpl.opt.prefix                                        
- 55: dhcpv6.iaaddr.ip                                56: icmpv6.nd.ns.target_address                                        
+ 55: dhcpv6.duid.bytes                               56: icmpv6.nd.ns.target_address                                        
  57: icmpv6.opt.type                                 58: icmpv6.opt.length  
  59: icmpv6.opt.aro.status                           60: icmpv6.opt.reserved    
  61: icmpv6.opt.aro.registration_lifetime            62: icmpv6.opt.aro.eui64                                  
- 63: --                                              64: --                             
- 65: --                                              66: --                                        
- 67: --                                              68: --                                        
- 69: --                                              70: --                                 
- 71: --                                              72: --                                  
- 73: --                                              74: --                             
- 75: --                                              76: --                                        
+ 63: dhcpv6.iaaddr.ip                                64: dhcpv6.xid                                       
+ 65: dhcpv6.duidll.link_layer_addr                   66: dhcpv6.duid.type                                           
+ 67: dhcpv6.duidll.hwtype                            68: dhcpv6.iaid                                             
+ 69: dhcpv6.iaid.t1                                  70: dhcpv6.iaid.t2                                       
+ 71: dhcpv6.option.type                              72: dhcpv6.elapsed_time                                   
+ 73: dhcpv6.msgtype                                  74: dhcpv6.linkaddr                                  
+ 75: dhcpv6.peeraddr                                 76: --                                           
  77: --                                              78: --                                        
  79: --                                              80: --                                 
  81: --                                              82: --                                  
@@ -222,42 +226,43 @@ for idx in $(seq 1 2 ${#CSV_PACKET_FIELD_TABLE[@]}); do
     fi
 done
 
-tshark -r ${wsbrd_cap_file} -T fields $EXTRACT_OPTIONS > ${LOG_PATH}/output_br.csv;
-tshark_mod ${LOG_PATH}/output_br.csv  ${LOG_PATH}/output_br.csv
+tshark -r ${wsbrd_cap_file} -T fields $EXTRACT_OPTIONS > $BRcsvFile;
+tshark_mod $BRcsvFile  $BRcsvFile
 
 
 echo "-------------convert Node router packet captures to csv---------------------"
 # text2pcap -q -t %H:%M:%S. -l 230 -n Node0Cap_PAN-PA-SELECT-2_0314_18-12.txt Node0Cap_PAN-PA-SELECT-2_0314_18-12.pcapng
 # -n : output file format of pcapng not default pcap format
 # -l : link-layer type number; default is 1 (Ethernet). see https://www.tcpdump.org/linktypes.html for other
-tshark -r ${nodes_pti_cap_file} -T fields $EXTRACT_OPTIONS > ${LOG_PATH}/output_node.csv
-tshark_mod ${LOG_PATH}/output_node.csv  ${LOG_PATH}/output_node.csv
+tshark -r ${nodes_pti_cap_file} -T fields $EXTRACT_OPTIONS > $NodeCsvFile
+tshark_mod $NodeCsvFile  $NodeCsvFile
 
-synchronize_node_cap_to_Br_cap ${LOG_PATH}/output_br.csv ${LOG_PATH}/output_node.csv
+synchronize_node_cap_to_Br_cap $BRcsvFile $NodeCsvFile
 
-# [ROLL-RPL-ROOT-1] Pass/Fail Criteria
+#
 # -------------------------------------------------------------------------------------------------
-# Step1 PASS:   Wireshark capture shows transmission of PA from DUT before DISC_IMIN time passes after receiving the PAS.
-#       FAIL:   PAN Advertisement frame fails to be transmitted from DUT within DISC_IMIN seconds of the PAS being received.
+# Step1 :   Test Bed Devices A-D and E-H are reset to boot-up phase and started.
+#           Test Bed Devices A-D and E-H perform PAN Discovery 
 # -------------------------------------------------------------------------------------------------
-# Step2 PASS:   DUT Border Router PAN Advertisement frame observed
-#       FAIL:   No DUT Border Router PAN Advertisement frames observed
+# Step2 :   Test Bed Devices A-D and E-H perform Security Bootstrapping
+#           Test Bed Devices A-D and E-H perform ROLL/RPL Route Establishment through DIO 
+#               processing and candidate parent selection (or Layer 2 Routing Establishment)
+#           Test Bed Devices A-D and E-H perform DHCPv6 
+#           Test Bed Devices A-D and E-H perform 6LoWPAN ND and are in State 5
 # -------------------------------------------------------------------------------------------------
-# Step3 PASS:   Steps 1 to 12 of the test procedures are successfully performed
-#       FAIL:   Any of Steps 1 to 12 test procedures fail to complete.
-# -------------------------------------------------------------------------------------------------
-# Step4 PASS:   Wireshark capture shows EAP-TLS exchange.
-#       FAIL:   Server Hello is not issued from Border Router DUT
+# Step3 :   Test Bed Device E sends ICMPv6 Echo Request to the Border Router DUT with no payload
+#           Border Router DUT sends ICMPv6 Echo Reply to Test Bed Device E
 # -------------------------------------------------------------------------------------------------
 # initialize the pass/fail array, steps_pass[0] related to the whole test PASS/FAIL
 steps_pass=(); steps_pass[0]=1;
-# Step 1-2 ----
+
+# Test Bed Devices A-D and E-H perform PAN Discovery
 ##echo "-----------------"
 STEP_PASSFAIL_Criteria=(
-"output csv file:"  ${NodeCsvFile}                                                          
+"output csv file:"  ${BRcsvFile}                                                          
 "Step number:"      "Step${#steps_pass[@]}"
-"Step Description:" "DUT(Border Router) received PAS from TBU..." 
-"time range:"       "0.00000"                   "60.00000"
+"Step Description:" "DUT(Border Router) received PAS from TBD A..." 
+"time range:"       "0.00000"                   "300.00000"
 "match items:"      "wpan.src64"                $wsnode0_mac
 "match items:"      "wpan.dst64"                "--"
 "match items:"      "frame.protocols"           "wpan"
@@ -271,7 +276,7 @@ step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 STEP_PASSFAIL_Criteria=(
 "output csv file:"  ${NodeCsvFile}                                                          
 "Step number:"      "Step${#steps_pass[@]}"
-"Step Description:" "PAS send, and PA observed within DISC_IMIN = ${DISC_IMIN}s" 
+"Step Description:" "after PAS sent, PA observed (on TBD A) within DISC_IMIN = ${DISC_IMIN}s" 
 "time range:"       $time_checked               $(echo "$time_checked + $DISC_IMIN.000000" | bc -l)
 "match items:"      "wpan.src64"                $BRRPI_mac
 "match items:"      "wpan.dst64"                "--"
@@ -280,15 +285,12 @@ STEP_PASSFAIL_Criteria=(
 );
 step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 
-
-
-
-# Step 3-5 ----
-#echo "-----------------"
+# Test Bed Devices A-D and E-H perform Security Bootstrapping
+#echo "-------------------------------------------------------"
 STEP_PASSFAIL_Criteria=(
 "output csv file:"  ${NodeCsvFile}                                                          
 "Step number:"      "Step${#steps_pass[@]}"
-"Step Description:" "Joiner issues a EAPOL-EAP frame: EAPOL-KEY Packet Type = 3 with EAPOL-KEY" 
+"Step Description:" "Joiner (TBD A) issues a EAPOL-EAP frame: EAPOL-KEY Packet Type = 3 with EAPOL-KEY" 
 "time range:"       $time_checked               $(echo "$time_checked + 60.000000" | bc -l)
 "match items:"      "wpan.src64"                $wsnode0_mac
 "match items:"      "wpan.dst64"                $BRRPI_mac
@@ -306,7 +308,7 @@ echo "DUT_receive_EAPOLEAP_EAPOL-KEY: $DUT_receive_EAPOLEAP_EAPOL_KEY";
 STEP_PASSFAIL_Criteria=(
 "output csv file:"  ${NodeCsvFile}                                                          
 "Step number:"      "Step${#steps_pass[@]}"
-"Step Description:" "Border Router DUT sends EAP Request Identity" 
+"Step Description:" "Border Router DUT sends EAP Request Identity to TBD A" 
 "time range:"       $time_checked               $(echo "$time_checked + 30.000000" | bc -l)
 "match items:"      "wpan.src64"                $BRRPI_mac
 "match items:"      "wpan.dst64"                $wsnode0_mac
@@ -322,7 +324,7 @@ step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 STEP_PASSFAIL_Criteria=(
 "output csv file:"  ${NodeCsvFile}                                                          
 "Step number:"      "Step${#steps_pass[@]}"
-"Step Description:" "Joiner sends EAP Response Identity" 
+"Step Description:" "Joiner (TBD A) sends EAP Response Identity" 
 "time range:"       $time_checked               $(echo "$time_checked + 30.000000" | bc -l)
 "match items:"      "wpan.src64"                $wsnode0_mac
 "match items:"      "wpan.dst64"                $BRRPI_mac
@@ -334,13 +336,11 @@ STEP_PASSFAIL_Criteria=(
 );
 step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 
-
-# Step 6-7 ----
 #echo "-----------------"
 STEP_PASSFAIL_Criteria=(
 "output csv file:"  ${NodeCsvFile}                                                          
 "Step number:"      "Step${#steps_pass[@]}"
-"Step Description:" "Joiner sends EAP Response Identity" 
+"Step Description:" "DUT border router sends EAP Response Identity" 
 "time range:"       $time_checked               $(echo "$time_checked + 30.000000" | bc -l)
 "match items:"      "wpan.src64"                $BRRPI_mac
 "match items:"      "wpan.dst64"                $wsnode0_mac
@@ -356,7 +356,7 @@ step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 STEP_PASSFAIL_Criteria=(
 "output csv file:"  ${NodeCsvFile}                                                          
 "Step number:"      "Step${#steps_pass[@]}"
-"Step Description:" "Joiner sends EAP Response EAP-TLS Client Hello to Border Router DUT" 
+"Step Description:" "Joiner (TBD A) sends EAP Response EAP-TLS Client Hello to Border Router DUT" 
 "time range:"       $time_checked               $(echo "$time_checked + 30.000000" | bc -l)
 "match items:"      "wpan.src64"                $wsnode0_mac
 "match items:"      "wpan.dst64"                $BRRPI_mac
@@ -369,8 +369,6 @@ STEP_PASSFAIL_Criteria=(
 );
 step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 
-
-# Step 8-9 ----
 #echo "-----------------"
 STEP_PASSFAIL_Criteria=(
 "output csv file:"  ${NodeCsvFile}                                                          
@@ -392,7 +390,7 @@ step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 STEP_PASSFAIL_Criteria=(
 "output csv file:"  ${NodeCsvFile}                                                          
 "Step number:"      "Step${#steps_pass[@]}"
-"Step Description:" "Joiner sends EAP Response EAP-TLS to BR DUT, Certificate, Client Key Exchange" 
+"Step Description:" "Joiner (TBD A) sends EAP Response EAP-TLS to BR DUT, Certificate, Client Key Exchange" 
 "time range:"       $time_checked               $(echo "$time_checked + 30.000000" | bc -l)
 "match items:"      "wpan.src64"                $wsnode0_mac
 "match items:"      "wpan.dst64"                $BRRPI_mac
@@ -404,8 +402,6 @@ STEP_PASSFAIL_Criteria=(
 );
 step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 
-
-# Step 10-12 ----
 #echo "-----------------"
 STEP_PASSFAIL_Criteria=(
 "output csv file:"  ${NodeCsvFile}                                                          
@@ -427,7 +423,7 @@ step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 STEP_PASSFAIL_Criteria=(
 "output csv file:"  ${NodeCsvFile}                                                          
 "Step number:"      "Step${#steps_pass[@]}"
-"Step Description:" "Joiner sends EAP-Response after DUT send EAP-TLS: Change Cipher Spec, Finished" 
+"Step Description:" "Joiner (TBD A) sends EAP-Response after DUT send EAP-TLS: Change Cipher Spec, Finished" 
 "time range:"       $time_checked               $(echo "$time_checked + 30.000000" | bc -l)
 "match items:"      "wpan.src64"                $wsnode0_mac
 "match items:"      "wpan.dst64"                $BRRPI_mac
@@ -453,18 +449,170 @@ STEP_PASSFAIL_Criteria=(
 "match items:"      "eap.code"                  3
 );
 step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
+time_finish0_DISCOVER_SEQURITY=$time_checked;
 
 
+# Test Bed Devices A-D perform DHCPv6 
+echo "";echo "---- Test Bed Devices A-D perform DHCPv6 ----------------"
+#echo "-----------------"
+time_checked=$time_finish0_DISCOVER_SEQURITY;
+STEP_PASSFAIL_Criteria=(
+"output csv file:"  ${NodeCsvFile}                                                          
+"Step number:"      "Step${#steps_pass[@]}"
+"Step Description:" "BR DUT receives DHCPv6 Client Solicit from TBU A" 
+"time range:"       $time_checked           $(echo "$time_checked + 150.000000" | bc -l)
+"match items:"      "wpan.src64"            $wsnode0_mac
+"match items:"      "wpan.dst64"            $BRRPI_mac
+"match items:"      "frame.protocols"       "wpan:6lowpan:ipv6:udp:dhcpv6"
+"match items:"      "dhcpv6.xid"                xxxx
+"match items:"      "dhcpv6.duid.type"          3
+"match items:"      "dhcpv6.duidll.hwtype"      6
+"match items:"      "dhcpv6.iaid"               xxxx
+"match items:"      "dhcpv6.iaid.t1"            xxxx 
+"match items:"      "dhcpv6.iaid.t2"            xxxx
+"match items:"      "dhcpv6.option.type"        xxxx
+"match items:"      "dhcpv6.elapsed_time"       xxxx
+);
+step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
+packet_checked=($packet_checked);
+transaction_id=${packet_checked[63]}; echo "transaction id: $transaction_id"
+link_layer_addr=${packet_checked[64]}; echo "link layer address: $link_layer_addr"
 
-
-#---------- 6LoWPAN Neighbor Discovery ananlysis really start here
-echo "";echo "---- 6LoWPAN Neighbor Discovery ananlysis begin ----------------"
 #echo "-----------------"
 STEP_PASSFAIL_Criteria=(
 "output csv file:"  ${NodeCsvFile}                                                          
 "Step number:"      "Step${#steps_pass[@]}"
+"Step Description:" "Border Router DUT sends DHCPv6 Reply with assigned IPv6 address" 
+"time range:"       $time_checked           $(echo "$time_checked + 100.000000" | bc -l)
+"match items:"      "wpan.src64"            $BRRPI_mac
+"match items:"      "wpan.dst64"            $wsnode0_mac
+"match items:"      "frame.protocols"       "wpan:6lowpan:ipv6:udp:dhcpv6"
+"match items:"      "dhcpv6.xid"                $transaction_id
+"match items:"      "dhcpv6.duid.type"          "3,3"
+"match items:"      "dhcpv6.duidll.hwtype"      "27,6"
+"match items:"      "dhcpv6.iaid"               xxxx
+"match items:"      "dhcpv6.iaid.t1"            xxxx 
+"match items:"      "dhcpv6.iaid.t2"            xxxx
+"match items:"      "dhcpv6.option.type"        xxxx
+"match items:"      "dhcpv6.iaaddr.ip"          xxxx
+);
+step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
+packet_checked=($packet_checked); wsnode0_ipaddr=${packet_checked[62]};
+echo "wsnode0 was assigned IPv6 address: $wsnode0_ipaddr"
+
+
+
+# TBDes A-D perform ROLL/RPL Route Establishment through DIO processing and candidate parent selection 
+echo "";echo "---- TBD A perform ROLL/RPL Route Establishment through DIO processing ----------------"
+#echo "-----------------"
+time_checked=$time_finish0_DISCOVER_SEQURITY;
+STEP_PASSFAIL_Criteria=(
+"output csv file:"  ${BRcsvFile}                                                          
+"Step number:"      "Step${#steps_pass[@]}"
+"Step Description:" "OPTIONAL-PASS: BR DUT receives “RPL DIS” from joiner TBDes A-D with the parameters" 
+"time range:"       $time_checked      $(echo "$time_checked + 150.000000" | bc -l)
+"match items:"      "wpan.src64"        $wsnode0_mac
+"match items:"      "wpan.dst64"        --
+"match items:"      "frame.protocols"   "wpan:6lowpan:ipv6:icmpv6"
+"match items:"      "wisun.uttie.type"  4
+"match items:"      "icmpv6.type"       155
+"match items:"      "icmpv6.code"       0
+"match items:"      "icmpv6.rpl.dis.flags"      0
+"match items:"      "icmpv6.reserved"           00
+"match items:"      "ipv6.src"          fe80::----
+"match items:"      "ipv6.dst"          ff02::----
+);
+step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
+#packet_checked=(${packet_checked[@]});
+#echo "packet_checked: $packet_checked"
+
+#echo "-----------------"
+time_checked=$time_finish0_DISCOVER_SEQURITY;
+STEP_PASSFAIL_Criteria=(
+"output csv file:"  ${NodeCsvFile}                                                          
+"Step number:"      "Step${#steps_pass[@]}"
+"Step Description:" "BR DUT sends initial RPL DIO to joiner TBDes A-D with the parameters" 
+"time range:"       $time_checked      $(echo "$time_checked + 150.000000" | bc -l)
+"match items:"      "wpan.src64"        $BRRPI_mac
+"match items:"      "wpan.dst64"        --
+"match items:"      "frame.protocols"   "wpan:6lowpan:ipv6:icmpv6"
+"match items:"      "wisun.uttie.type"  4
+"match items:"      "icmpv6.type"       155
+"match items:"      "icmpv6.code"       1
+"match items:"      "ipv6.src"          fe80::----
+"match items:"      "ipv6.dst"          ff02::----
+"match items:"      "icmpv6.rpl.dio.instance"       xxxx                      
+"match items:"      "icmpv6.rpl.dio.version"        xxxx                                
+"match items:"      "icmpv6.rpl.dio.rank"           196
+"match items:"      "icmpv6.rpl.dio.flag"           "0x88,0x00"
+"match items:"      "icmpv6.rpl.dio.dtsn"           xxxx
+"match items:"      "icmpv6.reserved"               "00"
+"match items:"      "icmpv6.rpl.dio.dagid"          fd00:6868:6868:----
+"match items:"      "icmpv6.rpl.opt.type"           "4,8"
+"match items:"      "icmpv6.rpl.opt.length"         "14,30" 
+"match items:"      "icmpv6.rpl.opt.config.flag"    "0x07"      
+"match items:"      "icmpv6.rpl.opt.config.interval_double"     2      
+"match items:"      "icmpv6.rpl.opt.config.interval_min"        15      
+"match items:"      "icmpv6.rpl.opt.config.redundancy"          0      
+#"match items:"      "icmpv6.rpl.opt.config.max_rank_inc"        2048
+#"match items:"      "icmpv6.rpl.opt.config.min_hop_rank_inc"    196  
+"match items:"      "icmpv6.rpl.opt.config.ocp"                 1   
+"match items:"      "icmpv6.rpl.opt.config.rsv"                 0   
+"match items:"      "icmpv6.rpl.opt.config.def_lifetime"        120 
+"match items:"      "icmpv6.rpl.opt.config.lifetime_unit"       60  
+"match items:"      "icmpv6.rpl.opt.prefix.length"              64    
+"match items:"      "icmpv6.rpl.opt.prefix.flag"                0x20    
+"match items:"      "icmpv6.rpl.opt.prefix.valid_lifetime"      0
+"match items:"      "icmpv6.rpl.opt.prefix.preferred_lifetime"  0    
+#"match items:"      "icmpv6.rpl.opt.reserved"                   1 
+"match items:"      "icmpv6.rpl.opt.prefix"                     fd00:6868:6868----  
+);
+step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
+#packet_checked=(${packet_checked[@]});
+#echo "packet_checked: $packet_checked"
+
+#echo "-----------------"
+STEP_PASSFAIL_Criteria=(
+"output csv file:"  ${NodeCsvFile}                                                          
+"Step number:"      "Step${#steps_pass[@]}"
+"Step Description:" "TBD A send a RPL DAO to the BR DUT which contents are as described in ROLL-RPL-JOIN-1" 
+"time range:"       $time_checked      $(echo "$time_checked + 100.000000" | bc -l)
+"match items:"      "wpan.src64"        $wsnode0_mac
+"match items:"      "wpan.dst64"        $BRRPI_mac
+"match items:"      "frame.protocols"   "wpan:6lowpan:data:ipv6:ipv6.hopopts:ipv6:icmpv6"
+"match items:"      "wisun.uttie.type"  4
+"match items:"      "icmpv6.type"       155
+"match items:"      "icmpv6.code"       2
+);
+step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
+
+#echo "-----------------"
+STEP_PASSFAIL_Criteria=(
+"output csv file:"  ${NodeCsvFile}                                                          
+"Step number:"      "Step${#steps_pass[@]}"
+"Step Description:" "BR DUT reply a RPL Acknowlegement back to TBU A" 
+"time range:"       $time_checked      $(echo "$time_checked + 100.000000" | bc -l)
+"match items:"      "wpan.src64"        $BRRPI_mac
+"match items:"      "wpan.dst64"        $wsnode0_mac
+"match items:"      "frame.protocols"   "wpan:6lowpan:ipv6:icmpv6"
+"match items:"      "wisun.uttie.type"  4
+"match items:"      "icmpv6.type"       155
+"match items:"      "icmpv6.code"       3
+"match items:"      "ipv6.src"          $BRRPI_ipv6
+"match items:"      "ipv6.dst"          fd00:6868:6868:0:8e1f:645e:40bb:1
+);
+step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
+
+
+#---------- Test Bed Devices A-D perform 6LoWPAN ND and are in State 5
+echo "";echo "---- TBD A perform 6LoWPAN ND and are in State 5 ----------------"
+#echo "-----------------"
+time_checked=$time_finish0_DISCOVER_SEQURITY;
+STEP_PASSFAIL_Criteria=(
+"output csv file:"  ${NodeCsvFile}                                                          
+"Step number:"      "Step${#steps_pass[@]}"
 "Step Description:" "Test bed device A sends “NS with ARO” to Border Router DUT (sent with AR=1)" 
-"time range:"       $time_checked               $(echo "$time_checked + 130.000000" | bc -l)
+"time range:"       $time_checked               $(echo "$time_checked + 150.000000" | bc -l)
 "match items:"      "wpan.src64"                $wsnode0_mac
 "match items:"      "wpan.dst64"                $BRRPI_mac
 "match items:"      "frame.protocols"           "wpan:6lowpan:ipv6:icmpv6"
@@ -513,20 +661,25 @@ step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 
 
 
-#---------- EAP-TLS Multi-hop  PAN-KEY-TLS-8 ananlysis really start here
-echo "";echo "---- EAP-TLS Multi-hop  PAN-KEY-TLS-8 ananlysis begin ----------------"
-# Step 13-16 ---- ] EAP-TLS Multi-hop  analysis ---------------------------------------
+
+
+
+#---------- Test Bed Devices E-H perform Security Bootstrapping
+echo "";echo "---- Test Bed Devices E-H perform Security Bootstrapping ----------------"
+#---------- TBDes E-H perform ROLL/RPL Route Establishment through DIO processing and candidate parent selection
+echo "---- TBDes E-H perform ROLL/RPL Route Establishment ----------------"
 time_TBD1_send_PAS=($(packet_receive_check ${NodeCsvFile} -t 3 $wsnode1_mac 5 "wpan" 6 "1"));
 echo "Node1 send PAS @: ${time_TBD1_send_PAS[@]}"
 
 # ---------------------
-time_checked=${time_TBD1_send_PAS[0]}
+#time_checked=${time_TBD1_send_PAS[0]}
+time_checked=$step1_time;
 #echo "-----------------"
 STEP_PASSFAIL_Criteria=(
 "output csv file:"  ${NodeCsvFile}                                                          
 "Step number:"      "Step${#steps_pass[@]}"
 "Step Description:" "Test Bed Device E Joiner issues a EAPOL-EAP frame" 
-"time range:"       $time_checked               $(echo "$time_checked + 60.000000" | bc -l)
+"time range:"       $time_checked               $(echo "$time_checked + 150.000000" | bc -l)
 "match items:"      "wpan.src64"                $wsnode1_mac
 "match items:"      "wpan.dst64"                $wsnode0_mac
 "match items:"      "frame.protocols"           "wpan:eapol"
@@ -658,9 +811,6 @@ STEP_PASSFAIL_Criteria=(
 );
 step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 
-
-#---------- EAP-TLS Multi-hop ananlysis really start here
-echo "";echo "---- EAP-TLS Multi-hop ananlysis begin ----------------"
 #echo "-----------------"
 STEP_PASSFAIL_Criteria=(
 "output csv file:"  ${NodeCsvFile}                                                          
@@ -842,13 +992,107 @@ STEP_PASSFAIL_Criteria=(
 "match items:"      "wisun.uttie.type"  2
 );
 step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
-
-#---------- RPL Join and Route Establishment  ROLL-RPL-ROOT-1 ananlysis really start here
-echo "";echo "---- RPL Join and Route Establishment  ROLL-RPL-ROOT-1 ananlysis begin ----------------"
+time_finish1_DISCOVER_SEQURITY=$time_checked;
 
 
+#---------- Test Bed Devices A-D and E-H perform DHCPv6 (Layer 3 Routing only)
+echo "";echo "---- TBDes E-H perform DHCPv6 (Layer 3 Routing only) ----------------"
+#echo "-----------------"
+time_checked=$time_finish1_DISCOVER_SEQURITY;
+STEP_PASSFAIL_Criteria=(
+"output csv file:"  ${NodeCsvFile}                                                          
+"Step number:"      "Step${#steps_pass[@]}"
+"Step Description:" "Border Router DUT receives DHCPv6 Relay-forward" 
+"time range:"       $time_checked           $(echo "$time_checked + 600.000000" | bc -l)
+"match items:"      "wpan.src64"            $wsnode0_mac
+"match items:"      "wpan.dst64"            $BRRPI_mac
+"match items:"      "frame.protocols"       "wpan:6lowpan:data:ipv6:ipv6.hopopts:ipv6:udp:dhcpv6"
+"match items:"      "dhcpv6.msgtype"        12,1
+);
+step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
+# MAY TODO -- calculate time difference between this data frame and next ACK send back
+# ......... shoulde be: 10.6ms/11.9ms < time_diff_ack < 14.6ms/15.9ms 
+
+#echo "-----------------"
+STEP_PASSFAIL_Criteria=(
+"output csv file:"  ${NodeCsvFile}                                                          
+"Step number:"      "Step${#steps_pass[@]}"
+"Step Description:" "Border Router DUT sends DHCPv6 Relay-reply with IPv6 address assigned to wsnode1" 
+"time range:"       $time_checked           $(echo "$time_checked + 150.000000" | bc -l)
+"match items:"      "wpan.src64"            $BRRPI_mac
+"match items:"      "wpan.dst64"            $wsnode0_mac
+"match items:"      "frame.protocols"       "wpan:6lowpan:ipv6:udp:dhcpv6"
+"match items:"      "dhcpv6.linkaddr"       $wsnode0_ipaddr
+"match items:"      "dhcpv6.peeraddr"       xxxx
+"match items:"      "dhcpv6.xid"            xxxx
+"match items:"      "dhcpv6.duid.type"          3,3
+"match items:"      "dhcpv6.duidll.hwtype"      27,6
+"match items:"      "dhcpv6.iaid"               xxxx
+"match items:"      "dhcpv6.iaid.t1"            xxxx 
+"match items:"      "dhcpv6.iaid.t2"            xxxx
+"match items:"      "dhcpv6.option.type"        xxxx
+"match items:"      "dhcpv6.duid.bytes"         xxxx
+"match items:"      "dhcpv6.iaaddr.ip"          xxxx
+);
+step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
+packet_checked=($packet_checked); wsnode1_ipaddr=${packet_checked[62]};
+echo "Border router assign IPv6 address to wsnode1: $wsnode1_ipaddr"
 
 
+#---------- Test Bed Devices E-H perform 6LoWPAN ND and are in State 5
+echo "";echo "---- Test Bed Devices E-H perform 6LoWPAN ND and are in State 5 ----------------"
+#echo "-----------------"
+time_checked=$time_finish1_DISCOVER_SEQURITY;
+STEP_PASSFAIL_Criteria=(
+"output csv file:"  ${NodeCsvFile}                                                          
+"Step number:"      "Step${#steps_pass[@]}"
+"Step Description:" "Test bed device E sends “NS with ARO” to Border Router DUT (sent with AR=1)" 
+"time range:"       $time_checked               $(echo "$time_checked + 150.000000" | bc -l)
+"match items:"      "wpan.src64"                $wsnode1_mac
+"match items:"      "wpan.dst64"                $wsnode0_mac
+"match items:"      "frame.protocols"           "wpan:6lowpan:ipv6:icmpv6"
+"match items:"      "wisun.uttie.type"          4
+"match items:"      "icmpv6.type"               135
+"match items:"      "icmpv6.code"               0
+"match items:"      "icmpv6.nd.ns.target_address"           fe80::8e1f:645e:40bb:1
+"match items:"      "icmpv6.opt.type"                       33
+"match items:"      "icmpv6.opt.length"                     2 
+"match items:"      "icmpv6.opt.aro.status"                 0      
+"match items:"      "icmpv6.opt.reserved"                   1
+"match items:"      "icmpv6.opt.aro.registration_lifetime"  xxxx      
+"match items:"      "icmpv6.opt.aro.eui64"                  $wsnode1_mac
+);
+step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
+
+#echo "-----------------"
+STEP_PASSFAIL_Criteria=(
+"output csv file:"  ${NodeCsvFile}                                                          
+"Step number:"      "Step${#steps_pass[@]}"
+"Step Description:" "Joiner TBD E(rank2) sends DAO to Border Router DUT through TBD A(rank1)" 
+"time range:"       $time_checked               $(echo "$time_checked + 30.000000" | bc -l)
+"match items:"      "wpan.src64"                $wsnode1_mac
+"match items:"      "wpan.dst64"                $wsnode0_mac
+"match items:"      "frame.protocols"           "wpan:6lowpan:data:ipv6:ipv6.hopopts:ipv6:icmpv6"
+"match items:"      "wisun.uttie.type"          4
+"match items:"      "icmpv6.type"               155
+"match items:"      "icmpv6.code"               2
+);
+step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
+
+#echo "-----------------"
+STEP_PASSFAIL_Criteria=(
+"output csv file:"  ${NodeCsvFile}                                                          
+"Step number:"      "Step${#steps_pass[@]}"
+"Step Description:" "Joiner test bed device sends DAO to Border Router DUT and receives DAO-ACK." 
+"time range:"       $time_checked               $(echo "$time_checked + 30.000000" | bc -l)
+"match items:"      "wpan.src64"                $BRRPI_mac
+"match items:"      "wpan.dst64"                $wsnode0_mac
+"match items:"      "frame.protocols"           "wpan:6lowpan:data:ipv6:ipv6.routing:icmpv6"
+"match items:"      "wisun.uttie.type"          4
+"match items:"      "icmpv6.type"               155
+"match items:"      "icmpv6.code"               3
+);
+step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 
 
 

@@ -98,8 +98,8 @@ function wisun_node_set_new
     esac
     sleep 0.2
   done
-  echo "wisun save" > $seria_port;
-  sleep 0.5
+  echo "wisun get wisun.mac" > $seria_port; sleep 0.5
+  echo "wisun save" > $seria_port; sleep 0.5
 
 }
 

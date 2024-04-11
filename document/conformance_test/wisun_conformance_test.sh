@@ -8,10 +8,12 @@ TBC_ip="192.168.31.179"
 BRRPI_usr="cmt"
 BRRPI_ip="192.168.31.97"
 BRRPI_mac="8e:1f:64:5e:40:00:f2:0b"
+BRRPI_ipv6="fd00:6868:6868:0:8c1f:645e:4000:f20b"
 BRRPI_path="/home/cmt/Git_repository/wisun-br-rong"
 silabspti=/home/${TBC_usr}/Git_repository/java_packet_trace_library/silabs-pti/build/libs/silabs-pti-1.12.2.jar
 # Jlink serial number of TBUs
 wsnode0_sn=440088192; wsnode0_mac="8c:1f:64:5e:40:bb:00:01"
+wsnode05_sn=440271870; wsnode05_mac="8c:1f:64:5e:40:bb:00:04"
 wsnode1_sn=440054721; wsnode1_mac="8c:1f:64:5e:40:bb:00:02"
 wsnode2_sn=440136634; wsnode2_mac="8c:1f:64:5e:40:bb:00:03"
 
@@ -19,6 +21,7 @@ wsnode2_sn=440136634; wsnode2_mac="8c:1f:64:5e:40:bb:00:03"
 # check serial port discripter for your test bed
 # then get access permission to serial ports
 wsnode0=/dev/ttyACM0; sudo chmod 777 $wsnode0
+wsnode05=/dev/ttyACM3; sudo chmod 777 $wsnode05
 wsnode1=/dev/ttyACM1; sudo chmod 777 $wsnode1
 wsnode2=/dev/ttyACM2; sudo chmod 777 $wsnode2
 
@@ -91,12 +94,14 @@ source br_cert_funcions.sh
 
 # open a minicom window to display serial port echo
 gnome-terminal --window --title="node0" --geometry=80x25+200+100 \
-                                        -e 'minicom -D /dev/ttyACM0 -b 115200 -8' \
-                  --tab --title="node1" -e 'minicom -D /dev/ttyACM1 -b 115200 -8' \
-                  --tab --title="node2" -e 'minicom -D /dev/ttyACM2 -b 115200 -8'
-stty -F ${wsnode0} ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
-stty -F ${wsnode1} ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
-stty -F ${wsnode2} ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
+                                         -e 'minicom -D /dev/ttyACM0 -b 115200 -8' \
+                  --tab --title="node05" -e 'minicom -D /dev/ttyACM3 -b 115200 -8' \
+                  --tab --title="node1"  -e 'minicom -D /dev/ttyACM1 -b 115200 -8' \
+                  --tab --title="node2"  -e 'minicom -D /dev/ttyACM2 -b 115200 -8'
+stty -F ${wsnode0}  ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
+stty -F ${wsnode05} ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
+stty -F ${wsnode1}  ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
+stty -F ${wsnode2}  ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
 
 # --------------------------------------------------------------------------------------------
 # Before start test script, border router RCP packet capture through wireshark should be set.
@@ -129,6 +134,8 @@ stty -F ${wsnode2} ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0
 java -jar $silabspti -discover > si_pti_discover.txt
 wsnode0_netif=$(find_netif_for_pti_capture si_pti_discover.txt $wsnode0_sn)
 echo "find wsnode0_sn:$wsnode0_sn and wsnode0_netif: $wsnode0_netif"
+wsnode05_netif=$(find_netif_for_pti_capture si_pti_discover.txt $wsnode05_sn)
+echo "find wsnode05_sn:$wsnode05_sn and wsnode05_netif: $wsnode05_netif"
 wsnode1_netif=$(find_netif_for_pti_capture si_pti_discover.txt $wsnode1_sn)
 echo "find wsnode1_sn:$wsnode1_sn and wsnode1_netif: $wsnode1_netif"
 wsnode2_netif=$(find_netif_for_pti_capture si_pti_discover.txt $wsnode2_sn)
@@ -147,15 +154,33 @@ rm -f si_pti_discover.txt
 
 #source test_PAN-KEY-TLS-6.sh
 
-source test_PAN-KEY-TLS-8.sh
+#source test_PAN-KEY-TLS-8.sh
+
+#source test_PAN-KEY-TLS-11.sh
+
+#source test_ROLL-RPL-ROOT-1.sh
+
+#source test_DHCPv6-SERVER.sh
+
+#source test_6LO-ND-LBR-1.sh
+
+#source test_DIRECT-HASH-HOP-LBR-1.sh
+
+#source test_DIRECT-SHORT-DWELL-LBR-1.sh
+
+source test_DIRECT-MIXED-DWELL-LBR-1.sh
+
+#source test_DIRECT-EXC-CHAN-SEND-LBR-1.sh
 
 
 
 sudo rm -f ${LOG_PATH}/sed*.*
 # check session id of serial port and wsbrd(ssh RPi) and kill them
 node0_id=$(ps -u | grep 'minicom -D' | grep $wsnode0 | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
+node05_id=$(ps -u | grep 'minicom -D' | grep $wsnode05 | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
 node1_id=$(ps -u | grep 'minicom -D' | grep $wsnode1 | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
 node2_id=$(ps -u | grep 'minicom -D' | grep $wsnode2 | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
 echo "kill minicom serial port 0: $node0_id"; kill $node0_id;
+echo "kill minicom serial port 0: $node05_id"; kill $node05_id;
 echo "kill minicom serial port 1: $node1_id"; kill $node1_id;
 echo "kill minicom serial port 2: $node2_id"; kill $node2_id;

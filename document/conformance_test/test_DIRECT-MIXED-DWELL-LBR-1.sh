@@ -54,7 +54,7 @@ TEST_CASE_NAME="DIRECT-MIXED-DWELL-LBR-1"
 # ------------- global variables end ------------------------------------
 debug_option="nDEBUG_ANALYSIS";
 if [ "$debug_option" = "DEBUG_ANALYSIS" ]; then
-    TEST_TIME="0411_10-58";
+    TEST_TIME="0411_14-22";
 else
     TEST_TIME=$(date "+%m%d_%H-%M");
 fi
@@ -89,11 +89,14 @@ else
     # TBUs config setting........
     WISUN_NODE0_CONFIG=("disconnect" "yes" "domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
         "unicast_dwell_interval" 15 "allowed_channels" "0-255" "allowed_mac64" $BRRPI_mac "allowed_mac64" $wsnode1_mac);
+    WISUN_NODE05_CONFIG=("disconnect" "yes" "domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
+        "unicast_dwell_interval" 255 "allowed_channels" "0-255" "allowed_mac64" $BRRPI_mac "allowed_mac64" $wsnode1_mac);
     WISUN_NODE1_CONFIG=("disconnect" "yes" "domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
         "unicast_dwell_interval" 15 "allowed_channels" "0-255" "allowed_mac64" $wsnode0_mac "allowed_mac64" $wsnode2_mac);
     WISUN_NODE2_CONFIG=("disconnect" "yes" "domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
-        "unicast_dwell_interval" 15 "allowed_channels" "0-255" "allowed_mac64" $wsnode1_mac );
+        "unicast_dwell_interval" 15 "allowed_channels" "0-255" "allowed_mac64" $wsnode1_mac);
     wisun_node_set_new $wsnode0 WISUN_NODE0_CONFIG
+    wisun_node_set_new $wsnode05 WISUN_NODE05_CONFIG
     wisun_node_set_new $wsnode1 WISUN_NODE1_CONFIG
     wisun_node_set_new $wsnode2 WISUN_NODE2_CONFIG
 
@@ -103,7 +106,7 @@ else
     # get/modify/overwrite the wsbrd.conf file before start wsbrd application in RPi
     scp ${BRRPI_usr}@${BRRPI_ip}:$BRRPI_path/wsbrd.conf ${LOG_PATH}/wsbrd.conf
     WISUN_BR_CONFIG=("domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
-    "unicast_dwell_interval" 255 "allowed_channels" "0-255" "allowed_mac64--" $wsnode0_mac);
+    "unicast_dwell_interval" 15 "allowed_channels" "0-255" "allowed_mac64--" $wsnode0_mac "allowed_mac64--" $wsnode2_mac);
     wisun_br_config_new ${LOG_PATH}/wsbrd.conf WISUN_BR_CONFIG
     scp ${LOG_PATH}/wsbrd.conf ${BRRPI_usr}@${BRRPI_ip}:$BRRPI_path/wsbrd.conf
     rm -f ${LOG_PATH}/wsbrd.conf
@@ -119,7 +122,7 @@ else
     echo "----------------------------start wsnode packet capture, for ${capture_time}s---"
     echo "start wsnode packet capture, for ${capture_time}s..."
     gnome-terminal --window --title="Node Capture" --geometry=90x24+200+0 -- \
-      sudo java -jar $silabspti -ip=$wsnode0_netif,$wsnode1_netif,$wsnode2_netif -time=$(($capture_time*1000)) -format=pcapng_wisun -out=${nodes_pti_cap_file}
+      sudo java -jar $silabspti -ip=$wsnode0_netif,$wsnode05_netif,$wsnode1_netif,$wsnode2_netif -time=$(($capture_time*1000)) -format=pcapng_wisun -out=${nodes_pti_cap_file}
 
     # ------start wsnode join_fan10-------
     echo "----------------------------start wsnode0 join_fan10------------------------"
@@ -127,8 +130,14 @@ else
     time_1=$(date +%s%N); echo "send wsnode0 join_fan10: $((($time_1 - $time_0)/1000000))ms";
     TIME_JOIN_FAN10=$(($time_1/1000000-$time_start_test))
     TIME_NODE0_JOIN_FAN10=$(echo "$TIME_JOIN_FAN10 / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
-    #echo "node0 start wisun join_fan10 at: $(($TIME_JOIN_FAN10/1000)).$(echo $(($TIME_JOIN_FAN10%1000+1000)) | sed 's/^1//')"
     echo "node0 start wisun join_fan10 at: $TIME_NODE0_JOIN_FAN10"
+    echo "-----------------------------------------------------------------------------"
+    echo "----------------------------start wsnode05 at ran1 join_fan10------------------------"
+    time_0=$(date +%s%N); echo "wisun join_fan10" > $wsnode05 
+    time_1=$(date +%s%N); echo "send wsnode05 join_fan10: $((($time_1 - $time_0)/1000000))ms";
+    TIME_JOIN_FAN10=$(($time_1/1000000-$time_start_test))
+    TIME_NODE05_JOIN_FAN10=$(echo "$TIME_JOIN_FAN10 / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
+    echo "node05 start wisun join_fan10 at: $TIME_NODE05_JOIN_FAN10"
     display_wait_progress $step1_time;
     echo "-----------------------------------------------------------------------------"
     echo "----------------------------start wsnode1 join_fan10------------------------"
@@ -980,7 +989,7 @@ echo "--------------------------------------------------------------------------
 STEP_PASSFAIL_Criteria=(
 "output csv file:"  ${NodeCsvFile}                                                          
 "Step number:"      "Step${#steps_pass[@]}"
-"Step Description:" "Joiner Test Bed Device E may send a PAN Configuration Solicit" 
+"Step Description:" "OPTIONAL-PASS: Joiner Test Bed Device E may send a PAN Configuration Solicit" 
 "time range:"       $time_checked      $(echo "$time_checked + 30.000000" | bc -l)
 "match items:"      "wpan.src64"        $wsnode1_mac
 "match items:"      "wpan.dst64"        "--"

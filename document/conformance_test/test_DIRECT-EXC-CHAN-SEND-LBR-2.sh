@@ -1,31 +1,40 @@
 source br_cert_funcions.sh
 # -----------------------------------------------------------------------
-# Test case :   Border Router as DUT [DIRECT-MIXED-DWELL-LBR-1]
+# Test case :   Border Router as DUT [DIRECT-EXC-CHAN-SEND-LBR-2]
 # -----------------------------------------------------------------------
 # Description:  
-# Note:  This test case is identical to the test case 
-# [DIRECT-SHORT-DWELL-LBR-1] except a unicast dwell interval of 15 ms 
-# is used for Test bed devices A-B, and a unicast dwell interval of 
-# 255 ms is used for Test bed devices C-D plus Test Bed Devices E-H 
-# have a unicast dwell interval of 15ms.
-#
-# This test case verifies the channel hop sequence required for Wi-SUN 
-# FAN implementation using the Direct Hash Channel.   
-# The Regulatory Domain should be set to 0x1, Operating Class 2 (400 Khz
-# channel spacing) and the data rate as 150kbps for this section of tests.
+# This test case verifies the DUT is able to process both a US-IE which 
+# uses the Regional Domain/Operating Class format as well as the 
+# CH0/Channel Spacing/Number of Channels format.  In addition, for
+# this test case, the test bed devices using the CH0/Channel 
+# Spacing/Number of Channels will present an Excluded Channel list 
+# as a list of 2 ranges while the test bed devices using the Regulatory 
+# Domain/Operating Class will present an Excluded Channel list as a mask
+# (opposite of how the Excluded Channels were described in 
+# [DIRECT-EXC-CHAN-SEND-LBR-1])
 # -----------------------------------------------------------------------
-# The Test bed devices A-B and Test bed devices E-H in the test are all 
-# configured for the Direct Hash Channel Function using a dwell interval 
-# of 15ms. The Test bed devices C-D are configured for the Direct Hash 
-# Channel Function using a dwell interval of 255ms.  
+# The Test bed devices A-B in the test are all configured for the Direct 
+# Hash Channel Function using a dwell interval of 15ms. The Test bed 
+# devices C-D are configured for the Direct Hash Channel Function using 
+# a dwell interval of 255ms.  The Test bed devices E-H are configured 
+# for the Direct Hash Channel Function using a dwell interval of 15ms.  
 # The DUT is similarly configured for the Direct Hash Channel function 
-# but using a DUT specific dwell interval..
+# but using a DUT specific dwell interval.
+# Note:  This test case is identical to the test case 
+# [DIRECT-CHAN-SEND-LBR-1] except:
+#   1. Test bed devices C-D will use North America Channel Plan 
+#     (Regulatory Domain, value of 1), Operating Class of 2 (400 Khz 
+#     channel spacing, data rate of 150 kbps (same as [DIRECT-MIXED-DWELL-1] 
+#     but will use an Excluded channel range of 10-20 and 50-60
+#   2.Test bed devices A-B will use CH0 of 902400, Channel spacing of 
+#     400 Khz (value of 1), Number of channels as 64 including an excluded 
+#     channel mask of 0x0A1B2C3D00004E5F
 # The test bed is configured as follows:
 #   a. LBR PAN A DUT configured for PAN A 
 #   b. Test bed Device A, Device B,  Device C and Device D at Rank 1
 #   c. Test Bed Device E, Device F, Device G and Device H at Rank 2
 # -----------------------------------------------------------------------
-TEST_CASE_NAME="DIRECT-MIXED-DWELL-LBR-1"
+TEST_CASE_NAME="DIRECT-EXC-CHAN-SEND-LBR-2"
 
 # ------------- global variables begin ----------------------------------
 # DO NOT change the global vars in this file
@@ -66,7 +75,7 @@ NodeCsvFile=${LOG_PATH}/output_node.csv;
 BRcsvFile=${LOG_PATH}/output_br.csv
 time_checked=0;
 packet_checked="";
-step0_time=50; step1_time=150; step2_time=450;
+step0_time=80; step1_time=150; step2_time=400;
 
 
 echo "----TEST [$TEST_CASE_NAME] start ..................................................................."
@@ -88,11 +97,11 @@ else
 
     # TBUs config setting........
     WISUN_NODE0_CONFIG=("disconnect" "yes" "domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
-        "unicast_dwell_interval" 15 "allowed_channels" "0-255" "allowed_mac64" $BRRPI_mac "allowed_mac64" $wsnode1_mac);
+        "unicast_dwell_interval" 15 "allowed_channels" "0" "allowed_mac64" $BRRPI_mac "allowed_mac64" $wsnode1_mac);
     WISUN_NODE05_CONFIG=("disconnect" "yes" "domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
-        "unicast_dwell_interval" 255 "allowed_channels" "0-255" "allowed_mac64" $BRRPI_mac "allowed_mac64" $wsnode1_mac);
+        "unicast_dwell_interval" 255 "allowed_channels" "0-10,30-40" "allowed_mac64" $BRRPI_mac "allowed_mac64" $wsnode1_mac);
     WISUN_NODE1_CONFIG=("disconnect" "yes" "domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
-        "unicast_dwell_interval" 15 "allowed_channels" "0-255" "allowed_mac64" $wsnode0_mac "allowed_mac64" $wsnode2_mac);
+        "unicast_dwell_interval" 15 "allowed_channels" "0" "allowed_mac64" $wsnode0_mac "allowed_mac64" $wsnode2_mac);
     WISUN_NODE2_CONFIG=("disconnect" "yes" "domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
         "unicast_dwell_interval" 15 "allowed_channels" "0-255" "allowed_mac64" $wsnode1_mac);
     wisun_node_set_new $wsnode0 WISUN_NODE0_CONFIG

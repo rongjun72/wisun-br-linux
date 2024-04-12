@@ -140,6 +140,10 @@ wsnode1_netif=$(find_netif_for_pti_capture si_pti_discover.txt $wsnode1_sn)
 echo "find wsnode1_sn:$wsnode1_sn and wsnode1_netif: $wsnode1_netif"
 wsnode2_netif=$(find_netif_for_pti_capture si_pti_discover.txt $wsnode2_sn)
 echo "find wsnode2_sn:$wsnode2_sn and wsnode2_netif: $wsnode2_netif"
+wsnode0_netif=$(echo $wsnode0_netif | sed "s/[^.0-9]//g");
+wsnode05_netif=$(echo $wsnode05_netif | sed "s/[^.0-9]//g");
+wsnode1_netif=$(echo $wsnode1_netif | sed "s/[^.0-9]//g");
+wsnode2_netif=$(echo $wsnode2_netif | sed "s/[^.0-9]//g");
 # delete temprary file
 rm -f si_pti_discover.txt
 
@@ -168,9 +172,13 @@ rm -f si_pti_discover.txt
 
 #source test_DIRECT-SHORT-DWELL-LBR-1.sh
 
-source test_DIRECT-MIXED-DWELL-LBR-1.sh
+#source test_DIRECT-MIXED-DWELL-LBR-1.sh
 
 #source test_DIRECT-EXC-CHAN-SEND-LBR-1.sh
+
+#source test_DIRECT-EXC-CHAN-SEND-LBR-2.sh
+
+source test_DIRECT-EXC-CHAN-LISTEN-LBR-1.sh
 
 
 

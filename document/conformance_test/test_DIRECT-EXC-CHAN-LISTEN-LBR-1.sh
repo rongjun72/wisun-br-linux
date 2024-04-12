@@ -1,23 +1,29 @@
 source br_cert_funcions.sh
 # -----------------------------------------------------------------------
-# Test case :   Border Router as DUT [DIRECT-MIXED-DWELL-LBR-1]
+# Test case :   Border Router as DUT [DIRECT-EXC-CHAN-LISTEN-LBR-1]
 # -----------------------------------------------------------------------
 # Description:  
+# The purpose of this test case is to exercise the DUT’s ability to 
+# self-declare excluded channels and to compute the correct Direct 
+# Hash channel hopping sequence with the excluded channel(s).
+# Note that we need some support in the TPS to require the vendor 
+# to say whether they are supporting excluded channels and to state 
+# how their device creates an excluded channel list (in the PICS)
 # Note:  This test case is identical to the test case 
-# [DIRECT-SHORT-DWELL-LBR-1] except a unicast dwell interval of 15 ms 
-# is used for Test bed devices A-B, and a unicast dwell interval of 
-# 255 ms is used for Test bed devices C-D plus Test Bed Devices E-H 
-# have a unicast dwell interval of 15ms.
-#
+# [DIRECT-MIXED-DWELL-LBR-1] except the DUT will be asked to publish 
+# an excluded channel list.
 # This test case verifies the channel hop sequence required for Wi-SUN 
-# FAN implementation using the Direct Hash Channel.   
-# The Regulatory Domain should be set to 0x1, Operating Class 2 (400 Khz
-# channel spacing) and the data rate as 150kbps for this section of tests.
+# FAN implementation using the Direct Hash Channel Function (value of 2), 
+# North America channel plan (regulatory domain value of 1). 
+# The Regulatory Domain should be set to 0x1, Operating Class 2 
+# (400 Khz channel spacing) and the data rate as 150kbps for this 
+# section of tests.
 # -----------------------------------------------------------------------
-# The Test bed devices A-B and Test bed devices E-H in the test are all 
-# configured for the Direct Hash Channel Function using a dwell interval 
-# of 15ms. The Test bed devices C-D are configured for the Direct Hash 
-# Channel Function using a dwell interval of 255ms.  
+# The Test bed devices A-B in the test are all configured for the Direct 
+# Hash Channel Function using a dwell interval of 15ms. The Test bed 
+# devices C-D are configured for the Direct Hash Channel Function using 
+# a dwell interval of 255ms. The Test bed devices E-H are configured for 
+# the Direct Hash Channel Function using a dwell interval of 15ms. 
 # The DUT is similarly configured for the Direct Hash Channel function 
 # but using a DUT specific dwell interval..
 # The test bed is configured as follows:
@@ -25,7 +31,7 @@ source br_cert_funcions.sh
 #   b. Test bed Device A, Device B,  Device C and Device D at Rank 1
 #   c. Test Bed Device E, Device F, Device G and Device H at Rank 2
 # -----------------------------------------------------------------------
-TEST_CASE_NAME="DIRECT-MIXED-DWELL-LBR-1"
+TEST_CASE_NAME="DIRECT-EXC-CHAN-LISTEN-LBR-1"
 
 # ------------- global variables begin ----------------------------------
 # DO NOT change the global vars in this file
@@ -106,7 +112,7 @@ else
     # get/modify/overwrite the wsbrd.conf file before start wsbrd application in RPi
     scp ${BRRPI_usr}@${BRRPI_ip}:$BRRPI_path/wsbrd.conf ${LOG_PATH}/wsbrd.conf
     WISUN_BR_CONFIG=("domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
-    "unicast_dwell_interval" 15 "allowed_channels" "0-255" "allowed_mac64--" $wsnode0_mac "allowed_mac64--" $wsnode2_mac);
+    "unicast_dwell_interval" 15 "allowed_channels" "10-20,30-40" "allowed_mac64--" $wsnode0_mac "allowed_mac64--" $wsnode2_mac);
     wisun_br_config_new ${LOG_PATH}/wsbrd.conf WISUN_BR_CONFIG
     scp ${LOG_PATH}/wsbrd.conf ${BRRPI_usr}@${BRRPI_ip}:$BRRPI_path/wsbrd.conf
     rm -f ${LOG_PATH}/wsbrd.conf

@@ -320,7 +320,7 @@ function synchronize_node_cap_to_Br_cap
   local NodeCsv=$2;
   local MAX_FAILs=20;
   local fail_cnt=0;
-  local SUCCESS_HITs=30;
+  local SUCCESS_HITs=22;
   local hit_cnt=0;
   local br_search_line=0
   local node_search_line=0

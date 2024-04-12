@@ -693,11 +693,11 @@ echo "";echo "---- Test Bed Devices E-H perform Security Bootstrapping ---------
 #---------- TBDes E-H perform ROLL/RPL Route Establishment through DIO processing and candidate parent selection
 echo "---- TBDes E-H perform ROLL/RPL Route Establishment ----------------"
 time_TBD1_send_PAS=($(packet_receive_check ${NodeCsvFile} -t 3 $wsnode1_mac 5 "wpan" 6 "1"));
-echo "Node1 send PAS @: ${time_TBD1_send_PAS[@]}"
+#echo "Node1 send PAS @: ${time_TBD1_send_PAS[@]}"
 
 # ---------------------
-time_checked=${time_TBD1_send_PAS[0]}
-#time_checked=$step1_time;
+#time_checked=${time_TBD1_send_PAS[0]}
+time_checked=$(($step0_time+$step1_time));
 #echo "-----------------"
 STEP_PASSFAIL_Criteria=(
 "output csv file:"  ${NodeCsvFile}                                                          

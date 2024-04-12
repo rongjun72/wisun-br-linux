@@ -426,6 +426,7 @@ function check_receive_message
 
 }
 
+
 function packet_receive_check
 {
   # function description:
@@ -456,13 +457,12 @@ function packet_receive_check
 
   # for tmp in ${sss[@]}; do echo $tmp >> temp.txt ; done; cat temp.txt | sort | uniq -d
   # create a temperary file for search ,sort and repeated check
-  CURR_TIME=$(date "+%m%d_%H-%M");
-  for idx in $(seq 0 $#); do
-    rm -rf temp_${CURR_TIME}_${idx}.txt
-  done
+  local lines_array=""
 
   # search for each input param: [col, key_word]
+  loop_seq=0;
   for idx in $(seq 3 2 $#); do
+    loop_seq=$(($loop_seq + 1));
     search_col=$(eval echo \${${idx}}); search_key=$(eval echo \${$(($idx+1))});
     #echo "[collum, key_word] : $search_col , $search_key"
     if [ "$search_key" = "xxxx" ]; then
@@ -479,17 +479,11 @@ function packet_receive_check
       #cat ${CaptureCsv} | cut -f $search_col | sed -n "/${search_key}/="
       searched_lines=($(cat ${CaptureCsv} | cut -f $search_col | sed -n "/^${search_key}$/="));
     fi
-    touch temp_${CURR_TIME}_${idx}.txt
-    for tmp in ${searched_lines[@]}; do 
-      echo $tmp >> temp_${CURR_TIME}_${idx}.txt; 
-    done
 
-    # paste the searched lines to temperary files
-    # for the first 
-    if [ $idx -eq 3 ]; then
-      cp temp_${CURR_TIME}_${idx}.txt temp_${CURR_TIME}_$(($idx+1)).txt;
+    if [ $loop_seq -eq 1 ]; then
+      lines_array=(${searched_lines[@]});
     else
-      sort -n temp_${CURR_TIME}_${idx}.txt temp_${CURR_TIME}_$(($idx-1)).txt | uniq -d > temp_${CURR_TIME}_$(($idx+1)).txt;
+      lines_array=($(echo ${lines_array[@]} ${searched_lines[@]} | tr ' ' '\n' | sort -n | uniq -d));
     fi
 
     # parsing: for each keyword, if found
@@ -497,12 +491,8 @@ function packet_receive_check
 
   done
 
-  #echo "--------------------"
-  #cat temp_${CURR_TIME}_$(($#)).txt
-  #echo "--------------------"
-
   # convert searched indice to array
-  items=($(cat temp_${CURR_TIME}_$(($#)).txt));
+  items=(${lines_array[@]});
   items_num=${#items[*]}; items_num=$(($items_num-1));
   for idx in $(seq 0 $items_num); do
     line_idx=${items[$idx]}; 
@@ -522,12 +512,8 @@ function packet_receive_check
       echo ""
     fi
   fi
-
-  # remove temperary files
-  for idx in $(seq 0 $#); do
-    rm -rf temp_${CURR_TIME}_${idx}.txt
-  done
 } 
+
 
 function step_pass_fail_check
 {

@@ -178,10 +178,11 @@ rm -f si_pti_discover.txt
 
 #source test_DIRECT-EXC-CHAN-SEND-LBR-2.sh
 
-source test_DIRECT-EXC-CHAN-LISTEN-LBR-1.sh
+#source test_DIRECT-EXC-CHAN-LISTEN-LBR-1.sh
 
 #source test_TR51-LISTEN-LBR-1.sh
 
+source test_UNICAST-DST-DFE-LBR-1.sh
 
 sudo rm -f ${LOG_PATH}/sed*.*
 # check session id of serial port and wsbrd(ssh RPi) and kill them

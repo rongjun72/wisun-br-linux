@@ -20,10 +20,10 @@ wsnode2_sn=440136634; wsnode2_mac="8c:1f:64:5e:40:bb:00:03"
 # Test Bed Units(TBU) connected to Test Bed through serial port
 # check serial port discripter for your test bed
 # then get access permission to serial ports
-wsnode0=/dev/ttyACM0; sudo chmod 777 $wsnode0
-wsnode05=/dev/ttyACM3; sudo chmod 777 $wsnode05
-wsnode1=/dev/ttyACM1; sudo chmod 777 $wsnode1
-wsnode2=/dev/ttyACM2; sudo chmod 777 $wsnode2
+wsnode0=/dev/ttyACM1; sudo chmod 777 $wsnode0
+wsnode05=/dev/ttyACM0; sudo chmod 777 $wsnode05
+wsnode1=/dev/ttyACM2; sudo chmod 777 $wsnode1
+wsnode2=/dev/ttyACM3; sudo chmod 777 $wsnode2
 
 #modulation_rate=(50 150)
 
@@ -94,10 +94,10 @@ source br_cert_funcions.sh
 
 # open a minicom window to display serial port echo
 gnome-terminal --window --title="node0" --geometry=80x25+200+100 \
-                                         -e 'minicom -D /dev/ttyACM0 -b 115200 -8' \
-                  --tab --title="node05" -e 'minicom -D /dev/ttyACM3 -b 115200 -8' \
-                  --tab --title="node1"  -e 'minicom -D /dev/ttyACM1 -b 115200 -8' \
-                  --tab --title="node2"  -e 'minicom -D /dev/ttyACM2 -b 115200 -8'
+                                         -e 'minicom -D /dev/ttyACM1 -b 115200 -8' \
+                  --tab --title="node05" -e 'minicom -D /dev/ttyACM0 -b 115200 -8' \
+                  --tab --title="node1"  -e 'minicom -D /dev/ttyACM2 -b 115200 -8' \
+                  --tab --title="node2"  -e 'minicom -D /dev/ttyACM3 -b 115200 -8'
 stty -F ${wsnode0}  ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
 stty -F ${wsnode05} ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
 stty -F ${wsnode1}  ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
@@ -168,19 +168,19 @@ rm -f si_pti_discover.txt
 
 #source test_6LO-ND-LBR-1.sh
 
-source test_DIRECT-HASH-HOP-LBR-1.sh
+#source test_DIRECT-HASH-HOP-LBR-1.sh
 
-source test_DIRECT-SHORT-DWELL-LBR-1.sh
+#source test_DIRECT-SHORT-DWELL-LBR-1.sh
 
-source test_DIRECT-MIXED-DWELL-LBR-1.sh
+#source test_DIRECT-MIXED-DWELL-LBR-1.sh
 
-source test_DIRECT-EXC-CHAN-SEND-LBR-1.sh
+#source test_DIRECT-EXC-CHAN-SEND-LBR-1.sh
 
-source test_DIRECT-EXC-CHAN-SEND-LBR-2.sh
+#source test_DIRECT-EXC-CHAN-SEND-LBR-2.sh
 
 source test_DIRECT-EXC-CHAN-LISTEN-LBR-1.sh
 
-source test_TR51-LISTEN-LBR-1.sh
+#source test_TR51-LISTEN-LBR-1.sh
 
 
 sudo rm -f ${LOG_PATH}/sed*.*

@@ -60,7 +60,7 @@ TEST_CASE_NAME="DIRECT-EXC-CHAN-LISTEN-LBR-1"
 # ------------- global variables end ------------------------------------
 debug_option="nDEBUG_ANALYSIS";
 if [ "$debug_option" = "DEBUG_ANALYSIS" ]; then
-    TEST_TIME="0411_14-22";
+    TEST_TIME="0412_17-31";
 else
     TEST_TIME=$(date "+%m%d_%H-%M");
 fi
@@ -697,8 +697,8 @@ time_TBD1_send_PAS=($(packet_receive_check ${NodeCsvFile} -t 3 $wsnode1_mac 5 "w
 echo "Node1 send PAS @: ${time_TBD1_send_PAS[@]}"
 
 # ---------------------
-time_checked=${time_TBD1_send_PAS[0]}
-#time_checked=$step1_time;
+#time_checked=${time_TBD1_send_PAS[0]}
+time_checked=$(($step0_time + $step1_time));
 #echo "-----------------"
 STEP_PASSFAIL_Criteria=(
 "output csv file:"  ${NodeCsvFile}                                                          

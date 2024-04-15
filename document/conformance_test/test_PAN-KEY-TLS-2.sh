@@ -57,6 +57,7 @@ echo "--------------------------------------------------------------------------
 
 # TBUs config setting........
 wisun_node_set $wsnode0 $wisun_domain $wisun_mode $wisun_class
+wisun_node_set $wsnode05 $wisun_domain $wisun_mode $wisun_class
 wisun_node_set $wsnode1 $wisun_domain $wisun_mode $wisun_class
 wisun_node_set $wsnode2 $wisun_domain $wisun_mode $wisun_class
 #echo "wisun mac_allow $wsnode1_mac" > $wsnode0

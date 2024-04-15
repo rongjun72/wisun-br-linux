@@ -80,11 +80,14 @@ else
     # TBUs config setting........
     WISUN_NODE0_CONFIG=("disconnect" "yes" "domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
         "unicast_dwell_interval" 255 "allowed_channels" "0-255" "allowed_mac64" $BRRPI_mac "allowed_mac64" $wsnode1_mac);
+    WISUN_NODE05_CONFIG=("disconnect" "yes" "domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
+        "unicast_dwell_interval" 255 "allowed_channels" "0-255" "allowed_mac64" $BRRPI_mac "allowed_mac64" $wsnode1_mac);
     WISUN_NODE1_CONFIG=("disconnect" "yes" "domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
         "unicast_dwell_interval" 255 "allowed_channels" "0-255" "allowed_mac64" $wsnode0_mac "allowed_mac64" $wsnode2_mac);
     WISUN_NODE2_CONFIG=("disconnect" "yes" "domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
         "unicast_dwell_interval" 255 "allowed_channels" "0-255" "allowed_mac64" $wsnode1_mac );
     wisun_node_set_new $wsnode0 WISUN_NODE0_CONFIG
+    wisun_node_set_new $wsnode05 WISUN_NODE05_CONFIG
     wisun_node_set_new $wsnode1 WISUN_NODE1_CONFIG
     wisun_node_set_new $wsnode2 WISUN_NODE2_CONFIG
 

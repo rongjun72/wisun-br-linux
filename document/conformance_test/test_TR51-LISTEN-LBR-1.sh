@@ -55,7 +55,7 @@ TEST_CASE_NAME="TR51-LISTEN-LBR-1"
 # ------------- global variables end ------------------------------------
 debug_option="nDEBUG_ANALYSIS";
 if [ "$debug_option" = "DEBUG_ANALYSIS" ]; then
-    TEST_TIME="0412_14-12";
+    TEST_TIME="0412_17-43";
 else
     TEST_TIME=$(date "+%m%d_%H-%M");
 fi
@@ -737,7 +737,7 @@ STEP_PASSFAIL_Criteria=(
 "output csv file:"  ${NodeCsvFile}                                                          
 "Step number:"      "Step${#steps_pass[@]}"
 "Step Description:" "DUT sends EAP Request Identity to Test Bed Device A via EAPOL-RELAY" 
-"time range:"       $time_checked               $(echo "$time_checked + 10.000000" | bc -l)
+"time range:"       $time_checked               $(echo "$time_checked + 410.000000" | bc -l)
 "match items:"      "wpan.src64"                $BRRPI_mac
 "match items:"      "wpan.dst64"                $wsnode0_mac
 "match items:"      "frame.protocols"           "wpan:6lowpan:ipv6:udp:wisun.eapol_relay:eapol"

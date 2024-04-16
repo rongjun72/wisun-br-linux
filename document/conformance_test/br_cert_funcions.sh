@@ -252,7 +252,8 @@ function display_wait_progress
   # -----------------------------------------
   # $1: wait time in second 
   #------------------------------------------
-  local wait_sec=$(($1/10));
+  local time_unit=10;
+  local wait_sec=$(($1/$time_unit-1));
   for wait_idx in $(seq 0 $wait_sec)
   do
     #echo $(date)
@@ -269,7 +270,7 @@ function display_wait_progress
     do
       echo -n "|"
     done
-    sleep 10
+    sleep $time_unit
   done
   echo -ne "\n"
 }
@@ -325,10 +326,10 @@ function synchronize_node_cap_to_Br_cap
   local br_search_line=0
   local node_search_line=0
   local COL_START=3
-  local total_time_offset_avg=0
   local total_time_offset_cnt=0
   local VAR_THRESHOLD=1000
 
+  total_time_offset_avg=0
   # while [ $fail_cnt le $MAX_FAILs ]
   # COL_START=3;line=3;sss=$(cat output_br.csv | sed -n "${line}p" | cut -f ${COL_START}-);echo $sss
   # sed -n "/${sss}/=" output_node.csv

@@ -1,26 +1,24 @@
 source br_cert_funcions.sh
 # -----------------------------------------------------------------------
-# Test case :   Border Router as DUT [UNICAST-DST-DFE-LBR-1]
+# Test case :   Border Router as DUT [UNICAST-FWD-DFE-LBR-1]
 # -----------------------------------------------------------------------
 # Description:  
-# This test case verifies a LBR DUT as Destination of an ICMPv6 Echo 
-# Request can receive and respond with ICMPv6 Echo Reply with the 
-# originator node using DFE.
+# This test case verifies a DUT as UDP and ICMPv6 Forwarder.
 # 
 # We can not set 6lowpan MTU value for Silabs wisun node!!!
 # We can test fragmentization by sending ping packet larger than 
 # default MTU 1280-byte
 # -----------------------------------------------------------------------
 # Test Bed records the traffic between the DUT and neighboring test bed 
-# devices by having Test bed devices A-D subscribed to received frames 
-# by the TBC.  
-# 
-# For this test case, a subset of the full test bed is needed.  
+# devices by subscribing to frames from Test bed devices A-D, Test bed 
+# devices E-H and Test bed devices I-L.  
 # Here is the configuration for this test case:
-#   a.LBR DUT configured for PAN A 
-#   b.Test bed Device A, Device B,  Device C and Device D at Rank 1
+#   a. LBR DUT configured for PAN A 
+#   b. Test bed Device A, Device B,  Device C and Device D at Rank 1
+#   c. Test Bed Device E, Device F, Device G and Device H at Rank 2 
+#   d. Test Bed Device I, Device J, Device K and Device L at Rank 3
 # -----------------------------------------------------------------------
-TEST_CASE_NAME="UNICAST-DST-DFE-LBR-1"
+TEST_CASE_NAME="UNICAST-FWD-DFE-LBR-1"
 
 # ------------- global variables begin ----------------------------------
 # DO NOT change the global vars in this file
@@ -49,7 +47,7 @@ TEST_CASE_NAME="UNICAST-DST-DFE-LBR-1"
 # ------------- global variables end ------------------------------------
 debug_option="nDEBUG_ANALYSIS";
 if [ "$debug_option" = "DEBUG_ANALYSIS" ]; then
-    TEST_TIME="0417_09-52";
+    TEST_TIME="0417_11-08";
 else
     TEST_TIME=$(date "+%m%d_%H-%M");
 fi
@@ -62,7 +60,7 @@ BRcsvFile=${LOG_PATH}/output_br.csv
 total_time_offset_avg=0;
 time_checked=0;
 packet_checked="";
-step0_time=200; step1_time=200; step2_time=200;
+step0_time=200; step1_time=200; step2_time=400; step3_time=200
 
 
 echo "----TEST [$TEST_CASE_NAME] start ..................................................................."
@@ -118,11 +116,11 @@ else
     #ssh ${BRRPI_usr}@${BRRPI_ip} "sudo wsbrd_cli set-icmpv6-mtu-size 700";
     sleep 20
 
-    capture_time=$(($step0_time + $step1_time + $step2_time))
+    capture_time=$(($step0_time + $step1_time + $step2_time + $step3_time))
     echo "----------------------------start wsnode packet capture, for ${capture_time}s---"
     echo "start wsnode packet capture, for ${capture_time}s..."
     gnome-terminal --window --title="Node Capture" --geometry=90x24+200+0 -- \
-      sudo java -jar $silabspti -ip=$wsnode0_netif,$wsnode05_netif -time=$(($capture_time*1000)) -format=pcapng_wisun -out=${nodes_pti_cap_file}
+      sudo java -jar $silabspti -ip=$wsnode0_netif,$wsnode05_netif,$wsnode2_netif -time=$(($capture_time*1000)) -format=pcapng_wisun -out=${nodes_pti_cap_file}
 
     # ------start wsnode join_fan10-------
     echo "----------------------------start wsnode0 join_fan10------------------------"
@@ -141,25 +139,43 @@ else
     echo "node05 start wisun join_fan10 at: $TIME_NODE05_JOIN_FAN10"
     display_wait_progress $step1_time;
     echo "-----------------------------------------------------------------------------"
+    echo "----------------------------start wsnode1 at ran2 join_fan10------------------------"
+    time_0=$(date +%s%N); echo "wisun join_fan10" > $wsnode1 
+    time_1=$(date +%s%N); echo "send wsnode1 join_fan10: $((($time_1 - $time_0)/1000000))ms";
+    TIME_JOIN_FAN10=$(($time_1/1000000-$time_start_test))
+    TIME_NODE1_JOIN_FAN10=$(echo "$TIME_JOIN_FAN10 / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
+    echo "node1 start wisun join_fan10 at: $TIME_NODE1_JOIN_FAN10"
+    echo "----------------------------start wsnode2 at ran3 join_fan10------------------------"
+    time_0=$(date +%s%N); echo "wisun join_fan10" > $wsnode2 
+    time_1=$(date +%s%N); echo "send wsnode2 join_fan10: $((($time_1 - $time_0)/1000000))ms";
+    TIME_JOIN_FAN10=$(($time_1/1000000-$time_start_test))
+    TIME_NODE2_JOIN_FAN10=$(echo "$TIME_JOIN_FAN10 / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
+    echo "node2 start wisun join_fan10 at: $TIME_NODE2_JOIN_FAN10"
+    display_wait_progress $step2_time;
+    echo "-----------------------------------------------------------------------------"
 
-    for index in $(seq 1 5); do
-        echo "-----------------------------------------------------------------------------"
-        echo "--------round $index--------ping DUT from TBD A @rank1------------------------"
-        time_0=$(date +%s%N); echo "wisun ping $BRRPI_ipv6 1380" > $wsnode0 
-        time_1=$(date +%s%N); echo "ping DUT from wsnode0: $((($time_1 - $time_0)/1000000))ms";
-        TIME_PING_DUT=$(($time_1/1000000-$time_start_test))
+    echo "-----------------------------------------------------------------------------"
+    for index in $(seq 1 3); do
+        echo "--------ping round $index--------------------------------"
+        time_0=$(date +%s%N); echo "wisun ping $wsnode2_ipaddr 1380" > $wsnode0 
+        TIME_PING_DUT=$(($time_0/1000000-$time_start_test))
         TIME_NODE0_PING_DUT=$(echo "$TIME_PING_DUT / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
-        echo "node05 start wisun join_fan10 at: $TIME_NODE0_PING_DUT"; sleep 5
-        echo "----------------------------ping DUT from TBD E @rank1------------------------"
-        time_0=$(date +%s%N); echo "wisun ping $BRRPI_ipv6 1380" > $wsnode05 
-        time_1=$(date +%s%N); echo "ping DUT from wsnode05: $((($time_1 - $time_0)/1000000))ms";
-        TIME_PING_DUT=$(($time_1/1000000-$time_start_test))
+        echo "ping from node0@rank1 to node2@rank3 at: $TIME_NODE0_PING_DUT"; sleep 5
+        time_0=$(date +%s%N); echo "wisun ping $wsnode2_ipaddr 1380" > $wsnode05 
+        TIME_PING_DUT=$(($time_0/1000000-$time_start_test))
         TIME_NODE05_PING_DUT=$(echo "$TIME_PING_DUT / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
-        echo "node05 start wisun join_fan10 at: $TIME_NODE05_PING_DUT"; sleep 5
-        echo "-----------------------------------------------------------------------------"
+        echo "ping from node05@rank1 to node2@rank3 at: $TIME_NODE05_PING_DUT"; sleep 5
+        time_0=$(date +%s%N); echo "wisun ping $wsnode0_ipaddr 1380" > $wsnode2 
+        TIME_PING_DUT=$(($time_0/1000000-$time_start_test))
+        TIME_NODE2_PING_DUT=$(echo "$TIME_PING_DUT / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
+        echo "ping from node2@rank3 to node0@rank1 at: $TIME_NODE2_PING_DUT"; sleep 5
+        time_0=$(date +%s%N); echo "wisun ping $wsnode05_ipaddr 1380" > $wsnode2 
+        TIME_PING_DUT=$(($time_0/1000000-$time_start_test))
+        TIME_NODE2_PING_DUT=$(echo "$TIME_PING_DUT / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
+        echo "ping from node2@rank3 to node05@rank1 at: $TIME_NODE2_PING_DUT"; sleep 5
     done
-    display_wait_progress $(($step2_time-10*5));
-
+    echo "-----------------------------------------------------------------------------"
+    display_wait_progress $(($step3_time-20*3));
 
     # check session id of serial port and wsbrd(ssh RPi) and kill them
     wsbrd_id=$(ps -u | grep cd | grep 'sudo wsbrd -F' | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
@@ -260,14 +276,10 @@ done
 tshark -r ${wsbrd_cap_file} -T fields $EXTRACT_OPTIONS > $BRcsvFile;
 tshark_mod $BRcsvFile  $BRcsvFile
 
-
 echo "-------------convert Node router packet captures to csv---------------------"
 # text2pcap -q -t %H:%M:%S. -l 230 -n Node0Cap_PAN-PA-SELECT-2_0314_18-12.txt Node0Cap_PAN-PA-SELECT-2_0314_18-12.pcapng
 # -n : output file format of pcapng not default pcap format
 # -l : link-layer type number; default is 1 (Ethernet). see https://www.tcpdump.org/linktypes.html for other
-echo "-------------------------------------------------------------------------------------------------------------------"
-echo "tshark -r ${nodes_pti_cap_file} -T fields $EXTRACT_OPTIONS > $NodeCsvFile"
-echo "-------------------------------------------------------------------------------------------------------------------"
 tshark -r ${nodes_pti_cap_file} -T fields $EXTRACT_OPTIONS > $NodeCsvFile
 tshark_mod $NodeCsvFile  $NodeCsvFile
 
@@ -1163,63 +1175,115 @@ step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 
 #---------- TBD A/E send ICPMv6 Echo Request to the LBR DUT 
 echo "---- TBD A/E send ICPMv6 Echo Request to the LBR DUT ----------------"
-time_checked=$(($step0_time+$step1_time+20-1));
-for index in $(seq 1 5); do
-    #echo "-----------------"
+time_checked=$(($step0_time+$step1_time+$step2_time+20-1));
+for index in $(seq 1 3); do
+    echo "-------ping round $index----------"
     STEP_PASSFAIL_Criteria=(
     "output csv file:"  ${NodeCsvFile}                                                          
     "Step number:"      "Step${#steps_pass[@]}"
     "Step Description:" "Test bed device A is able to send ICMPv6 Echo Request to the LBR DUT using DFE" 
-    "time range:"       $time_checked               $(echo "$time_checked + 15.000000" | bc -l)
+    "time range:"       $time_checked               $(echo "$time_checked + 7.000000" | bc -l)
     "match items:"      "ipv6.src"                  $wsnode0_lladdr,$wsnode0_ipaddr
-    "match items:"      "ipv6.dst"                  $BRRPI_lladdr,$BRRPI_ipv6
+    "match items:"      "ipv6.dst"                  $BRRPI_lladdr,$wsnode2_ipaddr
     "match items:"      "frame.protocols"           "wpan:6lowpan:data:data:ipv6:ipv6.hopopts:ipv6:ipv6.fraghdr:icmpv6:data"
     "match items:"      "icmpv6.type"               128
     "match items:"      "icmpv6.code"               0
     );
     step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
-
     #echo "-----------------"
     STEP_PASSFAIL_Criteria=(
     "output csv file:"  ${NodeCsvFile}                                                          
     "Step number:"      "Step${#steps_pass[@]}"
     "Step Description:" "6LoWPAN frame from DUT containing the ICMPv6 Echo Reply" 
-    "time range:"       $time_checked               $(echo "$time_checked + 15.000000" | bc -l)
-    "match items:"      "ipv6.src"                  $BRRPI_ipv6
-    "match items:"      "ipv6.dst"                  $wsnode0_ipaddr
-    "match items:"      "frame.protocols"           "wpan:6lowpan:ipv6:ipv6.fraghdr:icmpv6:data"
+    "time range:"       $time_checked               $(echo "$time_checked + 7.000000" | bc -l)
+    "match items:"      "ipv6.src"                  $wsnode2_lladdr,$wsnode2_ipaddr
+    "match items:"      "ipv6.dst"                  $wsnode1_lladdr,$wsnode0_ipaddr
+    "match items:"      "frame.protocols"           "wpan:6lowpan:data:data:ipv6:ipv6.hopopts:ipv6:ipv6.fraghdr:icmpv6:data"
     "match items:"      "icmpv6.type"               129
     "match items:"      "icmpv6.code"               0
     );
     step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
-
     #echo "-----------------"
     STEP_PASSFAIL_Criteria=(
     "output csv file:"  ${NodeCsvFile}                                                          
     "Step number:"      "Step${#steps_pass[@]}"
     "Step Description:" "Test bed device E is able to send ICMPv6 Echo Request to the LBR DUT using DFE" 
-    "time range:"       $time_checked               $(echo "$time_checked + 15.000000" | bc -l)
+    "time range:"       $time_checked               $(echo "$time_checked + 7.000000" | bc -l)
     "match items:"      "ipv6.src"                  $wsnode05_lladdr,$wsnode05_ipaddr
-    "match items:"      "ipv6.dst"                  $BRRPI_lladdr,$BRRPI_ipv6
+    "match items:"      "ipv6.dst"                  $BRRPI_lladdr,$wsnode2_ipaddr
     "match items:"      "frame.protocols"           "wpan:6lowpan:data:data:ipv6:ipv6.hopopts:ipv6:ipv6.fraghdr:icmpv6:data"
     "match items:"      "icmpv6.type"               128
     "match items:"      "icmpv6.code"               0
     );
     step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
-
     #echo "-----------------"
     STEP_PASSFAIL_Criteria=(
     "output csv file:"  ${NodeCsvFile}                                                          
     "Step number:"      "Step${#steps_pass[@]}"
     "Step Description:" "6LoWPAN frame from DUT containing the ICMPv6 Echo Reply" 
-    "time range:"       $time_checked               $(echo "$time_checked + 15.000000" | bc -l)
-    "match items:"      "ipv6.src"                  $BRRPI_ipv6
-    "match items:"      "ipv6.dst"                  $wsnode05_ipaddr
-    "match items:"      "frame.protocols"           "wpan:6lowpan:ipv6:ipv6.fraghdr:icmpv6:data"
+    "time range:"       $time_checked               $(echo "$time_checked + 7.000000" | bc -l)
+    "match items:"      "ipv6.src"                  $wsnode2_lladdr,$wsnode2_ipaddr
+    "match items:"      "ipv6.dst"                  $wsnode1_lladdr,$wsnode05_ipaddr
+    "match items:"      "frame.protocols"           "wpan:6lowpan:data:data:ipv6:ipv6.hopopts:ipv6:ipv6.fraghdr:icmpv6:data"
     "match items:"      "icmpv6.type"               129
     "match items:"      "icmpv6.code"               0
     );
     step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
+
+
+    #echo "-----------------"
+    STEP_PASSFAIL_Criteria=(
+    "output csv file:"  ${NodeCsvFile}                                                          
+    "Step number:"      "Step${#steps_pass[@]}"
+    "Step Description:" "Test bed device A is able to send ICMPv6 Echo Request to the LBR DUT using DFE" 
+    "time range:"       $time_checked               $(echo "$time_checked + 7.000000" | bc -l)
+    "match items:"      "ipv6.src"                  $wsnode2_lladdr,$wsnode2_ipaddr
+    "match items:"      "ipv6.dst"                  $wsnode1_lladdr,$wsnode0_ipaddr
+    "match items:"      "frame.protocols"           "wpan:6lowpan:data:data:ipv6:ipv6.hopopts:ipv6:ipv6.fraghdr:icmpv6:data"
+    "match items:"      "icmpv6.type"               128
+    "match items:"      "icmpv6.code"               0
+    );
+    step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
+    #echo "-----------------"
+    STEP_PASSFAIL_Criteria=(
+    "output csv file:"  ${NodeCsvFile}                                                          
+    "Step number:"      "Step${#steps_pass[@]}"
+    "Step Description:" "6LoWPAN frame from DUT containing the ICMPv6 Echo Reply" 
+    "time range:"       $time_checked               $(echo "$time_checked + 7.000000" | bc -l)
+    "match items:"      "ipv6.src"                  $wsnode0_lladdr,$wsnode0_ipaddr
+    "match items:"      "ipv6.dst"                  $BRRPI_lladdr,$wsnode2_ipaddr
+    "match items:"      "frame.protocols"           "wpan:6lowpan:data:data:ipv6:ipv6.hopopts:ipv6:ipv6.fraghdr:icmpv6:data"
+    "match items:"      "icmpv6.type"               129
+    "match items:"      "icmpv6.code"               0
+    );
+    step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
+    #echo "-----------------"
+    STEP_PASSFAIL_Criteria=(
+    "output csv file:"  ${NodeCsvFile}                                                          
+    "Step number:"      "Step${#steps_pass[@]}"
+    "Step Description:" "Test bed device E is able to send ICMPv6 Echo Request to the LBR DUT using DFE" 
+    "time range:"       $time_checked               $(echo "$time_checked + 7.000000" | bc -l)
+    "match items:"      "ipv6.src"                  $wsnode2_lladdr,$wsnode2_ipaddr
+    "match items:"      "ipv6.dst"                  $wsnode1_lladdr,$wsnode05_ipaddr
+    "match items:"      "frame.protocols"           "wpan:6lowpan:data:data:ipv6:ipv6.hopopts:ipv6:ipv6.fraghdr:icmpv6:data"
+    "match items:"      "icmpv6.type"               128
+    "match items:"      "icmpv6.code"               0
+    );
+    step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
+    #echo "-----------------"
+    STEP_PASSFAIL_Criteria=(
+    "output csv file:"  ${NodeCsvFile}                                                          
+    "Step number:"      "Step${#steps_pass[@]}"
+    "Step Description:" "6LoWPAN frame from DUT containing the ICMPv6 Echo Reply" 
+    "time range:"       $time_checked               $(echo "$time_checked + 7.000000" | bc -l)
+    "match items:"      "ipv6.src"                  $wsnode05_lladdr,$wsnode05_ipaddr
+    "match items:"      "ipv6.dst"                  $BRRPI_lladdr,$wsnode2_ipaddr
+    "match items:"      "frame.protocols"           "wpan:6lowpan:data:data:ipv6:ipv6.hopopts:ipv6:ipv6.fraghdr:icmpv6:data"
+    "match items:"      "icmpv6.type"               129
+    "match items:"      "icmpv6.code"               0
+    );
+    step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
+
 done
 
 

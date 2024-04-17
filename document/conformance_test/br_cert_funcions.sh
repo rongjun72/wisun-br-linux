@@ -293,11 +293,15 @@ function compensate_node_csv_time
 
   time_offset=$(echo "$time_offset / 1000 + 0.000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{9\}\).*/\1/')
   echo "compensate time_offset: $time_offset, according to Br capture time"
+  time_integer=$(($1/1000));
+  time_fract=$(($1%1000));
+  echo "time_integer:time_fract  == $time_integer.$time_fract"
 
   for line_idx in $(seq 1 $(sed -n '$=' $NodeCsv))
   do
     time_origin=$(sed -n "${line_idx}p" $NodeCsv | cut -f 2);
-    time_compensate=$(echo "$time_origin+$time_offset" | bc -l | sed 's/\([0-9]\+\.[0-9]\{9\}\).*/\1/');
+    #time_compensate=$(echo "$time_origin+$time_offset" | bc -l | sed 's/\([0-9]\+\.[0-9]\{9\}\).*/\1/');
+    time_compensate=$(echo "${time_origin} ${time_offset}" | awk '{printf("%.6f",'${time_origin}'+'${time_offset}') }');
     #echo "line: $line_idx -- $time_origin + $time_offset = $time_compensate"
     sed -i "${line_idx}s/[0-9]\+\.[0-9]\+/${time_compensate}/" $NodeCsv;
   done
@@ -621,15 +625,14 @@ function tshark_mod
   # $2: output csv file with path 
   #-----------------------------------------------
   input_csv_file=$1;
+  temp_file=temp_out.csv;
   output_csv_file=$2;
-  cat ${input_csv_file} | sed 's/\t/\t--/g' \
-  | sed 's/--0/0/g' | sed 's/--1/1/g' | sed 's/--2/2/g' | sed 's/--3/3/g' | sed 's/--4/4/g' \
-  | sed 's/--5/5/g' | sed 's/--6/6/g' | sed 's/--7/7/g' | sed 's/--8/8/g' | sed 's/--9/9/g' \
-  | sed 's/--a/a/g' | sed 's/--b/b/g' | sed 's/--c/c/g' | sed 's/--d/d/g' | sed 's/--e/e/g' | sed 's/--f/f/g' | sed 's/--g/g/g' \
-  | sed 's/--h/h/g' | sed 's/--i/i/g' | sed 's/--j/j/g' | sed 's/--k/k/g' | sed 's/--l/l/g' | sed 's/--m/m/g' | sed 's/--n/n/g' \
-  | sed 's/--o/o/g' | sed 's/--p/p/g' | sed 's/--q/q/g' | sed 's/--r/r/g' | sed 's/--s/s/g' | sed 's/--t/t/g' | sed 's/--u/u/g' \
-  | sed 's/--v/v/g' | sed 's/--w/w/g' | sed 's/--x/x/g' | sed 's/--y/y/g' | sed 's/--z/z/g' \
-  | sed 's/0000000000000000000000000000000000000000000000000000000000000000/0/g' \
-  | sed 's/00000000000000000000000000000000/0/g' | sed 's/0000000000000000/0/g' \
-  | sed 's/00000000/0/g' > $output_csv_file;
+  #time_start=$(($(date +%s%N)/1000000)); echo "----start modification"
+  cat ${input_csv_file} | sed 's/\t/\t--/g' | sed 's/--\([0-9a-zA-Z]\)/\1/g' | sed 's/0\{64\}/0/g' \
+  | sed 's/0\{32\}/0/g' | sed 's/0\{16\}/0/g' | sed 's/0\{8\}/0/g' > $temp_file;
+  mv $temp_file $output_csv_file;
+  rm -f $temp_file;
+  #time_finish=$(date +%s%N); TIME_MOD=$(($time_finish/1000000-$time_start));
+  #TIME_MOD=$(echo "$TIME_MOD / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); 
+  #echo "----modify takes: $TIME_MOD"
 }

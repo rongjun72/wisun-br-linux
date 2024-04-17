@@ -8,14 +8,23 @@ TBC_ip="192.168.31.179"
 BRRPI_usr="cmt"
 BRRPI_ip="192.168.31.97"
 BRRPI_mac="8e:1f:64:5e:40:00:f2:0b"
+BRRPI_lladdr="fe80::8c1f:645e:4000:f20b"
 BRRPI_ipv6="fd00:6868:6868:0:8c1f:645e:4000:f20b"
 BRRPI_path="/home/cmt/Git_repository/wisun-br-rong"
 silabspti=/home/${TBC_usr}/Git_repository/java_packet_trace_library/silabs-pti/build/libs/silabs-pti-1.12.2.jar
 # Jlink serial number of TBUs
 wsnode0_sn=440088192; wsnode0_mac="8c:1f:64:5e:40:bb:00:01"
-wsnode05_sn=440271870; wsnode05_mac="8c:1f:64:5e:40:bb:00:04"
+wsnode05_sn=440045706; wsnode05_mac="8c:1f:64:5e:40:bb:00:04"
 wsnode1_sn=440054721; wsnode1_mac="8c:1f:64:5e:40:bb:00:02"
 wsnode2_sn=440136634; wsnode2_mac="8c:1f:64:5e:40:bb:00:03"
+wsnode0_ipaddr="fd00:6868:6868:0:8e1f:645e:40bb:1"
+wsnode05_ipaddr="fd00:6868:6868:0:8e1f:645e:40bb:4"
+wsnode1_ipaddr="fd00:6868:6868:0:8e1f:645e:40bb:2"
+wsnode2_ipaddr="fd00:6868:6868:0:8e1f:645e:40bb:3"
+wsnode0_lladdr="fe80::8e1f:645e:40bb:1"
+wsnode05_lladdr="fe80::8e1f:645e:40bb:4"
+wsnode1_lladdr="fe80::8e1f:645e:40bb:2"
+wsnode2_lladdr="fe80::8e1f:645e:40bb:3"
 
 # Test Bed Units(TBU) connected to Test Bed through serial port
 # check serial port discripter for your test bed
@@ -182,7 +191,9 @@ rm -f si_pti_discover.txt
 
 #source test_TR51-LISTEN-LBR-1.sh
 
-source test_UNICAST-DST-DFE-LBR-1.sh
+#source test_UNICAST-DST-DFE-LBR-1.sh
+
+source test_UNICAST-FWD-DFE-LBR-1.sh
 
 sudo rm -f ${LOG_PATH}/sed*.*
 # check session id of serial port and wsbrd(ssh RPi) and kill them

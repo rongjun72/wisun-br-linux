@@ -270,6 +270,7 @@ function display_wait_progress
     do
       echo -n "|"
     done
+    echo -n "  $wait_idx/$wait_sec"
     sleep $time_unit
   done
   echo -ne "\n"
@@ -295,7 +296,7 @@ function compensate_node_csv_time
   echo "compensate time_offset: $time_offset, according to Br capture time"
   time_integer=$(($1/1000));
   time_fract=$(($1%1000));
-  echo "time_integer:time_fract  == $time_integer.$time_fract"
+  #echo "time_integer:time_fract  == $time_integer.$time_fract"
 
   for line_idx in $(seq 1 $(sed -n '$=' $NodeCsv))
   do
@@ -635,4 +636,116 @@ function tshark_mod
   #time_finish=$(date +%s%N); TIME_MOD=$(($time_finish/1000000-$time_start));
   #TIME_MOD=$(echo "$TIME_MOD / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); 
   #echo "----modify takes: $TIME_MOD"
+}
+
+
+function close_udp_server_sockets
+{
+  # function description:
+  # check all opened UDP server sockets on given Wi-SUN node
+  # then close these all sockets 
+  # 
+  # -----------------------------------------------------------------------------
+  # Input parameters:
+  # ----------------------------------------------
+  # $1: runtime wsnode serial log file 
+  # $2: wisun node serial port 
+  #-----------------------------------------------
+  wsnode_serial_log=$1;
+  wsnode_sport=$2;
+
+  echo "wisun socket_list" > $wsnode_sport; sleep 0.5;
+  cat ${wsnode_serial_log} | while read LINE; do
+      if [[ "$LINE" =~ "UDP server  ::" ]]; then
+          udp_server_socket_id=$(echo $LINE | sed 's/# \([0-9]\+\) UDP server ::.*$/\1/');
+          echo "--found UDP server socket ID: $udp_server_socket_id";
+          echo "wisun socket_close $udp_server_socket_id" > $wsnode_sport
+      fi
+  done
+}
+
+function close_udp_client_sockets
+{
+  # function description:
+  # check all opened UDP server sockets on given Wi-SUN node
+  # then close these all sockets 
+  # 
+  # -----------------------------------------------------------------------------
+  # Input parameters:
+  # ----------------------------------------------
+  # $1: runtime wsnode serial log file 
+  # $2: wisun node serial port 
+  #-----------------------------------------------
+  wsnode_serial_log=$1;
+  wsnode_sport=$2;
+
+  echo "wisun socket_list" > $wsnode_sport; sleep 0.5;
+  cat ${wsnode_serial_log} | while read LINE; do
+      if [[ "$LINE" =~ "UDP client" ]]; then
+          udp_clinet_socket_id=$(echo $LINE | sed 's/# \([0-9]\+\) UDP client.*$/\1/');
+          echo "--found UDP client socket ID: $udp_clinet_socket_id";
+          echo "wisun socket_close $udp_clinet_socket_id" > $wsnode_sport
+      fi
+  done
+}
+
+function setup_udp_client
+{
+  # function description:
+  # set up UDP client and get scoket id returned 
+  # 
+  # -----------------------------------------------------------------------------
+  # Input parameters:
+  # ----------------------------------------------
+  # $1: runtime wsnode serial log file 
+  # $2: wisun node serial port 
+  # $3: given UDP socket port number
+  # $4: UDP socket target ipv6 address
+  #-----------------------------------------------
+  wsnode_serial_log=$1;
+  wsnode_sport=$2;
+  UDP_PORT=$3;
+  target_ipaddr=$4;
+
+  udp_clinet_socket_id=255;
+  # set up UDP client at TBD A @rank1 and find the socket ID
+  echo "wisun udp_client $target_ipaddr $UDP_PORT" > $wsnode_sport; sleep 0.5;
+  while read LINE; do
+      if [[ "$LINE" =~ "Opened:" ]]; then
+          udp_clinet_socket_id=$(echo $LINE | sed 's/^.*Opened: \([0-9]\+\).*$/\1/');
+          #echo "UDP client socket ID is: $udp_clinet_socket_id";
+          break;
+      fi
+  done < ${wsnode_serial_log}
+
+  echo $udp_clinet_socket_id;
+  #return $udp_clinet_socket_id;
+}
+
+function setup_udp_server
+{
+  # function description:
+  # set up UDP server and get scoket id returned 
+  # 
+  # -----------------------------------------------------------------------------
+  # Input parameters:
+  # ----------------------------------------------
+  # $1: runtime wsnode serial log file 
+  # $2: wisun node serial port 
+  # $3: given UDP socket port number
+  #-----------------------------------------------
+  wsnode_serial_log=$1;
+  wsnode_sport=$2;
+  UDP_PORT=$3;
+
+  udp_server_socket_id=255;
+  echo "wisun udp_server $UDP_PORT" > $wsnode_sport; sleep 0.5;
+  while read LINE; do 
+      if [[ "$LINE" =~ "Listening:" ]]; then 
+          udp_server_socket_id=$(echo $LINE | sed 's/^.*Listening: \([0-9]\+\).*$/\1/');
+          break;
+      fi
+  done < ${wsnode_serial_log}
+
+  echo $udp_server_socket_id;
 }

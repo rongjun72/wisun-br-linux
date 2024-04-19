@@ -101,16 +101,21 @@ DISC_IMAX=2
 
 source br_cert_funcions.sh
 
+rm -f ${LOG_PATH}/wsnode0_serial.log
+rm -f ${LOG_PATH}/wsnode05_serial.log
+rm -f ${LOG_PATH}/wsnode1_serial.log
+rm -f ${LOG_PATH}/wsnode2_serial.log
+
 # open a minicom window to display serial port echo
 gnome-terminal --window --title="node0" --geometry=80x25+200+100 \
-                                         -e 'minicom -D /dev/ttyACM1 -b 115200 -8' \
-                  --tab --title="node05" -e 'minicom -D /dev/ttyACM0 -b 115200 -8' \
-                  --tab --title="node1"  -e 'minicom -D /dev/ttyACM2 -b 115200 -8' \
-                  --tab --title="node2"  -e 'minicom -D /dev/ttyACM3 -b 115200 -8'
-stty -F ${wsnode0}  ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
-stty -F ${wsnode05} ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
-stty -F ${wsnode1}  ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
-stty -F ${wsnode2}  ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 100
+                                         -e "minicom -D /dev/ttyACM1 -b 115200 -8 -C ${LOG_PATH}/wsnode0_serial.log" \
+                  --tab --title="node05" -e "minicom -D /dev/ttyACM0 -b 115200 -8 -C ${LOG_PATH}/wsnode05_serial.log" \
+                  --tab --title="node1"  -e "minicom -D /dev/ttyACM2 -b 115200 -8 -C ${LOG_PATH}/wsnode1_serial.log" \
+                  --tab --title="node2"  -e "minicom -D /dev/ttyACM3 -b 115200 -8 -C ${LOG_PATH}/wsnode2_serial.log"
+stty -F ${wsnode0}  ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 10
+stty -F ${wsnode05} ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 10
+stty -F ${wsnode1}  ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 10
+stty -F ${wsnode2}  ispeed 115200 ospeed 115200 -parenb cs8 -cstopb -icanon min 0 time 10
 
 # --------------------------------------------------------------------------------------------
 # Before start test script, border router RCP packet capture through wireshark should be set.
@@ -194,6 +199,7 @@ rm -f si_pti_discover.txt
 #source test_UNICAST-DST-DFE-LBR-1.sh
 
 source test_UNICAST-FWD-DFE-LBR-1.sh
+
 
 sudo rm -f ${LOG_PATH}/sed*.*
 # check session id of serial port and wsbrd(ssh RPi) and kill them

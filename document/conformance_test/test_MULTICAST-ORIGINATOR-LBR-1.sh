@@ -1,24 +1,32 @@
 source br_cert_funcions.sh
 # -----------------------------------------------------------------------
-# Test case :   Border Router as DUT [UNICAST-FWD-DFE-LBR-1]
+# Test case :   Border Router as DUT [MULTICAST-ORIGINATOR-LBR-1]
 # -----------------------------------------------------------------------
 # Description:  
-# This test case verifies a DUT as UDP and ICMPv6 Forwarder.
+# This test case verifies the ability of the DUT to originate multicast 
+# ICMPv6 and/or UDP Frames. The upstream/downstream test bed devices 
+# are configured to retrieve ICMPv6 and UDP packets they receive.
+# Note for tests below that the ICMPv6 or UDP frame must be encapsulated 
+# in a ULAD frame with an MPX-IE (IEEE 802.15.9). The exact contents 
+# of the MPX-IE frame are not shown below (focusing rather on the 
+# contents of the IPv6 frame) but expected to be present..
 # 
 # We can not set 6lowpan MTU value for Silabs wisun node!!!
 # We can test fragmentization by sending ping packet larger than 
 # default MTU 1280-byte
 # -----------------------------------------------------------------------
-# Test Bed records the traffic between the DUT and neighboring test bed 
-# devices by subscribing to frames from Test bed devices A-D, Test bed 
-# devices E-H and Test bed devices I-L.  
-# Here is the configuration for this test case:
-#   a. LBR DUT configured for PAN A 
-#   b. Test bed Device A, Device B,  Device C and Device D at Rank 1
-#   c. Test Bed Device E, Device F, Device G and Device H at Rank 2 
+# Test Bed consists of a Border Router plus six test bed routers to 
+# capture the ICMPv6 and UDP packet from the DUT.  
+# The test bed is configured as follows:
+#   a. LBR PAN A configured for PAN A 
+#   b. Test bed Device A, Device B, Device C and Device D at Rank 1
+#   c. Test bed Device E, Device F, Device G and Device H at Rank 2  
 #   d. Test Bed Device I, Device J, Device K and Device L at Rank 3
+# Channel Function is set to Direct Hash (channel hopping). 
+# The TBU’s in the test are all configured for the Direct Hash Channel 
+# Function using a Unicast Dwell Interval (UDI) of 15 ms.
 # -----------------------------------------------------------------------
-TEST_CASE_NAME="UNICAST-FWD-DFE-LBR-1"
+TEST_CASE_NAME="MULTICAST-ORIGINATOR-LBR-1"
 
 # ------------- global variables begin ----------------------------------
 # DO NOT change the global vars in this file
@@ -47,7 +55,7 @@ TEST_CASE_NAME="UNICAST-FWD-DFE-LBR-1"
 # ------------- global variables end ------------------------------------
 debug_option="nDEBUG_ANALYSIS";
 if [ "$debug_option" = "DEBUG_ANALYSIS" ]; then
-    TEST_TIME="0419_14-21";
+    TEST_TIME="0422_15-02";
 else
     TEST_TIME=$(date "+%m%d_%H-%M");
 fi
@@ -85,7 +93,7 @@ else
     WISUN_NODE0_CONFIG=("disconnect" "yes" "domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
         "unicast_dwell_interval" 15 "allowed_channels" "0" "allowed_mac64" $BRRPI_mac "allowed_mac64" $wsnode1_mac);
     WISUN_NODE05_CONFIG=("disconnect" "yes" "domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
-        "unicast_dwell_interval" 255 "allowed_channels" "0" "allowed_mac64" $BRRPI_mac "allowed_mac64" $wsnode1_mac);
+        "unicast_dwell_interval" 15 "allowed_channels" "0" "allowed_mac64" $BRRPI_mac "allowed_mac64" $wsnode1_mac);
     WISUN_NODE1_CONFIG=("disconnect" "yes" "domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
         "unicast_dwell_interval" 15 "allowed_channels" "0" "allowed_mac64" $wsnode0_mac "allowed_mac64" $wsnode2_mac);
     WISUN_NODE2_CONFIG=("disconnect" "yes" "domain" $wisun_domain "mode" $wisun_mode "class" $wisun_class 
@@ -154,27 +162,6 @@ else
     display_wait_progress $step2_time;
     echo "-----------------------------------------------------------------------------"
 
-    echo "-----------------------------------------------------------------------------"
-    for index in $(seq 1 2); do
-        echo "--------ping round $index--------------------------------"
-        time_0=$(date +%s%N); echo "wisun ping $wsnode2_ipaddr 1380" > $wsnode0 
-        TIME_PING_DUT=$(($time_0/1000000-$time_start_test))
-        TIME_NODE0_PING_DUT=$(echo "$TIME_PING_DUT / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
-        echo "ping from node0@rank1 to node2@rank3 at: $TIME_NODE0_PING_DUT"; sleep 5
-        time_0=$(date +%s%N); echo "wisun ping $wsnode2_ipaddr 1380" > $wsnode05 
-        TIME_PING_DUT=$(($time_0/1000000-$time_start_test))
-        TIME_NODE05_PING_DUT=$(echo "$TIME_PING_DUT / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
-        echo "ping from node05@rank1 to node2@rank3 at: $TIME_NODE05_PING_DUT"; sleep 5
-        time_0=$(date +%s%N); echo "wisun ping $wsnode0_ipaddr 1380" > $wsnode2 
-        TIME_PING_DUT=$(($time_0/1000000-$time_start_test))
-        TIME_NODE2_PING_DUT=$(echo "$TIME_PING_DUT / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
-        echo "ping from node2@rank3 to node0@rank1 at: $TIME_NODE2_PING_DUT"; sleep 5
-        time_0=$(date +%s%N); echo "wisun ping $wsnode05_ipaddr 1380" > $wsnode2 
-        TIME_PING_DUT=$(($time_0/1000000-$time_start_test))
-        TIME_NODE2_PING_DUT=$(echo "$TIME_PING_DUT / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/'); # uint in s
-        echo "ping from node2@rank3 to node05@rank1 at: $TIME_NODE2_PING_DUT"; sleep 5
-    done
-    echo "-----------------------------------------------------------------------------"
 
     echo "-----------------------------------------------------------------------------"
     UDP_PORT=25010; udp_body=""; rpt=8;
@@ -183,40 +170,31 @@ else
 
     #close all UDP socket by IDs checked in socket_list
     close_udp_client_sockets ${LOG_PATH}/wsnode0_serial.log $wsnode0
+    close_udp_client_sockets ${LOG_PATH}/wsnode05_serial.log $wsnode05
+    close_udp_client_sockets ${LOG_PATH}/wsnode1_serial.log $wsnode1
+    close_udp_client_sockets ${LOG_PATH}/wsnode2_serial.log $wsnode2
+    close_udp_server_sockets ${LOG_PATH}/wsnode0_serial.log $wsnode0
+    close_udp_server_sockets ${LOG_PATH}/wsnode05_serial.log $wsnode05
+    close_udp_server_sockets ${LOG_PATH}/wsnode1_serial.log $wsnode1
     close_udp_server_sockets ${LOG_PATH}/wsnode2_serial.log $wsnode2
-    # set up UDP client at TBD A @rank1 and find the socket ID
-    udp_clinet_socket_id=$(setup_udp_client ${LOG_PATH}/wsnode0_serial.log $wsnode0 $UDP_PORT $wsnode2_ipaddr);
-    echo "UDP client socket ID is: $udp_clinet_socket_id";
-    # set up UDP server at TBD J @rank3 and find the socket ID
+    # set up UDP server node TBD A-J @rank1-3 and get the socket ID
+    udp_server_socket_id=$(setup_udp_server ${LOG_PATH}/wsnode0_serial.log $wsnode0 $UDP_PORT);
+    udp_server_socket_id=$(setup_udp_server ${LOG_PATH}/wsnode05_serial.log $wsnode05 $UDP_PORT);
+    udp_server_socket_id=$(setup_udp_server ${LOG_PATH}/wsnode1_serial.log $wsnode1 $UDP_PORT);
     udp_server_socket_id=$(setup_udp_server ${LOG_PATH}/wsnode2_serial.log $wsnode2 $UDP_PORT);
     echo "UDP server socket ID is: $udp_server_socket_id";
 
-    for index in $(seq 1 5); do
-        echo "--------send udp frame round $index--------------------------------"
-        echo "wisun socket_write $udp_clinet_socket_id $udp_body" > $wsnode0 
+    for index in $(seq 1 2); do
+        echo "--------multicast udp frame from BR DUT round $index--------------------------------"
+        ssh  ${BRRPI_usr}@${BRRPI_ip} python3 Git_repository/wisun-br-rong/tools/multicast_packet_send.py ff03::2 25010 $udp_body
         TIME_NODE0_PING_DUT=$(echo "$(($(date +%s%N)/1000000-$time_start_test)) / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/');
-        echo "send udp frame from node0@rank1 to node2@rank3 at: $TIME_NODE0_PING_DUT"; sleep 5
-    done
+        echo "multicast udp frame from BR DUT to nodes@rank1-3 at: $TIME_NODE0_PING_DUT"; sleep 50
 
-    #close all UDP socket by IDs checked in socket_list
-    close_udp_client_sockets ${LOG_PATH}/wsnode0_serial.log $wsnode2
-    close_udp_server_sockets ${LOG_PATH}/wsnode2_serial.log $wsnode0
-    # set up UDP client at TBD J @rank3 and find the socket ID
-    udp_clinet_socket_id=$(setup_udp_client ${LOG_PATH}/wsnode2_serial.log $wsnode2 $UDP_PORT $wsnode0_ipaddr);
-    echo "UDP client socket ID is: $udp_clinet_socket_id";
-    # set up UDP server at TBD A @rank1 and find the socket ID
-    udp_server_socket_id=$(setup_udp_server ${LOG_PATH}/wsnode0_serial.log $wsnode0 $UDP_PORT);
-    echo "UDP server socket ID is: $udp_server_socket_id";
-
-    for index in $(seq 1 5); do
-        echo "--------send udp frame round $index--------------------------------"
-        echo "wisun socket_write $udp_clinet_socket_id $udp_body" > $wsnode2 
-        TIME_NODE0_PING_DUT=$(echo "$(($(date +%s%N)/1000000-$time_start_test)) / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/');
-        echo "send udp frame from node2@rank3 to node0@rank1 at: $TIME_NODE0_PING_DUT"; sleep 5
+        
     done
 
     echo "-----------------------------------------------------------------------------"
-    display_wait_progress $(($step3_time-20*2-5*5));
+    display_wait_progress $(($step3_time-50*2));
 
 
 
@@ -1217,170 +1195,49 @@ step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
 
 
 
-#---------- TBD A/E send ICPMv6 Echo Request to the LBR DUT 
-echo "---- TBD A/E send ICPMv6 Echo Request to the LBR DUT ----------------"
-time_checked=$(($step0_time+$step1_time+$step2_time+20-1));
+
+#---------- DUT send UDP multicast frame and TBUs forward them to all group 
+echo "---- DUT send UDP multicast frame and TBUs forward them to all group ----------------"
 for index in $(seq 1 2); do
-    echo "-------ping round $index----------"
-    STEP_PASSFAIL_Criteria=(
-    "output csv file:"  ${NodeCsvFile}                                                          
-    "Step number:"      "Step${#steps_pass[@]}"
-    "Step Description:" "round:$index: Test bed device A is able to send ICMPv6 Echo Request to the LBR DUT using DFE" 
-    "time range:"       $time_checked               $(echo "$time_checked + 7.000000" | bc -l)
-    "match items:"      "ipv6.src"                  $wsnode0_lladdr,$wsnode0_ipaddr
-    "match items:"      "ipv6.dst"                  $BRRPI_lladdr,$wsnode2_ipaddr
-    "match items:"      "frame.protocols"           "wpan:6lowpan:data:data:ipv6:ipv6.hopopts:ipv6:ipv6.fraghdr:icmpv6:data"
-    "match items:"      "icmpv6.type"               128
-    "match items:"      "icmpv6.code"               0
-    );
-    step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
-    #echo "-----------------"
-    STEP_PASSFAIL_Criteria=(
-    "output csv file:"  ${NodeCsvFile}                                                          
-    "Step number:"      "Step${#steps_pass[@]}"
-    "Step Description:" "round:$index: 6LoWPAN frame from DUT containing the ICMPv6 Echo Reply" 
-    "time range:"       $time_checked               $(echo "$time_checked + 7.000000" | bc -l)
-    "match items:"      "ipv6.src"                  $wsnode2_lladdr,$wsnode2_ipaddr
-    "match items:"      "ipv6.dst"                  $wsnode1_lladdr,$wsnode0_ipaddr
-    "match items:"      "frame.protocols"           "wpan:6lowpan:data:data:ipv6:ipv6.hopopts:ipv6:ipv6.fraghdr:icmpv6:data"
-    "match items:"      "icmpv6.type"               129
-    "match items:"      "icmpv6.code"               0
-    );
-    step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
-    #echo "-----------------"
-    STEP_PASSFAIL_Criteria=(
-    "output csv file:"  ${NodeCsvFile}                                                          
-    "Step number:"      "Step${#steps_pass[@]}"
-    "Step Description:" "round:$index: Test bed device E is able to send ICMPv6 Echo Request to the LBR DUT using DFE" 
-    "time range:"       $time_checked               $(echo "$time_checked + 7.000000" | bc -l)
-    "match items:"      "ipv6.src"                  $wsnode05_lladdr,$wsnode05_ipaddr
-    "match items:"      "ipv6.dst"                  $BRRPI_lladdr,$wsnode2_ipaddr
-    "match items:"      "frame.protocols"           "wpan:6lowpan:data:data:ipv6:ipv6.hopopts:ipv6:ipv6.fraghdr:icmpv6:data"
-    "match items:"      "icmpv6.type"               128
-    "match items:"      "icmpv6.code"               0
-    );
-    step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
-    #echo "-----------------"
-    STEP_PASSFAIL_Criteria=(
-    "output csv file:"  ${NodeCsvFile}                                                          
-    "Step number:"      "Step${#steps_pass[@]}"
-    "Step Description:" "round:$index: 6LoWPAN frame from DUT containing the ICMPv6 Echo Reply" 
-    "time range:"       $time_checked               $(echo "$time_checked + 7.000000" | bc -l)
-    "match items:"      "ipv6.src"                  $wsnode2_lladdr,$wsnode2_ipaddr
-    "match items:"      "ipv6.dst"                  $wsnode1_lladdr,$wsnode05_ipaddr
-    "match items:"      "frame.protocols"           "wpan:6lowpan:data:data:ipv6:ipv6.hopopts:ipv6:ipv6.fraghdr:icmpv6:data"
-    "match items:"      "icmpv6.type"               129
-    "match items:"      "icmpv6.code"               0
-    );
-    step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
-
-
-    #echo "-----------------"
-    STEP_PASSFAIL_Criteria=(
-    "output csv file:"  ${NodeCsvFile}                                                          
-    "Step number:"      "Step${#steps_pass[@]}"
-    "Step Description:" "round:$index: Test bed device A is able to send ICMPv6 Echo Request to the LBR DUT using DFE" 
-    "time range:"       $time_checked               $(echo "$time_checked + 7.000000" | bc -l)
-    "match items:"      "ipv6.src"                  $wsnode2_lladdr,$wsnode2_ipaddr
-    "match items:"      "ipv6.dst"                  $wsnode1_lladdr,$wsnode0_ipaddr
-    "match items:"      "frame.protocols"           "wpan:6lowpan:data:data:ipv6:ipv6.hopopts:ipv6:ipv6.fraghdr:icmpv6:data"
-    "match items:"      "icmpv6.type"               128
-    "match items:"      "icmpv6.code"               0
-    );
-    step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
-    #echo "-----------------"
-    STEP_PASSFAIL_Criteria=(
-    "output csv file:"  ${NodeCsvFile}                                                          
-    "Step number:"      "Step${#steps_pass[@]}"
-    "Step Description:" "round:$index: 6LoWPAN frame from DUT containing the ICMPv6 Echo Reply" 
-    "time range:"       $time_checked               $(echo "$time_checked + 7.000000" | bc -l)
-    "match items:"      "ipv6.src"                  $wsnode0_lladdr,$wsnode0_ipaddr
-    "match items:"      "ipv6.dst"                  $BRRPI_lladdr,$wsnode2_ipaddr
-    "match items:"      "frame.protocols"           "wpan:6lowpan:data:data:ipv6:ipv6.hopopts:ipv6:ipv6.fraghdr:icmpv6:data"
-    "match items:"      "icmpv6.type"               129
-    "match items:"      "icmpv6.code"               0
-    );
-    step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
-    #echo "-----------------"
-    STEP_PASSFAIL_Criteria=(
-    "output csv file:"  ${NodeCsvFile}                                                          
-    "Step number:"      "Step${#steps_pass[@]}"
-    "Step Description:" "round:$index: Test bed device E is able to send ICMPv6 Echo Request to the LBR DUT using DFE" 
-    "time range:"       $time_checked               $(echo "$time_checked + 7.000000" | bc -l)
-    "match items:"      "ipv6.src"                  $wsnode2_lladdr,$wsnode2_ipaddr
-    "match items:"      "ipv6.dst"                  $wsnode1_lladdr,$wsnode05_ipaddr
-    "match items:"      "frame.protocols"           "wpan:6lowpan:data:data:ipv6:ipv6.hopopts:ipv6:ipv6.fraghdr:icmpv6:data"
-    "match items:"      "icmpv6.type"               128
-    "match items:"      "icmpv6.code"               0
-    );
-    step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
-    #echo "-----------------"
-    STEP_PASSFAIL_Criteria=(
-    "output csv file:"  ${NodeCsvFile}                                                          
-    "Step number:"      "Step${#steps_pass[@]}"
-    "Step Description:" "round:$index: 6LoWPAN frame from DUT containing the ICMPv6 Echo Reply" 
-    "time range:"       $time_checked               $(echo "$time_checked + 7.000000" | bc -l)
-    "match items:"      "ipv6.src"                  $wsnode05_lladdr,$wsnode05_ipaddr
-    "match items:"      "ipv6.dst"                  $BRRPI_lladdr,$wsnode2_ipaddr
-    "match items:"      "frame.protocols"           "wpan:6lowpan:data:data:ipv6:ipv6.hopopts:ipv6:ipv6.fraghdr:icmpv6:data"
-    "match items:"      "icmpv6.type"               129
-    "match items:"      "icmpv6.code"               0
-    );
-    step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
-done
-
-
-
-
-#---------- sends UDP frame between TBD L using LBR DUT as upward routing path 
-echo "---- sends UDP frame between TBD L using LBR DUT as upward routing path ----------------"
-time_checked=$(($step0_time+$step1_time+$step2_time+20+20*2-1));
-for index in $(seq 1 5); do
-    echo "-------send udp A -> J, round $index----------"
-    STEP_PASSFAIL_Criteria=(
-    "output csv file:"  ${NodeCsvFile}                                                          
-    "Step number:"      "Step${#steps_pass[@]}"
-    "Step Description:" "round:$index: TBD A sends UDP frame to TBD J using the LBR DUT as the upward routing path" 
-    "time range:"       $time_checked               $(echo "$time_checked + 7.000000" | bc -l)
-    "match items:"      "ipv6.src"                  $wsnode0_lladdr,$wsnode0_ipaddr
-    "match items:"      "ipv6.dst"                  $BRRPI_lladdr,$wsnode2_ipaddr
-    "match items:"      "frame.protocols"           "wpan:6lowpan:data:ipv6:ipv6.hopopts:ipv6:udp:data"
-    );
-    step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
-    #echo "-----------------"
-    STEP_PASSFAIL_Criteria=(
-    "output csv file:"  ${NodeCsvFile}                                                          
-    "Step number:"      "Step${#steps_pass[@]}"
-    "Step Description:" "round:$index: TBD J receives UDP frame from TBD A using the LBR DUT as the downward routing path" 
-    "time range:"       $time_checked               $(echo "$time_checked + 7.000000" | bc -l)
-    "match items:"      "ipv6.src"                  $BRRPI_ipv6,$wsnode0_ipaddr
-    "match items:"      "ipv6.dst"                  $wsnode2_ipaddr,$wsnode2_ipaddr
-    "match items:"      "frame.protocols"           "wpan:6lowpan:data:ipv6:ipv6.routing:ipv6:udp:data"
-    );
-    step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
-done
-
-time_checked=$(($step0_time+$step1_time+$step2_time+20+20*2+5*5+2-1));
-for index in $(seq 1 5); do
+    time_checked=$(($step0_time+$step1_time+$step2_time+20+50*($index-1)));
     echo "-------send udp J -> A, round $index----------"
     STEP_PASSFAIL_Criteria=(
     "output csv file:"  ${NodeCsvFile}                                                          
     "Step number:"      "Step${#steps_pass[@]}"
-    "Step Description:" "round:$index: TBD J sends UDP frame to TBD A using the LBR DUT as the upward routing path" 
-    "time range:"       $time_checked               $(echo "$time_checked + 7.000000" | bc -l)
-    "match items:"      "ipv6.src"                  $wsnode2_lladdr,$wsnode2_ipaddr
-    "match items:"      "ipv6.dst"                  $wsnode1_lladdr,$wsnode0_ipaddr
+    "Step Description:" "round:$index: 6LoWPAN frame from DUT containing the UDP multicast payload shows IPHC header with Multicast Address" 
+    "time range:"       $time_checked               $(echo "$time_checked + 30.000000" | bc -l)
+    "match items:"      "wpan.src64"                $BRRPI_mac
+    "match items:"      "wpan.dst64"                --
+    "match items:"      "ipv6.src"                  $BRRPI_ipv6,$BRRPI_ipv6
+    "match items:"      "ipv6.dst"                  ff03::fc,ff03::2
     "match items:"      "frame.protocols"           "wpan:6lowpan:data:ipv6:ipv6.hopopts:ipv6:udp:data"
     );
     step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
     #echo "-----------------"
+    time_checked=$(($step0_time+$step1_time+$step2_time+20+50*($index-1)));
     STEP_PASSFAIL_Criteria=(
     "output csv file:"  ${NodeCsvFile}                                                          
     "Step number:"      "Step${#steps_pass[@]}"
-    "Step Description:" "round:$index: TBD A receives UDP frame from TBD J using the LBR DUT as the downward routing path" 
-    "time range:"       $time_checked               $(echo "$time_checked + 7.000000" | bc -l)
-    "match items:"      "ipv6.src"                  $wsnode1_lladdr,$wsnode2_ipaddr
-    "match items:"      "ipv6.dst"                  $wsnode0_lladdr,$wsnode0_ipaddr
+    "Step Description:" "round:$index: TBU A forwards 6LoWPAN frame from DUT containing the UDP multicast payload shows IPHC header with Multicast Address" 
+    "time range:"       $time_checked               $(echo "$time_checked + 30.000000" | bc -l)
+    "match items:"      "wpan.src64"                $wsnode0_mac
+    "match items:"      "wpan.dst64"                --
+    "match items:"      "ipv6.src"                  $BRRPI_ipv6,$BRRPI_ipv6
+    "match items:"      "ipv6.dst"                  ff03::fc,ff03::2
+    "match items:"      "frame.protocols"           "wpan:6lowpan:data:ipv6:ipv6.hopopts:ipv6:udp:data"
+    );
+    step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE
+    #echo "-----------------"
+    time_checked=$(($step0_time+$step1_time+$step2_time+20+50*($index-1)));
+    STEP_PASSFAIL_Criteria=(
+    "output csv file:"  ${NodeCsvFile}                                                          
+    "Step number:"      "Step${#steps_pass[@]}"
+    "Step Description:" "round:$index: TBU B forwards 6LoWPAN frame from DUT containing the UDP multicast payload shows IPHC header with Multicast Address" 
+    "time range:"       $time_checked               $(echo "$time_checked + 30.000000" | bc -l)
+    "match items:"      "wpan.src64"                $wsnode05_mac
+    "match items:"      "wpan.dst64"                --
+    "match items:"      "ipv6.src"                  $BRRPI_ipv6,$BRRPI_ipv6
+    "match items:"      "ipv6.dst"                  ff03::fc,ff03::2
     "match items:"      "frame.protocols"           "wpan:6lowpan:data:ipv6:ipv6.hopopts:ipv6:udp:data"
     );
     step_pass_fail_check STEP_PASSFAIL_Criteria CSV_PACKET_FIELD_TABLE

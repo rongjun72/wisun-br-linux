@@ -198,7 +198,9 @@ rm -f si_pti_discover.txt
 
 #source test_UNICAST-DST-DFE-LBR-1.sh
 
-source test_UNICAST-FWD-DFE-LBR-1.sh
+#source test_UNICAST-FWD-DFE-LBR-1.sh
+
+source test_MULTICAST-ORIGINATOR-LBR-1.sh
 
 
 sudo rm -f ${LOG_PATH}/sed*.*

@@ -240,7 +240,7 @@ function find_netif_for_pti_capture
   if [ -n "$line_sn" ]; then
     #echo "node jlink sn found in line: $line_sn..."
     local line_ip=$(($line_sn + 1)); 
-    wsnode_netif=$(sed -n "${line_ip}p" $1 | sed 's/^.*netif=//g')
+    wsnode_netif=$(sed -n "${line_ip}p" $1 | sed 's/^.*netif=//g' | sed "s/[^.0-9]//g")
     #echo "node net if is: $wsnode_netif"
   fi
   echo $wsnode_netif
@@ -749,3 +749,32 @@ function setup_udp_server
 
   echo $udp_server_socket_id;
 }
+
+function kill_minicoms
+{
+  # function description:
+  # check session id of given serial port and kill them 
+  # 
+  # -----------------------------------------------------------------------------
+  # Input parameters:
+  # ----------------------------------------------
+  # $1: device wsnode0 
+  # $2: device wsnode05 
+  # $3: device wsnode1 
+  # $4: device wsnode2 
+  #-----------------------------------------------
+  local wsnode0=$1
+  local wsnode05=$2
+  local wsnode1=$3
+  local wsnode2=$4
+ 
+  local node0_id=$(ps -u | grep 'minicom -D' | grep $wsnode0 | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
+  local node05_id=$(ps -u | grep 'minicom -D' | grep $wsnode05 | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
+  local node1_id=$(ps -u | grep 'minicom -D' | grep $wsnode1 | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
+  local node2_id=$(ps -u | grep 'minicom -D' | grep $wsnode2 | sed 's/^[^0-9]*\([0-9]*\).*/\1/g')
+  echo "kill minicom serial port 0: $node0_id"; kill $node0_id;
+  echo "kill minicom serial port 0: $node05_id"; kill $node05_id;
+  echo "kill minicom serial port 1: $node1_id"; kill $node1_id;
+  echo "kill minicom serial port 2: $node2_id"; kill $node2_id;
+}
+

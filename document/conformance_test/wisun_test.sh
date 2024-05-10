@@ -120,44 +120,12 @@ rm -f si_pti_discover.txt
 
 
 
-# test begin....................
-#source test_PAN-PA-SELECT-2.sh
 
-#source test_PAN-KEY-TLS-2.sh
 
-#source test_PAN-KEY-TLS-4.sh
 
-#source test_PAN-KEY-TLS-6.sh
 
-#source test_PAN-KEY-TLS-8.sh
 
-#source test_PAN-KEY-TLS-11.sh
 
-#source test_ROLL-RPL-ROOT-1.sh
-
-#source test_DHCPv6-SERVER.sh
-
-#source test_6LO-ND-LBR-1.sh
-
-#source test_DIRECT-HASH-HOP-LBR-1.sh
-
-#source test_DIRECT-SHORT-DWELL-LBR-1.sh
-
-#source test_DIRECT-MIXED-DWELL-LBR-1.sh
-
-#source test_DIRECT-EXC-CHAN-SEND-LBR-1.sh
-
-#source test_DIRECT-EXC-CHAN-SEND-LBR-2.sh
-
-#source test_DIRECT-EXC-CHAN-LISTEN-LBR-1.sh
-
-#source test_TR51-LISTEN-LBR-1.sh
-
-#source test_UNICAST-DST-DFE-LBR-1.sh
-
-#source test_UNICAST-FWD-DFE-LBR-1.sh
-
-#source test_MULTICAST-ORIGINATOR-LBR-1.sh
 
 
 sudo rm -f ${LOG_PATH}/sed*.*

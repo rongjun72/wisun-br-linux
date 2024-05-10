@@ -1,6 +1,6 @@
 source br_cert_funcions.sh
 # -----------------------------------------------------------------------
-# Test case :   Border Router as DUT [MULTICAST-ORIGINATOR-LBR-1]
+# Test case :   Border Router as DUT [MULTICAST-GROUP-FWD-LBR-1]
 # -----------------------------------------------------------------------
 # Description:  
 # This test case verifies the ability of the DUT to originate multicast 
@@ -26,7 +26,7 @@ source br_cert_funcions.sh
 # The TBU’s in the test are all configured for the Direct Hash Channel 
 # Function using a Unicast Dwell Interval (UDI) of 15 ms.
 # -----------------------------------------------------------------------
-TEST_CASE_NAME="MULTICAST-ORIGINATOR-LBR-1"
+TEST_CASE_NAME="MULTICAST-GROUP-FWD-LBR-1"
 
 # ------------- global variables begin ----------------------------------
 # DO NOT change the global vars in this file

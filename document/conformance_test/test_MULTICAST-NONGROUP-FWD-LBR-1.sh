@@ -1,6 +1,6 @@
 source br_cert_funcions.sh
 # -----------------------------------------------------------------------
-# Test case :   Border Router as DUT [MULTICAST-ORIGINATOR-LBR-1]
+# Test case :   Border Router as DUT [MULTICAST-NONGROUP-FWD-LBR-1]
 # -----------------------------------------------------------------------
 # Description:  
 # This test case verifies the ability of the DUT to originate multicast 
@@ -26,7 +26,7 @@ source br_cert_funcions.sh
 # The TBU’s in the test are all configured for the Direct Hash Channel 
 # Function using a Unicast Dwell Interval (UDI) of 15 ms.
 # -----------------------------------------------------------------------
-TEST_CASE_NAME="MULTICAST-ORIGINATOR-LBR-1"
+TEST_CASE_NAME="MULTICAST-NONGROUP-FWD-LBR-1"
 
 # ------------- global variables begin ----------------------------------
 # DO NOT change the global vars in this file
@@ -185,10 +185,10 @@ else
     echo "UDP server socket ID is: $udp_server_socket_id";
 
     for index in $(seq 1 2); do
-        echo "--------multicast udp frame from BR DUT round $index--------------------------------"
-        ssh  ${BRRPI_usr}@${BRRPI_ip} python3 Git_repository/wisun-br-rong/tools/multicast_packet_send.py $multicast_addr $UDP_PORT $udp_body
-        TIME_NODE0_PING_DUT=$(echo "$(($(date +%s%N)/1000000-$time_start_test)) / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/');
-        echo "multicast udp frame from BR DUT to nodes@rank1-3 at: $TIME_NODE0_PING_DUT"; sleep 50
+        echo "--------send icmp multicast frame from TBD A round $index--------------------------------"
+        echo "wisun ping $multicast_addr" > $wsnode0;
+        TIME_NODE0_ICMP_MULTICAST=$(echo "$(($(date +%s%N)/1000000-$time_start_test)) / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/');
+        echo "send icmp multicast frame from TBD A at: $TIME_NODE0_ICMP_MULTICAST"; sleep 50
 
         
     done

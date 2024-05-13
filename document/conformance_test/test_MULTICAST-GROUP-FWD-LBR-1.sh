@@ -186,7 +186,7 @@ else
 
     for index in $(seq 1 2); do
         echo "--------multicast udp frame from BR DUT round $index--------------------------------"
-        ssh  ${BRRPI_usr}@${BRRPI_ip} python3 Git_repository/wisun-br-rong/tools/multicast_packet_send.py $multicast_addr $UDP_PORT $udp_body
+        ssh  ${BRRPI_usr}@${BRRPI_ip} python3 $multicast_send_cmd $multicast_addr $UDP_PORT $udp_body
         TIME_NODE0_PING_DUT=$(echo "$(($(date +%s%N)/1000000-$time_start_test)) / 1000" | bc -l | sed 's/\([0-9]\+\.[0-9]\{3\}\).*/\1/');
         echo "multicast udp frame from BR DUT to nodes@rank1-3 at: $TIME_NODE0_PING_DUT"; sleep 50
 

@@ -532,7 +532,7 @@ int wsbr_main(int argc, char *argv[])
     struct wsbr_ctxt *ctxt = &g_ctxt;
     struct pollfd fds[POLLFD_COUNT];
 
-    INFO("Silicon Labs Wi-SUN border router %s", version_daemon_str);
+    INFO("CMosTek Wi-SUN border router %s", version_daemon_str);
     signal(SIGINT, kill_handler);
     signal(SIGHUP, kill_handler);
     signal(SIGTERM, kill_handler);

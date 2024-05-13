@@ -6,11 +6,12 @@ TBC_ip="192.168.31.179"
 # Device Under Test(DUT) are border router(BR) implemented by RaspberryPi+RCP
 # witch can be controlled through ssh remote access  
 BRRPI_usr="cmt"
-BRRPI_ip="192.168.31.97"
+BRRPI_ip="192.168.31.217"
 BRRPI_mac="8e:1f:64:5e:40:00:f2:0b"
 BRRPI_lladdr="fe80::8c1f:645e:4000:f20b"
 BRRPI_ipv6="fd00:6868:6868:0:8c1f:645e:4000:f20b"
-BRRPI_path="/home/cmt/Git_repository/wisun-br-rong"
+BRRPI_path="/home/cmt/Git_repository/wisun-br-linux"
+multicast_send_cmd=${BRRPI_path}/tools/multicast_packet_send.py
 silabspti=/home/${TBC_usr}/Git_repository/java_packet_trace_library/silabs-pti/build/libs/silabs-pti-1.12.2.jar
 # Jlink serial number of TBUs
 wsnode0_sn=440088192; wsnode0_mac="8c:1f:64:5e:40:bb:00:01"
@@ -196,11 +197,11 @@ rm -f si_pti_discover.txt
 
 #source test_TR51-LISTEN-LBR-1.sh
 
-source test_UNICAST-DST-DFE-LBR-1.sh
+#source test_UNICAST-DST-DFE-LBR-1.sh
 
 #source test_UNICAST-FWD-DFE-LBR-1.sh
 
-#source test_MULTICAST-ORIGINATOR-LBR-1.sh
+source test_MULTICAST-ORIGINATOR-LBR-1.sh
 
 #source test_MULTICAST-NONGROUP-FWD-LBR-1.sh
 

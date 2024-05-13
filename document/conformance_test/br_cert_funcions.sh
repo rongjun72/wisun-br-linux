@@ -199,7 +199,7 @@ function ssh_check_and_kill_wsbrd
   local thread=$(echo $(ssh ${BRRPI_usr}@${BRRPI_ip} "ps -u wsbrd") | sed 's/^.*CMD //g' | sed 's/ .*$//g')
   echo "------check the thread number of wsbrd: $thread"
   # kill existing wsbrd thread before start
-  if [ -n "$thread" ]; then
+  if [ -n "$thread" ] && [ "$thread" != "PID" ]; then
     echo "------kill the existing wsbrd thread: $thread before start" 
     ssh ${BRRPI_usr}@${BRRPI_ip} "sudo kill $thread";
   fi

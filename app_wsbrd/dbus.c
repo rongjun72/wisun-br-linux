@@ -1526,6 +1526,19 @@ int dbus_node_fw_ota(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
     return 0;
 }
 
+int dbus_add_trust_ca(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    ///struct wsbr_ctxt *ctxt = userdata;
+    char *trust_ca_file;
+    int ret;
+
+    ret = sd_bus_message_read_basic(m, 's', (void **)&trust_ca_file);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    WARN("Add new trust certificate to cert chain: %s", trust_ca_file);
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
 
 static const sd_bus_vtable dbus_vtable[] = {
         SD_BUS_VTABLE_START(0),
@@ -1668,6 +1681,8 @@ static const sd_bus_vtable dbus_vtable[] = {
                         dbus_rcp_fw_update, 0),
         SD_BUS_METHOD("nodeFwOTA", "ays", NULL,
                         dbus_node_fw_ota, 0),
+        SD_BUS_METHOD("addTrustCA", "as", NULL,
+                        dbus_add_trust_ca, 0),
         SD_BUS_VTABLE_END
 };
 

@@ -721,6 +721,7 @@ void parse_commandline(struct wsbrd_conf *config, int argc, char *argv[],
                 break;
             case 'A':
                 strcpy(info.key, "authority");
+                //WARN("---------------------------pem file:: %s", info->filename);
                 conf_set_cert(config, &info, &config->tls_ca, NULL);
                 break;
             case 'b':

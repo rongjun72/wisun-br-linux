@@ -1068,6 +1068,22 @@ fn node_fw_ota(dbus_user: bool, arg0: String, arg1: String) -> Result<(), Box<dy
     Ok(())
 }
 
+fn add_trust_ca(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("trust ca file name: {:?}", arg0);
+    let _ret = dbus_proxy.add_trust_ca(arg0);
+
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut pan_id: u16             = 0;
     let mut pan_size: u16           = 0;
@@ -1224,6 +1240,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .subcommand(SubCommand::with_name("node-fw-ota").about("Start node firmware OTA. Usage: >wsbrd_cli node-fw-ota ota_multicast_addr ota_filename")
             .arg(Arg::with_name("ota_multicast_addr").help("input ota multicast group ipv6 addr").empty_values(false))
             .arg(Arg::with_name("ota_image").help("node-fw-ota ota_filename").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("add-trust-ca").about("Add a trusted certificate to certs chain. Usage: >wsbrd_cli add-trust-ca pem_file")
+            .arg(Arg::with_name("pem_filename").help("add-trust-ca pem_filename").empty_values(false))
         ,)
         .get_matches();
     let dbus_user = matches.is_present("user");
@@ -1636,6 +1655,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             node_fw_ota(dbus_user, ota_multicast_addr, ota_image)
+        }
+        Some("add-trust-ca")       => {
+            let mut pem_file: String  = String::from("");
+            if let Some(subcmd) = matches.subcommand_matches("add-trust-ca") {
+                if let Some(tempval) = subcmd.value_of("pem_file") {
+                    pem_file = tempval.to_string();
+                }
+            }
+            add_trust_ca(dbus_user, pem_file)
         }
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }

@@ -1528,20 +1528,72 @@ int dbus_node_fw_ota(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 
 int dbus_add_trust_ca(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
 {
-    struct wsbr_ctxt *ctxt = userdata;
+    /////struct wsbr_ctxt *ctxt = userdata;
     char *trust_ca_file;
     int ret;
-    arm_certificate_entry_s ttt;
+    ////arm_certificate_entry_s ttt;
 
     ret = sd_bus_message_read_basic(m, 's', (void **)&trust_ca_file);
     WARN_ON(ret < 0, "%s", strerror(-ret));
     WARN("Add new trust certificate to cert chain: %s", trust_ca_file);
 
-    ret = read_cert(trust_ca_file, &dest->cert);
+    //////ret = read_cert(trust_ca_file, &dest->cert);
 
     sd_bus_reply_method_return(m, NULL);
     return 0;
 }
+
+int dbus_register_meter(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    ////struct wsbr_ctxt *ctxt = userdata;
+    const uint8_t *dest_addr;
+    size_t len;
+    int ret;
+
+    ret = sd_bus_message_read_array(m, 'y', (const void **)&dest_addr, &len);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    WARN_ON(len != 16, "%s", strerror(EINVAL));
+
+    tr_warn("register meter ipv6 address: %s", tr_ipv6(dest_addr));
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
+int dbus_remove_meter(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    ////struct wsbr_ctxt *ctxt = userdata;
+    const uint8_t *dest_addr;
+    size_t len;
+    int ret;
+
+    ret = sd_bus_message_read_array(m, 'y', (const void **)&dest_addr, &len);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    WARN_ON(len != 16, "%s", strerror(EINVAL));
+
+    tr_warn("remove meter ipv6 address: %s", tr_ipv6(dest_addr));
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
+int dbus_async_request(sd_bus_message *m, void *userdata, sd_bus_error *ret_error)
+{
+    ////struct wsbr_ctxt *ctxt = userdata;
+    const uint8_t *dest_addr;
+    size_t len;
+    int ret;
+
+    ret = sd_bus_message_read_array(m, 'y', (const void **)&dest_addr, &len);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    WARN_ON(len != 16, "%s", strerror(EINVAL));
+
+    tr_warn("async request meter ipv6 address: %s", tr_ipv6(dest_addr));
+
+    sd_bus_reply_method_return(m, NULL);
+    return 0;
+}
+
 
 static const sd_bus_vtable dbus_vtable[] = {
         SD_BUS_VTABLE_START(0),
@@ -1686,6 +1738,15 @@ static const sd_bus_vtable dbus_vtable[] = {
                         dbus_node_fw_ota, 0),
         SD_BUS_METHOD("addTrustCA", "s", NULL,
                         dbus_add_trust_ca, 0),
+        SD_BUS_METHOD("registerMeter", "ay", NULL,
+                        dbus_register_meter, 0),
+        SD_BUS_METHOD("removeMeter", "ay", NULL,
+                        dbus_remove_meter, 0),
+        SD_BUS_METHOD("asyncRequest", "ay", NULL,
+                        dbus_async_request, 0),
+        SD_BUS_PROPERTY("listMeters", "q", dbus_get_ws_pan_id,
+                        offsetof(struct wsbr_ctxt, rcp_if_id),
+                        SD_BUS_VTABLE_PROPERTY_CONST),
         SD_BUS_VTABLE_END
 };
 

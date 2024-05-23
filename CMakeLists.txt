@@ -120,6 +120,8 @@ add_library(libwsbrd STATIC
     app_wsbrd/commandline.c
     app_wsbrd/commandline_values.c
     app_wsbrd/mbedtls_config_check.c
+    app_wsbrd/meter_collector/wisun_collector.c
+    app_wsbrd/meter_collector/wisun_meter_collector.c
     common/crc.c
     common/bus_uart.c
     common/events_scheduler.c
@@ -231,6 +233,7 @@ add_library(libwsbrd STATIC
 )
 target_include_directories(libwsbrd PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    app_wsbrd/meter_collector/
     stack/source/
     stack/
 )

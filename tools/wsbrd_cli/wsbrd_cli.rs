@@ -1084,6 +1084,79 @@ fn add_trust_ca(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error:
     Ok(())
 }
 
+fn register_meter(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Send meter register request to destination: {:?}", arg0);
+    let arg0: Ipv6Addr = arg0.parse().unwrap();
+    let ipv6_addr: Vec<u8> = arg0.octets().to_vec();
+ 
+    let _ret = dbus_proxy.register_meter(ipv6_addr);
+
+    Ok(())
+}
+
+fn remove_meter(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Send meter remove request to destination: {:?}", arg0);
+    let arg0: Ipv6Addr = arg0.parse().unwrap();
+    let ipv6_addr: Vec<u8> = arg0.octets().to_vec();
+ 
+    let _ret = dbus_proxy.remove_meter(ipv6_addr);
+
+    Ok(())
+}
+
+fn async_request(dbus_user: bool, arg0: String) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Send async request to destination: {:?}", arg0);
+    let arg0: Ipv6Addr = arg0.parse().unwrap();
+    let ipv6_addr: Vec<u8> = arg0.octets().to_vec();
+ 
+    let _ret = dbus_proxy.async_request(ipv6_addr);
+
+    Ok(())
+}
+
+fn list_meters(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
+    let dbus_conn;
+    if dbus_user {
+        dbus_conn = Connection::new_session()?;
+    } else {
+        dbus_conn = Connection::new_system()?;
+    }
+    let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
+
+    println!("--------------------------------------------------------------");
+    println!("Wi-SUN PAN id: {:#04x}", dbus_proxy.wisun_pan_id().unwrap_or(0));
+
+    Ok(())
+}
+
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut pan_id: u16             = 0;
     let mut pan_size: u16           = 0;
@@ -1244,6 +1317,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .subcommand(SubCommand::with_name("add-trust-ca").about("Add a trusted certificate to certs chain. Usage: >wsbrd_cli add-trust-ca pem_file")
             .arg(Arg::with_name("pem_file").help("add-trust-ca pem_file").empty_values(false))
         ,)
+        .subcommand(SubCommand::with_name("register-meter").about("Register collector to the given meter with destination address")
+            .arg(Arg::with_name("ipv6_addr").help("destination address of the meter").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("remove-meter").about("Remove registration from the given meter with destination address")
+            .arg(Arg::with_name("ipv6_addr").help("destination address of the meter").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("async-request").about("Send an async request to the given meter with destination address")
+            .arg(Arg::with_name("ipv6_addr").help("destination address of the meter").empty_values(false))
+        ,)
+        .subcommand(SubCommand::with_name("list-meters").about("List registered and async meters"),)
         .get_matches();
     let dbus_user = matches.is_present("user");
 
@@ -1262,6 +1345,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some("get-wisun-gtk-keys")          => get_wisun_gtks(dbus_user),
         Some("get-wisun-gtk-active-key-index")  => get_wisun_gtk_active_key_index(dbus_user),
         Some("get-wisun-cfg-settings")      => get_wisun_cfg_settings(dbus_user),
+        Some("list-meters")                 => list_meters(dbus_user),
         Some("set-network-name")            => {
             let mut wisun_nwkname: String   = String::from("Wi-SUN test");
             if let Some(subcmd) = matches.subcommand_matches("set-network-name") {
@@ -1664,6 +1748,33 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
             add_trust_ca(dbus_user, pem_file)
+        }
+        Some("register-meter")       => {
+            let mut ipv6_addr: String = String::from("");
+            if let Some(subcmd) = matches.subcommand_matches("register-meter") {
+                if let Some(tempval) = subcmd.value_of("ipv6_addr") {
+                    ipv6_addr = tempval.to_string();
+                }
+            }
+            register_meter(dbus_user, ipv6_addr)
+        }
+        Some("remove-meter")       => {
+            let mut ipv6_addr: String = String::from("");
+            if let Some(subcmd) = matches.subcommand_matches("remove-meter") {
+                if let Some(tempval) = subcmd.value_of("ipv6_addr") {
+                    ipv6_addr = tempval.to_string();
+                }
+            }
+            remove_meter(dbus_user, ipv6_addr)
+        }
+        Some("async-request")       => {
+            let mut ipv6_addr: String = String::from("");
+            if let Some(subcmd) = matches.subcommand_matches("async-request") {
+                if let Some(tempval) = subcmd.value_of("ipv6_addr") {
+                    ipv6_addr = tempval.to_string();
+                }
+            }
+            async_request(dbus_user, ipv6_addr)
         }
         _ => Ok(()), // Already covered by AppSettings::SubcommandRequired
     }

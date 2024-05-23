@@ -149,6 +149,10 @@ pub trait ComSilabsWisunBorderRouter {
     fn rcp_fw_update(&self, arg0: String) -> Result<(), dbus::Error>;
     fn node_fw_ota(&self, arg0: Vec<u8>, arg1: String) -> Result<(), dbus::Error>;
     fn add_trust_ca(&self, arg0: String) -> Result<(), dbus::Error>;
+    fn register_meter(&self, arg0: Vec<u8>) -> Result<(), dbus::Error>;
+    fn remove_meter(&self, arg0: Vec<u8>) -> Result<(), dbus::Error>;
+    fn async_request(&self, arg0: Vec<u8>) -> Result<(), dbus::Error>;
+    fn list_meters(&self) -> Result<u16, dbus::Error>;
 }
 
 impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsWisunBorderRouter for blocking::Proxy<'a, C> {
@@ -399,4 +403,21 @@ impl<'a, T: blocking::BlockingSender, C: ::std::ops::Deref<Target=T>> ComSilabsW
     fn add_trust_ca(&self, arg0: String) -> Result<(), dbus::Error> {
         self.method_call("com.silabs.Wisun.BorderRouter", "addTrustCA", (arg0, ))
     }
+
+    fn register_meter(&self, arg0: Vec<u8>) -> Result<(), dbus::Error> {
+        self.method_call("com.silabs.Wisun.BorderRouter", "registerMeter", (arg0, ))
+    }
+
+    fn remove_meter(&self, arg0: Vec<u8>) -> Result<(), dbus::Error> {
+        self.method_call("com.silabs.Wisun.BorderRouter", "removeMeter", (arg0, ))
+    }
+
+    fn async_request(&self, arg0: Vec<u8>) -> Result<(), dbus::Error> {
+        self.method_call("com.silabs.Wisun.BorderRouter", "asyncRequest", (arg0, ))
+    }
+
+    fn list_meters(&self) -> Result<u16, dbus::Error> {
+        <Self as blocking::stdintf::org_freedesktop_dbus::Properties>::get(&self, "com.silabs.Wisun.BorderRouter", "listMeters")
+    }
+    
 }

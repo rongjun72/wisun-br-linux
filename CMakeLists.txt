@@ -120,6 +120,7 @@ add_library(libwsbrd STATIC
     app_wsbrd/commandline.c
     app_wsbrd/commandline_values.c
     app_wsbrd/mbedtls_config_check.c
+    app_wsbrd/meter_collector/mempool.c
     app_wsbrd/meter_collector/wisun_collector.c
     app_wsbrd/meter_collector/wisun_meter_collector.c
     common/crc.c

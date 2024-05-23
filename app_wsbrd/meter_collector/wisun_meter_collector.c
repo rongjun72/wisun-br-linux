@@ -32,459 +32,449 @@
 //                                   Includes
 // -----------------------------------------------------------------------------
 
-////#include <stdio.h>
-////#include <assert.h>
-////#include <string.h>
+#include <stdio.h>
+#include <assert.h>
+#include <string.h>
+#include <pthread.h>
+#include "common/log.h"
+#include "common/log_legacy.h"
 ////#include "mbed-trace/mbed_trace.h"
-////#include "wisun_meter_collector.h"
+#include "wisun_meter_collector.h"
 ////#include "cmsis_os2.h"
-////#include "rtos/mutex.h"
-////#include "wisun_meter_collector_config.h"
-////
-////#define TRACE_GROUP "met"
-////
-////// -----------------------------------------------------------------------------
-//////                              Macros and Typedefs
-////// -----------------------------------------------------------------------------
-////
-/////// Unpack measurement packet internal macro function
-////#define __pack_unpack_measurement_packets(dest, src) \
-////  do {                                               \
-////    if (src == NULL) {                               \
-////      return;                                        \
-////    }                                                \
-////    dest->id          = src->id;                     \
-////    dest->temperature = src->temperature;            \
-////    dest->humidity    = src->humidity;               \
-////    dest->light       = src->light;                  \
-////  } while (0)
-////
-/////// Print measurement packet internal macro function
-////#define __print_packet(ip_address, packet)                              \
-////  do {                                                                  \
-////    tr_info("[%s: {id: %d}{temp: %d.%d}{hum: %d%d}{lx: %d}]", \
-////           ip_address,                                                  \
-////           packet->id,                                                  \
-////           packet->temperature / 1000,                                  \
-////           (packet->temperature % 1000) / 10,                           \
-////           packet->humidity / 1000,                                     \
-////           (packet->humidity % 1000) / 10,                              \
-////           packet->light);                                              \
-////  } while (0)
-////
-/////// Common handler init helper macro function
-////#define __common_init(hnd)                        \
-////  do {                                            \
-////    hnd->resource_hnd.lock = _mc_mutex_acquire;   \
-////    hnd->resource_hnd.unlock = _mc_mutex_release; \
-////    _meter_collector_common_mtx_init();           \
-////    if (hnd->resource_hnd.init != NULL) {         \
-////      hnd->resource_hnd.init();                   \
-////    }                                             \
-////  } while (0)
-////
-////// -----------------------------------------------------------------------------
-//////                          Static Function Declarations
-////// -----------------------------------------------------------------------------
-/////**************************************************************************//**
-//// * @brief Meter - Collector common mutex init
-//// * @details Helper function
-//// *****************************************************************************/
-////static void _meter_collector_common_mtx_init(void);
-////
-/////**************************************************************************//**
-//// * @brief Mutex acquire
-//// * @details Helper function
-//// *****************************************************************************/
-////static void _mc_mutex_acquire(void);
-////
-/////**************************************************************************//**
-//// * @brief Mutex release
-//// * @details Helper function
-//// *****************************************************************************/
-////static void _mc_mutex_release(void);
-////
-/////**************************************************************************//**
-//// * @brief Default collector parse
-//// * @details Default handler
-//// * @param[in] raw Received data buffer
-//// * @param[in] packet_data_len Length of the received packet
-//// * @param[in] remote_addr Address of the sender
-//// * @return NULL
-//// *****************************************************************************/
-////static sl_wisun_meter_entry_t *_def_collector_parse(void *raw,
-////                                                    int32_t packet_data_len,
-////                                                    const ns_address_t * const remote_addr);
-////
-/////**************************************************************************//**
-//// * @brief Default collector timeout handler
-//// * @details Default handler
-//// * @param[in,out] meter Meter entry
-//// *****************************************************************************/
-////static void _def_collector_timeout_hnd(sl_wisun_meter_entry_t *meter);
-////
-/////**************************************************************************//**
-//// * @brief Default meter parse
-//// * @details Default handler
-//// * @param[in] raw Received data buffer
-//// * @param[in] packet_data_len Length of the received packet
-//// * @param[out] req NULL
-//// * @return SL_STATUS_OK Never
-//// * @return SL_STATUS_FAIL Always
-//// *****************************************************************************/
-////static uint32_t _def_meter_parse(const void * const raw,
-////                                    int32_t packet_data_len,
-////                                    sl_wisun_request_type_t * const req);
-////
-/////**************************************************************************//**
-//// * @brief Default meter build
-//// * @details Default handler
-//// * @param[in] req Request type
-//// * @param[in] packets Pointer to the packet buffer
-//// * @param[in] nr_of_packets Number of packets to build
-//// * @param[in, out] buf Buffer to store packed data
-//// * @param[out] len Length of the buffer
-//// * @return SL_STATUS_OK Never
-//// * @return SL_STATUS_FAIL Always
-//// *****************************************************************************/
-////static uint32_t _def_meter_build(const sl_wisun_request_type_t req,
-////                                    const sl_wisun_meter_packet_t * const packets,
-////                                    const uint8_t nr_of_packets,
-////                                    uint8_t * const buf,
-////                                    uint32_t * const len);
-////
-/////***************************************************************************//**
-//// * @brief Default meter measurement brancing
-//// * @details Default handler
-//// * @param[in] collector_mempool Pointer to the collectors mempool
-//// * @param[in] schedule Schedule time for the measurements
-//// * @return true Never
-//// * @return false Always
-//// ******************************************************************************/
-////static bool _def_meter_meas_branching(sl_mempool_t *collector_mempool,
-////                                      const uint32_t schedule);
-////
-/////***************************************************************************//**
-//// * @brief Default meter sending brancing
-//// * @details Default handler
-//// * @param[in] storage Pointer to the measurement packet storage
-//// * @param[in] collector Pointer to a collector entry
-//// * @param[out] nr_of_packets Number of packets to send
-//// * @return true Never
-//// * @return false Always
-//// ******************************************************************************/
-////static bool _def_meter_send_branching(sl_wisun_meter_packet_storage_t *storage,
-////                                      sl_wisun_collector_entry_t *collector,
-////                                      uint8_t *nr_of_packets);
-////
-////// -----------------------------------------------------------------------------
-//////                                Global Variables
-////// -----------------------------------------------------------------------------
-////
-////// -----------------------------------------------------------------------------
-//////                                Static Variables
-////// -----------------------------------------------------------------------------
-////
-/////// Internal reference token
-////static char _token[SL_WISUN_METER_COLLECTOR_TOKEN_MAX_SIZE] = { 0 };
-////
-/////// Internal reference token length without '\0'
-////static uint16_t _token_length = 0;
-////
-/////// Meter-Collector mutex
-/////////static osMutexId_t _mc_mtx = { NULL };
-////
-/////// Meter-Collector mutex attribute
-////////static const osMutexAttr_t _mc_mtx_attr = {
-////////  .name      = "MeterCollMutex",
-////////  .attr_bits = osMutexRecursive,
-////////  .cb_mem    = NULL,
-////////  .cb_size   = 0
-////////};
-////static mutex_entry_t _mc_mtx = {
-////  ._name = "MeterCollMutex"
-////}; 
-////
-////// -----------------------------------------------------------------------------
-//////                          Public Function Definitions
-////// -----------------------------------------------------------------------------
-////
-////void sl_wisun_collector_init_hnd(sl_wisun_collector_hnd_t *hnd)
-////{
-////  __common_init(hnd);
-////}
-////
-////void sl_wisun_meter_init_hnd(sl_wisun_meter_hnd_t *hnd)
-////{
-////  __common_init(hnd);
-////}
-////
-////void sl_wisun_collector_set_initializer(sl_wisun_collector_hnd_t *hnd,
-////                                        sl_wisun_mc_init_t initializer)
-////{
-////  hnd->resource_hnd.init = initializer;
-////}
-////
-////void sl_wisun_meter_set_initializer(sl_wisun_meter_hnd_t *hnd,
-////                                    sl_wisun_mc_init_t initializer)
-////{
-////  hnd->resource_hnd.init = initializer;
-////}
-////
-////void sl_wisun_collector_set_handler(sl_wisun_collector_hnd_t *hnd,
-////                                    sl_wisun_collector_parse_t parser,
-////                                    sl_wisun_collector_timeout_hnd_t timeout_hnd)
-////{
-////  if (hnd->resource_hnd.lock != NULL) {
-////    hnd->resource_hnd.lock();
-////  }
-////  hnd->parse = parser == NULL ? _def_collector_parse : parser;
-////  hnd->timeout = timeout_hnd == NULL ? _def_collector_timeout_hnd : timeout_hnd;
-////  if (hnd->resource_hnd.unlock != NULL) {
-////    hnd->resource_hnd.unlock();
-////  }
-////}
-////
-////void sl_wisun_meter_set_handler(sl_wisun_meter_hnd_t *hnd,
-////                                sl_wisun_meter_parse_t parser,
-////                                sl_wisun_meter_build_hnd_t build,
-////                                sl_wisun_meter_meas_branching_t is_measurement_necessary,
-////                                sl_wisun_meter_send_branching_t is_sending_necessary)
-////{
-////  if (hnd->resource_hnd.lock != NULL) {
-////    hnd->resource_hnd.lock();
-////  }
-////  hnd->parse = parser == NULL ? _def_meter_parse : parser;
-////  hnd->build = build == NULL ? _def_meter_build : build;
-////  hnd->is_measurement_necessary = (is_measurement_necessary == NULL)
-////                                  ? _def_meter_meas_branching : is_measurement_necessary;
-////  hnd->is_sending_necessary = (is_sending_necessary == NULL)
-////                              ? _def_meter_send_branching : is_sending_necessary;
-////  if (hnd->resource_hnd.unlock != NULL) {
-////    hnd->resource_hnd.unlock();
-////  }
-////}
-////
-/////* Init token */
-////void sl_wisun_mc_init_token(const char * const token_str)
-////{
-////  if (token_str == NULL) {
-////    tr_err("[ERROR: token string is NULL]");
-////    return;
-////  }
-////
-////  _mc_mutex_acquire();
-////  _token_length = 0;
-////  for (uint16_t i = 0; i < SL_WISUN_METER_COLLECTOR_TOKEN_MAX_SIZE - 1; ++i, ++_token_length) {
-////    if (!token_str[i]) {
-////      break;
-////    }
-////    _token[i] = token_str[i];
-////  }
-////  if (_token_length == SL_WISUN_METER_COLLECTOR_TOKEN_MAX_SIZE - 1) {
-////    tr_warn("[WARNING: Token length is reached the maximum size: %d]", _token_length);
-////  }
-////  _token[_token_length] = 0;
-////  _mc_mutex_release();
-////}
-////
-/////* Get token length */
-////uint16_t sl_wisun_mc_get_token_size(void)
-////{
-////  uint16_t rval = 0;
-////  _mc_mutex_acquire();
-////  rval = _token_length;
-////  _mc_mutex_release();
-////  return rval;
-////}
-////
-/////* Unpack packet */
-////void sl_wisun_mc_unpack_measurement_packet(sl_wisun_meter_packet_t * const dest,
-////                                           const sl_wisun_meter_packet_packed_t * const src)
-////{
-////  __pack_unpack_measurement_packets(dest, src);
-////}
-////
-/////* Pack packet */
-////void sl_wisun_mc_pack_measurement_packet(sl_wisun_meter_packet_packed_t * const dest,
-////                                         const sl_wisun_meter_packet_t * const src)
-////{
-////  __pack_unpack_measurement_packets(dest, src);
-////}
-////
-/////* Print measurement packet */
-////void sl_wisun_mc_print_mesurement(const char *ip_address, const void *packet, const bool is_packed)
-////{
-////  const sl_wisun_meter_packet_t *unpacked_packet = NULL;
-////  const sl_wisun_meter_packet_packed_t *packed_packet = NULL;
-////
-////  if (ip_address == NULL || packet == NULL) {
-////    return;
-////  }
-////  if ( is_packed ) {
-////    packed_packet = (const sl_wisun_meter_packet_packed_t *) packet;
-////    __print_packet(ip_address, packed_packet);
-////  } else {
-////    unpacked_packet = (const sl_wisun_meter_packet_t *) packet;
-////    __print_packet(ip_address, unpacked_packet);
-////  }
-////}
-////
-/////* compare token */
-////bool sl_wisun_mc_compare_token(const char *token, const uint16_t token_size)
-////{
-////  bool res = true;
-////
-////  if (token_size != _token_length) {
-////    return false;
-////  }
-////  _mc_mutex_acquire();
-////  for (uint16_t i = 0; i < _token_length; ++i) {
-////    if (_token[i] != token[i]) {
-////      res = false;
-////      break;
-////    }
-////  }
-////  _mc_mutex_release();
-////  return res;
-////}
-////
-/////* compare addresses */
-////bool sl_wisun_mc_compare_address(const ns_address_t *addr1, const ns_address_t *addr2)
-////{
-////  uint8_t *p1 = (uint8_t *)&addr1->address;
-////  uint8_t *p2 = (uint8_t *)&addr2->address;
-////  for (uint8_t i = 0; i < 16; ++i) {
-////    if (p1[i] != p2[i]) {
-////      return false;
-////    }
-////  }
-////  return true;
-////}
-////
-////// -----------------------------------------------------------------------------
-//////                          Static Function Definitions
-////// -----------------------------------------------------------------------------
-////
-/////* Meter-Collector init */
-////static void _meter_collector_common_mtx_init(void)
-////{
-////  ////if (_mc_mtx == NULL) {
-////    mutex_init(&_mc_mtx);
-////    ////_mc_mtx = osMutexNew(&_mc_mtx_attr);
-////    ////assert(_mc_mtx != NULL);
-////  ////}
-////}
-////
-/////* Mutex acquire */
-////static void _mc_mutex_acquire(void)
-////{
-////  ////if (osKernelGetState() == osKernelRunning) {
-////  ////  assert(osMutexAcquire(_mc_mtx, osWaitForever) == osOK);
-////  ////}
-////  _mc_mtx.lock(&_mc_mtx);
-////}
-////
-/////* Mutex release */
-////static void _mc_mutex_release(void)
-////{
-////  ////if (osKernelGetState() == osKernelRunning) {
-////  ////  assert(osMutexRelease(_mc_mtx) == osOK);
-////  ////}
-////  _mc_mtx.unlock(&_mc_mtx);
-////}
-////
-////static sl_wisun_meter_entry_t *_def_collector_parse(void *raw,
-////                                                    int32_t packet_data_len,
-////                                                    const ns_address_t * const remote_addr)
-////{
-////  (void) raw;
-////  (void) packet_data_len;
-////  (void) remote_addr;
-////  assert("[Collector Parser not implemented!]" == NULL);
-////  return NULL;
-////}
-////
-////static void _def_collector_timeout_hnd(sl_wisun_meter_entry_t *meter)
-////{
-////  const char *ip_str = NULL;
-////
-////  tr_info("[Measurement response timed out: %dms %s]",
-////         (meter->resp_recv_timestamp - meter->req_sent_timestamp),
-////         tr_ipv6(meter->addr.address));
-////  ////////free(meter->addr.address);
-////}
-////
-////static uint32_t _def_meter_build(const sl_wisun_request_type_t req,
-////                                    const sl_wisun_meter_packet_t * const packets,
-////                                    const uint8_t nr_of_packets,
-////                                    uint8_t * const buf,
-////                                    uint32_t * const len)
-////{
-////  (void) req;
-////  (void) packets;
-////  (void) nr_of_packets;
-////  (void) buf;
-////  (void) len;
-////  assert("[Meter Build not implemented!]" == NULL);
-////  return SL_STATUS_FAIL;
-////}
-////
-////static uint32_t _def_meter_parse(const void * const raw,
-////                                    int32_t packet_data_len,
-////                                    sl_wisun_request_type_t * const req)
-////{
-////  (void) raw;
-////  (void) packet_data_len;
-////  (void) req;
-////  assert("[Meter Parse not implemented!]" == NULL);
-////  return SL_STATUS_FAIL;
-////}
-////
-////static bool _def_meter_meas_branching(sl_mempool_t *collector_mempool,
-////                                      const uint32_t schedule)
-////{
-////  (void) collector_mempool;
-////  (void) schedule;
-////  assert("[Meter Measurement branching not implemented!]" == NULL);
-////  return false;
-////}
-////
-////static bool _def_meter_send_branching(sl_wisun_meter_packet_storage_t *storage,
-////                                      sl_wisun_collector_entry_t *collector,
-////                                      uint8_t *nr_of_packets)
-////{
-////  (void) storage;
-////  (void) collector;
-////  (void) nr_of_packets;
-////  assert("[Meter Sending branching not implemented!]" == NULL);
-////  return false;
-////}
-////
-////uint8_t sl_wisun_mc_get_led_id_from_payload(const char *payload_str)
-////{
-////  if (!strncmp(payload_str, SL_WISUN_METER_LED0_TOGGLE_PAYLOAD_STR,
-////               SL_WISUN_METER_LED_TOGGLE_PAYLOAD_STR_MAX_LEN)) {
-////    return SL_WISUN_METER_LED0;
-////  } else if (!strncmp(payload_str, SL_WISUN_METER_LED1_TOGGLE_PAYLOAD_STR,
-////                      SL_WISUN_METER_LED_TOGGLE_PAYLOAD_STR_MAX_LEN)) {
-////    return SL_WISUN_METER_LED1;
-////  } else {
-////    return SL_WISUN_METER_LED_UNKNOWN;
-////  }
-////}
-////
-////const char *sl_wisun_mc_get_led_payload_by_id(const uint8_t led_id)
-////{
-////  switch (led_id) {
-////    case SL_WISUN_METER_LED0:        return SL_WISUN_METER_LED0_TOGGLE_PAYLOAD_STR;
-////    case SL_WISUN_METER_LED1:        return SL_WISUN_METER_LED1_TOGGLE_PAYLOAD_STR;
-////    default:                         return "Unknown";
-////  }
-////}
-////
-////#undef __print_packet
-////#undef __pack_unpack_measurement_packets
-////#undef __common_init
+#include "wisun_meter_collector_config.h"
+
+#define TRACE_GROUP "collector"
+
+// -----------------------------------------------------------------------------
+//                              Macros and Typedefs
+// -----------------------------------------------------------------------------
+
+/// Unpack measurement packet internal macro function
+#define __pack_unpack_measurement_packets(dest, src) \
+  do {                                               \
+    if (src == NULL) {                               \
+      return;                                        \
+    }                                                \
+    dest->id          = src->id;                     \
+    dest->temperature = src->temperature;            \
+    dest->humidity    = src->humidity;               \
+    dest->light       = src->light;                  \
+  } while (0)
+
+/// Print measurement packet internal macro function
+#define __print_packet(ip_address, packet)                              \
+  do {                                                                  \
+    tr_info("[%s: {id: %d}{temp: %d.%d}{hum: %d%d}{lx: %d}]", \
+           ip_address,                                                  \
+           packet->id,                                                  \
+           packet->temperature / 1000,                                  \
+           (packet->temperature % 1000) / 10,                           \
+           packet->humidity / 1000,                                     \
+           (packet->humidity % 1000) / 10,                              \
+           packet->light);                                              \
+  } while (0)
+
+/// Common handler init helper macro function
+#define __common_init(hnd)                        \
+  do {                                            \
+    hnd->resource_hnd.lock = _mc_mutex_acquire;   \
+    hnd->resource_hnd.unlock = _mc_mutex_release; \
+    _meter_collector_common_mtx_init();           \
+    if (hnd->resource_hnd.init != NULL) {         \
+      hnd->resource_hnd.init();                   \
+    }                                             \
+  } while (0)
+
+// -----------------------------------------------------------------------------
+//                          Static Function Declarations
+// -----------------------------------------------------------------------------
+/**************************************************************************//**
+ * @brief Meter - Collector common mutex init
+ * @details Helper function
+ *****************************************************************************/
+static void _meter_collector_common_mtx_init(void);
+
+/**************************************************************************//**
+ * @brief Mutex acquire
+ * @details Helper function
+ *****************************************************************************/
+static void _mc_mutex_acquire(void);
+
+/**************************************************************************//**
+ * @brief Mutex release
+ * @details Helper function
+ *****************************************************************************/
+static void _mc_mutex_release(void);
+
+/**************************************************************************//**
+ * @brief Default collector parse
+ * @details Default handler
+ * @param[in] raw Received data buffer
+ * @param[in] packet_data_len Length of the received packet
+ * @param[in] remote_addr Address of the sender
+ * @return NULL
+ *****************************************************************************/
+static sl_wisun_meter_entry_t *_def_collector_parse(void *raw,
+                                                    int32_t packet_data_len,
+                                                    const struct sockaddr_in6 * const remote_addr);
+
+/**************************************************************************//**
+ * @brief Default collector timeout handler
+ * @details Default handler
+ * @param[in,out] meter Meter entry
+ *****************************************************************************/
+static void _def_collector_timeout_hnd(sl_wisun_meter_entry_t *meter);
+
+/**************************************************************************//**
+ * @brief Default meter parse
+ * @details Default handler
+ * @param[in] raw Received data buffer
+ * @param[in] packet_data_len Length of the received packet
+ * @param[out] req NULL
+ * @return SL_STATUS_OK Never
+ * @return SL_STATUS_FAIL Always
+ *****************************************************************************/
+static uint32_t _def_meter_parse(const void * const raw,
+                                    int32_t packet_data_len,
+                                    sl_wisun_request_type_t * const req);
+
+/**************************************************************************//**
+ * @brief Default meter build
+ * @details Default handler
+ * @param[in] req Request type
+ * @param[in] packets Pointer to the packet buffer
+ * @param[in] nr_of_packets Number of packets to build
+ * @param[in, out] buf Buffer to store packed data
+ * @param[out] len Length of the buffer
+ * @return SL_STATUS_OK Never
+ * @return SL_STATUS_FAIL Always
+ *****************************************************************************/
+static uint32_t _def_meter_build(const sl_wisun_request_type_t req,
+                                    const sl_wisun_meter_packet_t * const packets,
+                                    const uint8_t nr_of_packets,
+                                    uint8_t * const buf,
+                                    uint32_t * const len);
+
+/***************************************************************************//**
+ * @brief Default meter measurement brancing
+ * @details Default handler
+ * @param[in] collector_mempool Pointer to the collectors mempool
+ * @param[in] schedule Schedule time for the measurements
+ * @return true Never
+ * @return false Always
+ ******************************************************************************/
+static bool _def_meter_meas_branching(sl_mempool_t *collector_mempool,
+                                      const uint32_t schedule);
+
+/***************************************************************************//**
+ * @brief Default meter sending brancing
+ * @details Default handler
+ * @param[in] storage Pointer to the measurement packet storage
+ * @param[in] collector Pointer to a collector entry
+ * @param[out] nr_of_packets Number of packets to send
+ * @return true Never
+ * @return false Always
+ ******************************************************************************/
+static bool _def_meter_send_branching(sl_wisun_meter_packet_storage_t *storage,
+                                      sl_wisun_collector_entry_t *collector,
+                                      uint8_t *nr_of_packets);
+
+// -----------------------------------------------------------------------------
+//                                Global Variables
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+//                                Static Variables
+// -----------------------------------------------------------------------------
+
+/// Internal reference token
+static char _token[SL_WISUN_METER_COLLECTOR_TOKEN_MAX_SIZE] = { 0 };
+
+/// Internal reference token length without '\0'
+static uint16_t _token_length = 0;
+
+/// Meter-Collector mutex
+/////static osMutexId_t _mc_mtx = { NULL };
+
+/// Meter-Collector mutex attribute
+////static const osMutexAttr_t _mc_mtx_attr = {
+////  .name      = "MeterCollMutex",
+////  .attr_bits = osMutexRecursive,
+////  .cb_mem    = NULL,
+////  .cb_size   = 0
+////};
+static pthread_mutex_t _mc_mtx;
+
+// -----------------------------------------------------------------------------
+//                          Public Function Definitions
+// -----------------------------------------------------------------------------
+
+void sl_wisun_collector_init_hnd(sl_wisun_collector_hnd_t *hnd)
+{
+  __common_init(hnd);
+}
+
+void sl_wisun_meter_init_hnd(sl_wisun_meter_hnd_t *hnd)
+{
+  __common_init(hnd);
+}
+
+void sl_wisun_collector_set_initializer(sl_wisun_collector_hnd_t *hnd,
+                                        sl_wisun_mc_init_t initializer)
+{
+  hnd->resource_hnd.init = initializer;
+}
+
+void sl_wisun_meter_set_initializer(sl_wisun_meter_hnd_t *hnd,
+                                    sl_wisun_mc_init_t initializer)
+{
+  hnd->resource_hnd.init = initializer;
+}
+
+void sl_wisun_collector_set_handler(sl_wisun_collector_hnd_t *hnd,
+                                    sl_wisun_collector_parse_t parser,
+                                    sl_wisun_collector_timeout_hnd_t timeout_hnd)
+{
+  if (hnd->resource_hnd.lock != NULL) {
+    hnd->resource_hnd.lock();
+  }
+  hnd->parse = parser == NULL ? _def_collector_parse : parser;
+  hnd->timeout = timeout_hnd == NULL ? _def_collector_timeout_hnd : timeout_hnd;
+  if (hnd->resource_hnd.unlock != NULL) {
+    hnd->resource_hnd.unlock();
+  }
+}
+
+void sl_wisun_meter_set_handler(sl_wisun_meter_hnd_t *hnd,
+                                sl_wisun_meter_parse_t parser,
+                                sl_wisun_meter_build_hnd_t build,
+                                sl_wisun_meter_meas_branching_t is_measurement_necessary,
+                                sl_wisun_meter_send_branching_t is_sending_necessary)
+{
+  if (hnd->resource_hnd.lock != NULL) {
+    hnd->resource_hnd.lock();
+  }
+  hnd->parse = parser == NULL ? _def_meter_parse : parser;
+  hnd->build = build == NULL ? _def_meter_build : build;
+  hnd->is_measurement_necessary = (is_measurement_necessary == NULL)
+                                  ? _def_meter_meas_branching : is_measurement_necessary;
+  hnd->is_sending_necessary = (is_sending_necessary == NULL)
+                              ? _def_meter_send_branching : is_sending_necessary;
+  if (hnd->resource_hnd.unlock != NULL) {
+    hnd->resource_hnd.unlock();
+  }
+}
+
+/* Init token */
+void sl_wisun_mc_init_token(const char * const token_str)
+{
+  if (token_str == NULL) {
+    ERROR("[ERROR: token string is NULL]");
+    return;
+  }
+
+  _mc_mutex_acquire();
+  _token_length = 0;
+  for (uint16_t i = 0; i < SL_WISUN_METER_COLLECTOR_TOKEN_MAX_SIZE - 1; ++i, ++_token_length) {
+    if (!token_str[i]) {
+      break;
+    }
+    _token[i] = token_str[i];
+  }
+  if (_token_length == SL_WISUN_METER_COLLECTOR_TOKEN_MAX_SIZE - 1) {
+    tr_warn("[WARNING: Token length is reached the maximum size: %d]", _token_length);
+  }
+  _token[_token_length] = 0;
+  _mc_mutex_release();
+}
+
+/* Get token length */
+uint16_t sl_wisun_mc_get_token_size(void)
+{
+  uint16_t rval = 0;
+  _mc_mutex_acquire();
+  rval = _token_length;
+  _mc_mutex_release();
+  return rval;
+}
+
+/* Unpack packet */
+void sl_wisun_mc_unpack_measurement_packet(sl_wisun_meter_packet_t * const dest,
+                                           const sl_wisun_meter_packet_packed_t * const src)
+{
+  __pack_unpack_measurement_packets(dest, src);
+}
+
+/* Pack packet */
+void sl_wisun_mc_pack_measurement_packet(sl_wisun_meter_packet_packed_t * const dest,
+                                         const sl_wisun_meter_packet_t * const src)
+{
+  __pack_unpack_measurement_packets(dest, src);
+}
+
+/* Print measurement packet */
+void sl_wisun_mc_print_mesurement(const char *ip_address, const void *packet, const bool is_packed)
+{
+  const sl_wisun_meter_packet_t *unpacked_packet = NULL;
+  const sl_wisun_meter_packet_packed_t *packed_packet = NULL;
+
+  if (ip_address == NULL || packet == NULL) {
+    return;
+  }
+  if ( is_packed ) {
+    packed_packet = (const sl_wisun_meter_packet_packed_t *) packet;
+    __print_packet(ip_address, packed_packet);
+  } else {
+    unpacked_packet = (const sl_wisun_meter_packet_t *) packet;
+    __print_packet(ip_address, unpacked_packet);
+  }
+}
+
+/* compare token */
+bool sl_wisun_mc_compare_token(const char *token, const uint16_t token_size)
+{
+  bool res = true;
+
+  if (token_size != _token_length) {
+    return false;
+  }
+  _mc_mutex_acquire();
+  for (uint16_t i = 0; i < _token_length; ++i) {
+    if (_token[i] != token[i]) {
+      res = false;
+      break;
+    }
+  }
+  _mc_mutex_release();
+  return res;
+}
+
+/* compare addresses */
+bool sl_wisun_mc_compare_address(const struct sockaddr_in6 *addr1, const struct sockaddr_in6 *addr2)
+{
+  uint8_t *p1 = (uint8_t *)&addr1->sin6_addr;
+  uint8_t *p2 = (uint8_t *)&addr2->sin6_addr;
+  for (uint8_t i = 0; i < 16; ++i) {
+    if (p1[i] != p2[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// -----------------------------------------------------------------------------
+//                          Static Function Definitions
+// -----------------------------------------------------------------------------
+
+/* Meter-Collector init */
+static void _meter_collector_common_mtx_init(void)
+{
+    pthread_mutex_init(&_mc_mtx, NULL);
+}
+
+/* Mutex acquire */
+static void _mc_mutex_acquire(void)
+{
+  pthread_mutex_lock(&_mc_mtx);
+}
+
+/* Mutex release */
+static void _mc_mutex_release(void)
+{
+  pthread_mutex_unlock(&_mc_mtx);
+}
+
+static sl_wisun_meter_entry_t *_def_collector_parse(void *raw,
+                                                    int32_t packet_data_len,
+                                                    const struct sockaddr_in6 * const remote_addr)
+{
+  (void) raw;
+  (void) packet_data_len;
+  (void) remote_addr;
+  assert("[Collector Parser not implemented!]" == NULL);
+  return NULL;
+}
+
+static void _def_collector_timeout_hnd(sl_wisun_meter_entry_t *meter)
+{
+  const char *ip_str = NULL;
+
+  tr_info("[Measurement response timed out: %dms %s]",
+         (meter->resp_recv_timestamp - meter->req_sent_timestamp),
+         tr_ipv6(meter->addr.sin6_addr.__in6_u.__u6_addr16));
+  ////////free(meter->addr.address);
+}
+
+static uint32_t _def_meter_build(const sl_wisun_request_type_t req,
+                                    const sl_wisun_meter_packet_t * const packets,
+                                    const uint8_t nr_of_packets,
+                                    uint8_t * const buf,
+                                    uint32_t * const len)
+{
+  (void) req;
+  (void) packets;
+  (void) nr_of_packets;
+  (void) buf;
+  (void) len;
+  assert("[Meter Build not implemented!]" == NULL);
+  return SL_STATUS_FAIL;
+}
+
+static uint32_t _def_meter_parse(const void * const raw,
+                                    int32_t packet_data_len,
+                                    sl_wisun_request_type_t * const req)
+{
+  (void) raw;
+  (void) packet_data_len;
+  (void) req;
+  assert("[Meter Parse not implemented!]" == NULL);
+  return SL_STATUS_FAIL;
+}
+
+static bool _def_meter_meas_branching(sl_mempool_t *collector_mempool,
+                                      const uint32_t schedule)
+{
+  (void) collector_mempool;
+  (void) schedule;
+  assert("[Meter Measurement branching not implemented!]" == NULL);
+  return false;
+}
+
+static bool _def_meter_send_branching(sl_wisun_meter_packet_storage_t *storage,
+                                      sl_wisun_collector_entry_t *collector,
+                                      uint8_t *nr_of_packets)
+{
+  (void) storage;
+  (void) collector;
+  (void) nr_of_packets;
+  assert("[Meter Sending branching not implemented!]" == NULL);
+  return false;
+}
+
+uint8_t sl_wisun_mc_get_led_id_from_payload(const char *payload_str)
+{
+  if (!strncmp(payload_str, SL_WISUN_METER_LED0_TOGGLE_PAYLOAD_STR,
+               SL_WISUN_METER_LED_TOGGLE_PAYLOAD_STR_MAX_LEN)) {
+    return SL_WISUN_METER_LED0;
+  } else if (!strncmp(payload_str, SL_WISUN_METER_LED1_TOGGLE_PAYLOAD_STR,
+                      SL_WISUN_METER_LED_TOGGLE_PAYLOAD_STR_MAX_LEN)) {
+    return SL_WISUN_METER_LED1;
+  } else {
+    return SL_WISUN_METER_LED_UNKNOWN;
+  }
+}
+
+const char *sl_wisun_mc_get_led_payload_by_id(const uint8_t led_id)
+{
+  switch (led_id) {
+    case SL_WISUN_METER_LED0:        return SL_WISUN_METER_LED0_TOGGLE_PAYLOAD_STR;
+    case SL_WISUN_METER_LED1:        return SL_WISUN_METER_LED1_TOGGLE_PAYLOAD_STR;
+    default:                         return "Unknown";
+  }
+}
+
+#undef __print_packet
+#undef __pack_unpack_measurement_packets
+#undef __common_init
 
 

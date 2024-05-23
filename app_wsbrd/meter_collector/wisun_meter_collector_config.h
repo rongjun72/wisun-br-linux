@@ -63,4 +63,29 @@
 
 // <<< end of configuration section >>>
 
+// <<< Use Configuration Wizard in Context Menu >>>
+
+// <h>Wi-SUN Collector configuration
+// <o SL_WISUN_COLLECTOR_MAX_REG_METER> Maximum count of registerable Meters
+// <i> Default: 32
+#define SL_WISUN_COLLECTOR_MAX_REG_METER                                32U
+
+// <h>Wi-SUN Collector configuration
+// <o SL_WISUN_COLLECTOR_MAX_REG_METER> Maximum count of async Meters
+// <i> Default: 32
+#define SL_WISUN_COLLECTOR_MAX_ASYNC_METER                              32U
+
+// </h>
+// <o SL_WISUN_COLLECTOR_STACK_SIZE_WORD> Collector thread stack size in word
+// <i> Default: 256
+#define SL_WISUN_COLLECTOR_STACK_SIZE_WORD                              256U
+
+// </h>
+// <o SL_WISUN_COLLECTOR_REQUEST_TIMEOUT> Maximum waiting time [ms] for requests
+// <i> Default: 360000
+#define SL_WISUN_COLLECTOR_REQUEST_TIMEOUT                              360000U
+
+// <<< end of configuration section >>>
+
+
 #endif // SL_WISUN_METER_COLLECTOR_CONFIG_H

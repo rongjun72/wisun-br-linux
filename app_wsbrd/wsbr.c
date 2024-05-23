@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <semaphore.h>
+#include "meter_collector/wisun_collector.h"
 #include "common/bus_uart.h"
 #include "common/bus_cpc.h"
 #include "common/dhcp_server.h"
@@ -587,6 +588,7 @@ int wsbr_main(int argc, char *argv[])
     BUG_ON(ctxt->rcp_if_id < 0, "arm_nwk_interface_lowpan_init: %d", ctxt->rcp_if_id);
 
     wsbr_network_init(ctxt);
+    sl_wisun_collector_init();
     event_scheduler_run_until_idle();
 
     dbus_register(ctxt);

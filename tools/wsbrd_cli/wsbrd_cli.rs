@@ -1242,7 +1242,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .arg(Arg::with_name("ota_image").help("node-fw-ota ota_filename").empty_values(false))
         ,)
         .subcommand(SubCommand::with_name("add-trust-ca").about("Add a trusted certificate to certs chain. Usage: >wsbrd_cli add-trust-ca pem_file")
-            .arg(Arg::with_name("pem_filename").help("add-trust-ca pem_filename").empty_values(false))
+            .arg(Arg::with_name("pem_file").help("add-trust-ca pem_file").empty_values(false))
         ,)
         .get_matches();
     let dbus_user = matches.is_present("user");

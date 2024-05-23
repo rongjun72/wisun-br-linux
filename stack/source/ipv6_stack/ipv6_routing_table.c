@@ -1734,8 +1734,8 @@ void ipv6_route_table_ttl_update(int seconds)
 
         if (r->lifetime > seconds) {
             r->lifetime -= seconds;
-            if (r->lifetime%100 == 0)
-                tr_debug("------ r->lifetime = %d", r->lifetime);
+            ////////if (r->lifetime%100 == 0)
+            ////////    tr_debug("------ r->lifetime = %d", r->lifetime);
             continue;
         }
 

@@ -435,6 +435,7 @@ static void conf_set_cert(struct wsbrd_conf *config, const struct storage_parse_
     int ret;
 
     BUG_ON(raw_param);
+    WARN("---------------------------pem file:: %s", info->filename);
     ret = read_cert(info->value, &dest->cert);
     FATAL_ON(ret < 0, 1, "%s:%d: %s: %m", info->filename, info->linenr, info->value);
     dest->cert_len = ret;
@@ -721,7 +722,6 @@ void parse_commandline(struct wsbrd_conf *config, int argc, char *argv[],
                 break;
             case 'A':
                 strcpy(info.key, "authority");
-                //WARN("---------------------------pem file:: %s", info->filename);
                 conf_set_cert(config, &info, &config->tls_ca, NULL);
                 break;
             case 'b':

@@ -135,7 +135,7 @@ static void _def_collector_timeout_hnd(sl_wisun_meter_entry_t *meter);
  * @return SL_STATUS_OK Never
  * @return SL_STATUS_FAIL Always
  *****************************************************************************/
-static uint32_t _def_meter_parse(const void * const raw,
+static sl_status_t _def_meter_parse(const void * const raw,
                                     int32_t packet_data_len,
                                     sl_wisun_request_type_t * const req);
 
@@ -150,7 +150,7 @@ static uint32_t _def_meter_parse(const void * const raw,
  * @return SL_STATUS_OK Never
  * @return SL_STATUS_FAIL Always
  *****************************************************************************/
-static uint32_t _def_meter_build(const sl_wisun_request_type_t req,
+static sl_status_t _def_meter_build(const sl_wisun_request_type_t req,
                                     const sl_wisun_meter_packet_t * const packets,
                                     const uint8_t nr_of_packets,
                                     uint8_t * const buf,
@@ -406,7 +406,7 @@ static void _def_collector_timeout_hnd(sl_wisun_meter_entry_t *meter)
   ////////free(meter->addr.address);
 }
 
-static uint32_t _def_meter_build(const sl_wisun_request_type_t req,
+static sl_status_t _def_meter_build(const sl_wisun_request_type_t req,
                                     const sl_wisun_meter_packet_t * const packets,
                                     const uint8_t nr_of_packets,
                                     uint8_t * const buf,
@@ -421,7 +421,7 @@ static uint32_t _def_meter_build(const sl_wisun_request_type_t req,
   return SL_STATUS_FAIL;
 }
 
-static uint32_t _def_meter_parse(const void * const raw,
+static sl_status_t _def_meter_parse(const void * const raw,
                                     int32_t packet_data_len,
                                     sl_wisun_request_type_t * const req)
 {

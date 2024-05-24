@@ -49,6 +49,10 @@
 #define SL_STATUS_OK                ((uint32_t)0x0000)  ///< No error.
 #define SL_STATUS_FAIL              ((uint32_t)0x0001)  ///< Generic error.
 #define SL_STATUS_ALREADY_EXISTS    ((uint32_t)0x002E)  ///< Item already exists.
+// -----------------------------------------------------------------------------
+// Data Types
+/** @brief define global status variable. */
+typedef uint32_t sl_status_t;
 
 /// Meter LED toggle payload string max lenght
 #define SL_WISUN_METER_LED_TOGGLE_PAYLOAD_STR_MAX_LEN     (16U)
@@ -212,12 +216,12 @@ typedef struct {
 } sl_wisun_meter_packet_storage_t;
 
 /// Meter received packet parser type definition
-typedef uint32_t (*sl_wisun_meter_parse_t)(const void * const,
+typedef sl_status_t (*sl_wisun_meter_parse_t)(const void * const,
                                               int,
                                               sl_wisun_request_type_t * const);
 
 /// Meter build measurement data handler type definition
-typedef uint32_t (*sl_wisun_meter_build_hnd_t)(const sl_wisun_request_type_t,
+typedef sl_status_t (*sl_wisun_meter_build_hnd_t)(const sl_wisun_request_type_t,
                                                   const sl_wisun_meter_packet_t * const,
                                                   const uint8_t, uint8_t * const,
                                                   uint32_t * const);

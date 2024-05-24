@@ -86,7 +86,7 @@ void sl_wisun_collector_init_common_resources(void);
  * @return SL_STATUS_ALREADY_EXISTS meter had already been added
  * @return SL_STATUS_FAIL on error
  *****************************************************************************/
-uint32_t sl_wisun_collector_register_meter(const struct sockaddr_in6 * const meter_addr);
+sl_status_t sl_wisun_collector_register_meter(const struct sockaddr_in6 * const meter_addr);
 
 /**************************************************************************//**
  * @brief Remove Meter.
@@ -95,7 +95,7 @@ uint32_t sl_wisun_collector_register_meter(const struct sockaddr_in6 * const met
  * @return SL_STATUS_OK meter has been successfully removed
  * @return SL_STATUS_FAIL on error
  *****************************************************************************/
-uint32_t sl_wisun_collector_remove_meter(const struct sockaddr_in6 * const meter_addr);
+sl_status_t sl_wisun_collector_remove_meter(const struct sockaddr_in6 * const meter_addr);
 
 /**************************************************************************//**
  * @brief Send async request.
@@ -104,7 +104,7 @@ uint32_t sl_wisun_collector_remove_meter(const struct sockaddr_in6 * const meter
  * @return SL_STATUS_OK async request has been successfully sent
  * @return SL_STATUS_FAIL on error
  *****************************************************************************/
-uint32_t sl_wisun_send_async_request(const struct sockaddr_in6 * const meter_addr);
+sl_status_t sl_wisun_send_async_request(const struct sockaddr_in6 * const meter_addr);
 
 /**************************************************************************//**
 * @brief Set async measurement request.
@@ -167,7 +167,7 @@ sl_wisun_meter_entry_t *sl_wisun_collector_get_meter(const struct sockaddr_in6 *
  * @return SL_STATUS_OK On success
  * @return SL_STATUS_FAIL On failure
  *****************************************************************************/
-uint32_t sl_wisun_collector_send_request(const int32_t sockid,
+sl_status_t sl_wisun_collector_send_request(const int32_t sockid,
                                             const struct sockaddr_in6 *addr,
                                             const sl_wisun_meter_request_t * const req);
 

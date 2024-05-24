@@ -39,8 +39,6 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include "wisun_meter_collector.h"
-////#include "wisun_collector_config.h"
-////#include "sl_status.h"
 
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
@@ -86,7 +84,7 @@ void sl_wisun_collector_init_common_resources(void);
  * @return SL_STATUS_ALREADY_EXISTS meter had already been added
  * @return SL_STATUS_FAIL on error
  *****************************************************************************/
-sl_status_t sl_wisun_collector_register_meter(const struct sockaddr_in6 * const meter_addr);
+sl_status_t sl_wisun_collector_register_meter(const sockaddr_in6_t* const meter_addr);
 
 /**************************************************************************//**
  * @brief Remove Meter.
@@ -95,7 +93,7 @@ sl_status_t sl_wisun_collector_register_meter(const struct sockaddr_in6 * const 
  * @return SL_STATUS_OK meter has been successfully removed
  * @return SL_STATUS_FAIL on error
  *****************************************************************************/
-sl_status_t sl_wisun_collector_remove_meter(const struct sockaddr_in6 * const meter_addr);
+sl_status_t sl_wisun_collector_remove_meter(const sockaddr_in6_t* const meter_addr);
 
 /**************************************************************************//**
  * @brief Send async request.
@@ -104,7 +102,7 @@ sl_status_t sl_wisun_collector_remove_meter(const struct sockaddr_in6 * const me
  * @return SL_STATUS_OK async request has been successfully sent
  * @return SL_STATUS_FAIL on error
  *****************************************************************************/
-sl_status_t sl_wisun_send_async_request(const struct sockaddr_in6 * const meter_addr);
+sl_status_t sl_wisun_send_async_request(const sockaddr_in6_t* const meter_addr);
 
 /**************************************************************************//**
 * @brief Set async measurement request.
@@ -140,7 +138,7 @@ void sl_wisun_collector_print_meters(void);
  * @param[in] meter_addr meter address structure
  * @return Pointer to the meter entry with the given address
  *****************************************************************************/
-sl_wisun_meter_entry_t *sl_wisun_collector_get_async_meter_entry_by_address(const struct sockaddr_in6 * const meter_addr);
+sl_wisun_meter_entry_t *sl_wisun_collector_get_async_meter_entry_by_address(const sockaddr_in6_t* const meter_addr);
 
 /**************************************************************************//**
  * @brief Get registered meter by address.
@@ -148,7 +146,7 @@ sl_wisun_meter_entry_t *sl_wisun_collector_get_async_meter_entry_by_address(cons
  * @param[in] meter_addr meter address structure
  * @return Pointer to the meter entry with the given address
  *****************************************************************************/
-sl_wisun_meter_entry_t *sl_wisun_collector_get_registered_meter_entry_by_address(const struct sockaddr_in6 * const meter_addr);
+sl_wisun_meter_entry_t *sl_wisun_collector_get_registered_meter_entry_by_address(const sockaddr_in6_t* const meter_addr);
 
 /**************************************************************************//**
  * @brief Get Meter by address.
@@ -156,7 +154,7 @@ sl_wisun_meter_entry_t *sl_wisun_collector_get_registered_meter_entry_by_address
  * @param[in] meter_addr meter address structure
  * @return Pointer to the meter entry with the given address
  *****************************************************************************/
-sl_wisun_meter_entry_t *sl_wisun_collector_get_meter(const struct sockaddr_in6 * const meter_addr);
+sl_wisun_meter_entry_t *sl_wisun_collector_get_meter(const sockaddr_in6_t* const meter_addr);
 
 /**************************************************************************//**
  * @brief Collector send request
@@ -168,7 +166,7 @@ sl_wisun_meter_entry_t *sl_wisun_collector_get_meter(const struct sockaddr_in6 *
  * @return SL_STATUS_FAIL On failure
  *****************************************************************************/
 sl_status_t sl_wisun_collector_send_request(const int32_t sockid,
-                                            const struct sockaddr_in6 *addr,
+                                            const sockaddr_in6_t *addr,
                                             const sl_wisun_meter_request_t * const req);
 
 #endif

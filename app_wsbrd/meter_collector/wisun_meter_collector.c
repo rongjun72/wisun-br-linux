@@ -39,9 +39,7 @@
 #include <time.h>
 #include "common/log.h"
 #include "common/log_legacy.h"
-////#include "mbed-trace/mbed_trace.h"
 #include "wisun_meter_collector.h"
-////#include "cmsis_os2.h"
 #include "wisun_meter_collector_config.h"
 
 #define TRACE_GROUP "collector"
@@ -117,7 +115,7 @@ static void _mc_mutex_release(void);
  *****************************************************************************/
 static sl_wisun_meter_entry_t *_def_collector_parse(void *raw,
                                                     int32_t packet_data_len,
-                                                    const struct sockaddr_in6 * const remote_addr);
+                                                    const sockaddr_in6_t* const remote_addr);
 
 /**************************************************************************//**
  * @brief Default collector timeout handler
@@ -195,15 +193,6 @@ static char _token[SL_WISUN_METER_COLLECTOR_TOKEN_MAX_SIZE] = { 0 };
 static uint16_t _token_length = 0;
 
 /// Meter-Collector mutex
-/////static osMutexId_t _mc_mtx = { NULL };
-
-/// Meter-Collector mutex attribute
-////static const osMutexAttr_t _mc_mtx_attr = {
-////  .name      = "MeterCollMutex",
-////  .attr_bits = osMutexRecursive,
-////  .cb_mem    = NULL,
-////  .cb_size   = 0
-////};
 static pthread_mutex_t _mc_mtx;
 
 // -----------------------------------------------------------------------------
@@ -351,7 +340,7 @@ bool sl_wisun_mc_compare_token(const char *token, const uint16_t token_size)
 }
 
 /* compare addresses */
-bool sl_wisun_mc_compare_address(const struct sockaddr_in6 *addr1, const struct sockaddr_in6 *addr2)
+bool sl_wisun_mc_compare_address(const sockaddr_in6_t *addr1, const sockaddr_in6_t *addr2)
 {
   uint8_t *p1 = (uint8_t *)&addr1->sin6_addr;
   uint8_t *p2 = (uint8_t *)&addr2->sin6_addr;
@@ -387,7 +376,7 @@ static void _mc_mutex_release(void)
 
 static sl_wisun_meter_entry_t *_def_collector_parse(void *raw,
                                                     int32_t packet_data_len,
-                                                    const struct sockaddr_in6 * const remote_addr)
+                                                    const sockaddr_in6_t* const remote_addr)
 {
   (void) raw;
   (void) packet_data_len;
@@ -398,12 +387,10 @@ static sl_wisun_meter_entry_t *_def_collector_parse(void *raw,
 
 static void _def_collector_timeout_hnd(sl_wisun_meter_entry_t *meter)
 {
-  const char *ip_str = NULL;
-
   tr_info("[Measurement response timed out: %dms %s]",
          (meter->resp_recv_timestamp - meter->req_sent_timestamp),
-         tr_ipv6(meter->addr.sin6_addr.__in6_u.__u6_addr16));
-  ////////free(meter->addr.address);
+         tr_ipv6(meter->addr.sin6_addr.s6_addr));
+  ////////free(meter->addr.address); 
 }
 
 static sl_status_t _def_meter_build(const sl_wisun_request_type_t req,

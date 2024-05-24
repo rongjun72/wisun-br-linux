@@ -13,7 +13,7 @@
 #ifndef LOG_LEGACY_H
 #define LOG_LEGACY_H
 #include "common/log.h"
-
+#define CLOCK_MONOTONIC		1
 /*
  * Ensure compatibility with legacy code from the Nanostack. Don't use for new
  * code (use log.h instead).

@@ -38,17 +38,9 @@
 #include <pthread.h>
 #include <unistd.h>
 
-////#include "cmsis_os2.h"
-////#include "wisun_meter_collector.h"
-////#include "sl_cmsis_os2_common.h"
-////#include "sl_component_catalog.h"
 #include "mempool.h"
-////#include "sl_sleeptimer.h"
-////#include "sl_wisun_app_core_util.h"
 #include "wisun_collector.h"
-////#include "sl_wisun_collector_config.h"
 #include "wisun_meter_collector_config.h"
-////#include "sl_wisun_trace_util.h"
 #include "common/log.h"
 #include "common/log_legacy.h"
 
@@ -82,7 +74,7 @@ static void _create_common_socket(void);
  * @return SL_STATUS_FAIL On failure
  *****************************************************************************/
 static sl_status_t _collector_recv_response(const int32_t sockid,
-                                            struct sockaddr_in6 *remote_addr,
+                                            sockaddr_in6_t *remote_addr,
                                             int32_t * const packet_data_len);
 
 /**************************************************************************//**
@@ -95,7 +87,7 @@ static sl_status_t _collector_recv_response(const int32_t sockid,
  *****************************************************************************/
 static sl_wisun_meter_entry_t *_collector_parse_response(void *raw,
                                                          int32_t packet_data_len,
-                                                         const struct sockaddr_in6 * const remote_addr);
+                                                         const sockaddr_in6_t* const remote_addr);
 
 /**************************************************************************//**
  * @brief Remove broken meters
@@ -119,7 +111,7 @@ static void *_collector_recv_thread_fnc(void *args);
  * @param block Pointer to the first block in the mempool
  * @return sl_wisun_meter_entry_t* Meter entry or NULL on error
  *****************************************************************************/
-static sl_wisun_meter_entry_t *_collector_get_meter_entry_by_address_from_mempool(const struct sockaddr_in6 * const remote_addr,
+static sl_wisun_meter_entry_t *_collector_get_meter_entry_by_address_from_mempool(const sockaddr_in6_t* const remote_addr,
                                                                                   sl_mempool_block_hnd_t *block);
 
 /**************************************************************************//**
@@ -162,20 +154,7 @@ static uint8_t _rx_buf[SL_WISUN_COLLECTOR_BUFFER_LEN] = { 0U };
 /// Collector internal handler
 static sl_wisun_collector_hnd_t _collector_hnd        = { 0 };
  
-/////// Collector receiver task attributes
-////static const osThreadAttr_t _collector_recv_task_attr = {
-////  .name        = "CollectorRecvTask",
-////  .attr_bits   = osThreadDetached,
-////  .cb_mem      = NULL,
-////  .cb_size     = 0U,
-////  .stack_mem   = NULL,
-////  .stack_size  = app_stack_size_word_to_byte(SL_WISUN_COLLECTOR_STACK_SIZE_WORD),
-////  .priority    = osPriorityBelowNormal,
-////  .tz_module   = 0U
-////};
-////
 /// Collector receiver thread ID
-////static osThreadId_t _collector_recv_thr_id            = NULL;
 static pthread_t _collector_recv_thr_id;
 
 /// Socket shared among the sender and receiver threads
@@ -262,13 +241,12 @@ void sl_wisun_collector_init_common_resources(void)
   // Init collector handler
   sl_wisun_collector_init_hnd(&_collector_hnd);
 
-  ////_collector_recv_thr_id = osThreadNew(_collector_recv_thread_fnc, NULL, &_collector_recv_task_attr);
   pthread_create(&_collector_recv_thr_id, NULL, _collector_recv_thread_fnc, NULL);
   assert(_collector_recv_thr_id != 0);
 }
 
 /* Register meter */
-sl_status_t sl_wisun_collector_register_meter(const struct sockaddr_in6 *meter_addr)
+sl_status_t sl_wisun_collector_register_meter(const sockaddr_in6_t *meter_addr)
 {
   const sl_mempool_block_hnd_t *block     = NULL;
   sl_wisun_meter_entry_t *tmp_meter_entry = NULL;
@@ -299,7 +277,7 @@ sl_status_t sl_wisun_collector_register_meter(const struct sockaddr_in6 *meter_a
   tmp_meter_entry->type = SL_WISUN_MC_REQ_REGISTER;
   tmp_meter_entry->resp_recv_timestamp = 0U;
   tmp_meter_entry->req_sent_timestamp = get_monotonic_ms();
-  memcpy(&tmp_meter_entry->addr, meter_addr, sizeof(struct sockaddr_in6));
+  memcpy(&tmp_meter_entry->addr, meter_addr, sizeof(sockaddr_in6_t));
 
   // Send a registration request to the meter
   res = sl_wisun_collector_send_request(_common_socket, &tmp_meter_entry->addr, &_registration_req);
@@ -315,7 +293,7 @@ sl_status_t sl_wisun_collector_register_meter(const struct sockaddr_in6 *meter_a
 }
 
 /* Remove meter */
-sl_status_t sl_wisun_collector_remove_meter(const struct sockaddr_in6 *meter_addr)
+sl_status_t sl_wisun_collector_remove_meter(const sockaddr_in6_t *meter_addr)
 {
   const sl_mempool_block_hnd_t *block           = NULL;
   const sl_wisun_meter_entry_t *tmp_meter_entry = NULL;
@@ -357,7 +335,7 @@ sl_status_t sl_wisun_collector_remove_meter(const struct sockaddr_in6 *meter_add
   return SL_STATUS_OK;
 }
 
-sl_status_t sl_wisun_send_async_request(const struct sockaddr_in6 *meter_addr)
+sl_status_t sl_wisun_send_async_request(const sockaddr_in6_t *meter_addr)
 {
   const sl_mempool_block_hnd_t *block     = NULL;
   sl_wisun_meter_entry_t *tmp_meter_entry = NULL;
@@ -387,7 +365,7 @@ sl_status_t sl_wisun_send_async_request(const struct sockaddr_in6 *meter_addr)
   }
   tmp_meter_entry->req_sent_timestamp = get_monotonic_ms();
   tmp_meter_entry->resp_recv_timestamp = 0U;
-  memcpy(&tmp_meter_entry->addr, meter_addr, sizeof(struct sockaddr_in6));
+  memcpy(&tmp_meter_entry->addr, meter_addr, sizeof(sockaddr_in6_t));
 
   // Send a async measurement request to the meter
   res = sl_wisun_collector_send_request(_common_socket, &tmp_meter_entry->addr, &_async_meas_req);
@@ -428,7 +406,7 @@ void sl_wisun_collector_print_meters(void)
   _collector_print_registered_meters();
 }
 
-sl_wisun_meter_entry_t *sl_wisun_collector_get_async_meter_entry_by_address(const struct sockaddr_in6 * const meter_addr)
+sl_wisun_meter_entry_t *sl_wisun_collector_get_async_meter_entry_by_address(const sockaddr_in6_t* const meter_addr)
 {
   sl_wisun_meter_entry_t *tmp_meter_entry = NULL;
 
@@ -440,7 +418,7 @@ sl_wisun_meter_entry_t *sl_wisun_collector_get_async_meter_entry_by_address(cons
   return tmp_meter_entry;
 }
 
-sl_wisun_meter_entry_t *sl_wisun_collector_get_registered_meter_entry_by_address(const struct sockaddr_in6 * const meter_addr)
+sl_wisun_meter_entry_t *sl_wisun_collector_get_registered_meter_entry_by_address(const sockaddr_in6_t* const meter_addr)
 {
   sl_wisun_meter_entry_t *tmp_meter_entry = NULL;
 
@@ -452,7 +430,7 @@ sl_wisun_meter_entry_t *sl_wisun_collector_get_registered_meter_entry_by_address
   return tmp_meter_entry;
 }
 
-sl_wisun_meter_entry_t *sl_wisun_collector_get_meter(const struct sockaddr_in6 * const meter_addr)
+sl_wisun_meter_entry_t *sl_wisun_collector_get_meter(const sockaddr_in6_t* const meter_addr)
 {
   sl_wisun_meter_entry_t *tmp_meter_entry = NULL;
 
@@ -465,7 +443,7 @@ sl_wisun_meter_entry_t *sl_wisun_collector_get_meter(const struct sockaddr_in6 *
 }
 
 sl_status_t sl_wisun_collector_send_request(const int32_t sockid,
-                                            const struct sockaddr_in6 *addr,
+                                            const sockaddr_in6_t *addr,
                                             const sl_wisun_meter_request_t * const req)
 {
   socklen_t len       = 0U;
@@ -498,7 +476,7 @@ sl_status_t sl_wisun_collector_send_request(const int32_t sockid,
 
 static void _create_common_socket(void)
 {
-  static struct sockaddr_in6 collector_addr  = { 0 };
+  static sockaddr_in6_t collector_addr  = { 0 };
   int32_t res                         = SOCKET_INVALID_ID;
 
   _common_socket = socket(AF_INET6, SOCK_DGRAM | SOCK_NONBLOCK, IPPROTO_UDP);
@@ -510,12 +488,12 @@ static void _create_common_socket(void)
 
   res = bind(_common_socket,
              (const struct sockaddr *) &collector_addr,
-             sizeof(struct sockaddr_in6));
+             sizeof(sockaddr_in6_t));
   assert(res < 0);
 }
 
 static sl_status_t _collector_recv_response(const int32_t sockid,
-                                            struct sockaddr_in6 *remote_addr,
+                                            sockaddr_in6_t *remote_addr,
                                             int32_t * const packet_data_len)
 {
   socklen_t addrlen = 0U;
@@ -526,7 +504,7 @@ static sl_status_t _collector_recv_response(const int32_t sockid,
   }
 
   *packet_data_len = -1;
-  addrlen = sizeof(struct sockaddr_in6);
+  addrlen = sizeof(sockaddr_in6_t);
   res = recvfrom(sockid,
                  (void *)_rx_buf,
                  SL_WISUN_COLLECTOR_BUFFER_LEN,
@@ -549,7 +527,7 @@ static sl_status_t _collector_recv_response(const int32_t sockid,
 
 static sl_wisun_meter_entry_t *_collector_parse_response(void *raw,
                                                          int32_t packet_data_len,
-                                                         const struct sockaddr_in6 * const remote_addr)
+                                                         const sockaddr_in6_t* const remote_addr)
 {
 #if !defined(SL_CATALOG_WISUN_COAP_PRESENT)
   uint16_t packet_size              = 0U;
@@ -638,7 +616,7 @@ static void *_collector_recv_thread_fnc(void *args)
   uint32_t response_time_ms         = 0U;
   sl_wisun_meter_entry_t *meter     = NULL;
   sl_status_t res                   = SL_STATUS_FAIL;
-  static struct sockaddr_in6 remote_addr = { 0 };
+  static sockaddr_in6_t remote_addr = { 0 };
   int32_t packet_data_len           = -1;
 
   (void) args;
@@ -686,7 +664,7 @@ static void *_collector_recv_thread_fnc(void *args)
   return NULL;
 }
 
-static sl_wisun_meter_entry_t *_collector_get_meter_entry_by_address_from_mempool(const struct sockaddr_in6 * const remote_addr,
+static sl_wisun_meter_entry_t *_collector_get_meter_entry_by_address_from_mempool(const sockaddr_in6_t* const remote_addr,
                                                                                   sl_mempool_block_hnd_t *block)
 {
   sl_wisun_meter_entry_t *tmp_meter_entry = NULL;

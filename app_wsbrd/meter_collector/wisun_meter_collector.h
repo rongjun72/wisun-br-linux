@@ -38,7 +38,6 @@
 #include <inttypes.h>
 #include <stdlib.h>
 #include "mempool.h"
-/////#include "socket_api.h"
 #include <netinet/in.h>
 // -----------------------------------------------------------------------------
 //                              Macros and Typedefs
@@ -53,6 +52,7 @@
 // Data Types
 /** @brief define global status variable. */
 typedef uint32_t sl_status_t;
+typedef struct sockaddr_in6 sockaddr_in6_t;
 
 /// Meter LED toggle payload string max lenght
 #define SL_WISUN_METER_LED_TOGGLE_PAYLOAD_STR_MAX_LEN     (16U)
@@ -130,7 +130,7 @@ typedef enum sl_wisun_request_type {
 /// Meter entry type definition
 typedef struct sl_wisun_meter_entry {
   /// Address structure for meter
-  struct sockaddr_in6 addr;
+  sockaddr_in6_t addr;
   /// Request sent timestamp
   uint32_t req_sent_timestamp;
   /// Response received timestamp
@@ -142,7 +142,7 @@ typedef struct sl_wisun_meter_entry {
 /// Collector entry type definition
 typedef struct sl_wisun_collector_entry {
   /// Address structure for collector
-  struct sockaddr_in6 addr;
+  sockaddr_in6_t addr;
 } sl_wisun_collector_entry_t;
 
 /// Mutex lock callback type definition
@@ -193,7 +193,7 @@ typedef struct sl_wisun_meter_packet_packed {
 //////SL_PACK_END()
 
 /// Collector received packet parser type definition
-typedef sl_wisun_meter_entry_t * (*sl_wisun_collector_parse_t)(void *, int, const struct sockaddr_in6 * const);
+typedef sl_wisun_meter_entry_t * (*sl_wisun_collector_parse_t)(void *, int, const sockaddr_in6_t* const);
 
 /// Collector measurement timeout handler type definition
 typedef void (*sl_wisun_collector_timeout_hnd_t)(sl_wisun_meter_entry_t *);
@@ -394,7 +394,7 @@ const char *sl_wisun_mc_get_led_payload_by_id(const uint8_t led_id);
  * @return true if addresses has been matched
  * @return false if addresses has not been matched
  *****************************************************************************/
-bool sl_wisun_mc_compare_address(const struct sockaddr_in6 *addr1, const struct sockaddr_in6 *addr2);
+bool sl_wisun_mc_compare_address(const sockaddr_in6_t *addr1, const sockaddr_in6_t *addr2);
 
 uint32_t get_monotonic_ms(void);
 #endif

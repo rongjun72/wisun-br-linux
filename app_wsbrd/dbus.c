@@ -15,6 +15,7 @@
 #include <pthread.h>
 #include <arpa/inet.h>
 #include <systemd/sd-bus.h>
+#include <netinet/in.h>
 #include "app_wsbrd/tun.h"
 #include "common/named_values.h"
 #include "common/utils.h"
@@ -22,6 +23,8 @@
 #include "stack/ws_bbr_api.h"
 #include "common/log_legacy.h"
 #include "common/rcp_fw_update.h"
+#include "meter_collector/wisun_collector.h"
+#include "meter_collector/wisun_meter_collector_config.h"
 
 #include "stack/source/6lowpan/ws/ws_common.h"
 #include "stack/source/6lowpan/ws/ws_pae_controller.h"
@@ -1549,12 +1552,23 @@ int dbus_register_meter(sd_bus_message *m, void *userdata, sd_bus_error *ret_err
     const uint8_t *dest_addr;
     size_t len;
     int ret;
+    struct sockaddr_in6 meter_addr = {
+      .sin6_family = AF_INET6,
+      .sin6_addr = { .s6_addr = { 0U }, },
+      .sin6_port = SL_WISUN_METER_PORT
+    };
+    const char *ip_addr = NULL;
 
     ret = sd_bus_message_read_array(m, 'y', (const void **)&dest_addr, &len);
     WARN_ON(ret < 0, "%s", strerror(-ret));
     WARN_ON(len != 16, "%s", strerror(EINVAL));
+    ip_addr = tr_ipv6(dest_addr);
+    if (inet_pton(AF_INET6, ip_addr, &meter_addr.sin6_addr) == -1 ) {
+        tr_error("[Failed: invalid remote address parameter]");
+    }
+    tr_warn("register meter ipv6 address: %s", ip_addr);
 
-    tr_warn("register meter ipv6 address: %s", tr_ipv6(dest_addr));
+    ret = sl_wisun_collector_register_meter(&meter_addr);
 
     sd_bus_reply_method_return(m, NULL);
     return 0;
@@ -1566,12 +1580,23 @@ int dbus_remove_meter(sd_bus_message *m, void *userdata, sd_bus_error *ret_error
     const uint8_t *dest_addr;
     size_t len;
     int ret;
+    struct sockaddr_in6 meter_addr = {
+      .sin6_family = AF_INET6,
+      .sin6_addr = { .s6_addr = { 0U }, },
+      .sin6_port = SL_WISUN_METER_PORT
+    };
+    const char *ip_addr = NULL;
 
     ret = sd_bus_message_read_array(m, 'y', (const void **)&dest_addr, &len);
     WARN_ON(ret < 0, "%s", strerror(-ret));
     WARN_ON(len != 16, "%s", strerror(EINVAL));
+    ip_addr = tr_ipv6(dest_addr);
+    if (inet_pton(AF_INET6, ip_addr, &meter_addr.sin6_addr) == -1 ) {
+        tr_error("[Failed: invalid remote address parameter]");
+    }
+    tr_warn("register meter ipv6 address: %s", ip_addr);
 
-    tr_warn("remove meter ipv6 address: %s", tr_ipv6(dest_addr));
+    ret = sl_wisun_collector_remove_meter(&meter_addr);
 
     sd_bus_reply_method_return(m, NULL);
     return 0;
@@ -1583,12 +1608,23 @@ int dbus_async_request(sd_bus_message *m, void *userdata, sd_bus_error *ret_erro
     const uint8_t *dest_addr;
     size_t len;
     int ret;
+    struct sockaddr_in6 meter_addr = {
+      .sin6_family = AF_INET6,
+      .sin6_addr = { .s6_addr = { 0U }, },
+      .sin6_port = SL_WISUN_METER_PORT
+    };
+    const char *ip_addr = NULL;
 
     ret = sd_bus_message_read_array(m, 'y', (const void **)&dest_addr, &len);
     WARN_ON(ret < 0, "%s", strerror(-ret));
     WARN_ON(len != 16, "%s", strerror(EINVAL));
+    ip_addr = tr_ipv6(dest_addr);
+    if (inet_pton(AF_INET6, ip_addr, &meter_addr.sin6_addr) == -1 ) {
+        tr_error("[Failed: invalid remote address parameter]");
+    }
+    tr_warn("register meter ipv6 address: %s", ip_addr);
 
-    tr_warn("async request meter ipv6 address: %s", tr_ipv6(dest_addr));
+    ret = sl_wisun_send_async_request(&meter_addr);
 
     sd_bus_reply_method_return(m, NULL);
     return 0;

@@ -621,7 +621,7 @@ int wsbr_restart(struct wsbr_ctxt *ctxt)
     BUG_ON(ctxt->rcp_if_id < 0, "arm_nwk_interface_lowpan_init: %d", ctxt->rcp_if_id);
 
     wsbr_network_init(ctxt);
-
+    sl_wisun_collector_init();
 
     return 0;
 }

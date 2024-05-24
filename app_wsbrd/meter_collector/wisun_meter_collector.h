@@ -392,4 +392,5 @@ const char *sl_wisun_mc_get_led_payload_by_id(const uint8_t led_id);
  *****************************************************************************/
 bool sl_wisun_mc_compare_address(const struct sockaddr_in6 *addr1, const struct sockaddr_in6 *addr2);
 
+uint32_t get_monotonic_ms(void);
 #endif

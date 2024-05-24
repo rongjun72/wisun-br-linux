@@ -36,6 +36,7 @@
 #include <assert.h>
 #include <string.h>
 #include <pthread.h>
+#include <time.h>
 #include "common/log.h"
 #include "common/log_legacy.h"
 ////#include "mbed-trace/mbed_trace.h"
@@ -471,6 +472,15 @@ const char *sl_wisun_mc_get_led_payload_by_id(const uint8_t led_id)
     case SL_WISUN_METER_LED1:        return SL_WISUN_METER_LED1_TOGGLE_PAYLOAD_STR;
     default:                         return "Unknown";
   }
+}
+
+#define CLOCK_MONOTONIC		1
+uint32_t get_monotonic_ms(void)
+{
+    struct timespec tp;
+    clock_gettime(CLOCK_MONOTONIC, &tp);
+    uint32_t tmp = tp.tv_sec * 1000 + tp.tv_nsec / 1000000;
+    return tmp;
 }
 
 #undef __print_packet

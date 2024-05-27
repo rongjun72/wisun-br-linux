@@ -193,7 +193,7 @@ typedef struct sl_wisun_meter_packet_packed {
 //////SL_PACK_END()
 
 /// Collector received packet parser type definition
-typedef sl_wisun_meter_entry_t * (*sl_wisun_collector_parse_t)(void *, int, const sockaddr_in6_t* const);
+typedef sl_wisun_meter_entry_t * (*sl_wisun_collector_parse_t)(void *, int, sockaddr_in6_t* const);
 
 /// Collector measurement timeout handler type definition
 typedef void (*sl_wisun_collector_timeout_hnd_t)(sl_wisun_meter_entry_t *);

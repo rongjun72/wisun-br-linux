@@ -84,7 +84,7 @@ void sl_wisun_collector_init_common_resources(void);
  * @return SL_STATUS_ALREADY_EXISTS meter had already been added
  * @return SL_STATUS_FAIL on error
  *****************************************************************************/
-sl_status_t sl_wisun_collector_register_meter(const sockaddr_in6_t* const meter_addr);
+sl_status_t sl_wisun_collector_register_meter(sockaddr_in6_t* const meter_addr);
 
 /**************************************************************************//**
  * @brief Remove Meter.
@@ -93,7 +93,7 @@ sl_status_t sl_wisun_collector_register_meter(const sockaddr_in6_t* const meter_
  * @return SL_STATUS_OK meter has been successfully removed
  * @return SL_STATUS_FAIL on error
  *****************************************************************************/
-sl_status_t sl_wisun_collector_remove_meter(const sockaddr_in6_t* const meter_addr);
+sl_status_t sl_wisun_collector_remove_meter(sockaddr_in6_t* const meter_addr);
 
 /**************************************************************************//**
  * @brief Send async request.
@@ -102,7 +102,7 @@ sl_status_t sl_wisun_collector_remove_meter(const sockaddr_in6_t* const meter_ad
  * @return SL_STATUS_OK async request has been successfully sent
  * @return SL_STATUS_FAIL on error
  *****************************************************************************/
-sl_status_t sl_wisun_send_async_request(const sockaddr_in6_t* const meter_addr);
+sl_status_t sl_wisun_send_async_request(sockaddr_in6_t* const meter_addr);
 
 /**************************************************************************//**
 * @brief Set async measurement request.

@@ -115,7 +115,7 @@ static void _mc_mutex_release(void);
  *****************************************************************************/
 static sl_wisun_meter_entry_t *_def_collector_parse(void *raw,
                                                     int32_t packet_data_len,
-                                                    const sockaddr_in6_t* const remote_addr);
+                                                    sockaddr_in6_t * const remote_addr);
 
 /**************************************************************************//**
  * @brief Default collector timeout handler
@@ -376,7 +376,7 @@ static void _mc_mutex_release(void)
 
 static sl_wisun_meter_entry_t *_def_collector_parse(void *raw,
                                                     int32_t packet_data_len,
-                                                    const sockaddr_in6_t* const remote_addr)
+                                                    sockaddr_in6_t* const remote_addr)
 {
   (void) raw;
   (void) packet_data_len;

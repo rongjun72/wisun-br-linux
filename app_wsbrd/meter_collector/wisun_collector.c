@@ -87,7 +87,7 @@ static sl_status_t _collector_recv_response(const int32_t sockid,
  *****************************************************************************/
 static sl_wisun_meter_entry_t *_collector_parse_response(void *raw,
                                                          int32_t packet_data_len,
-                                                         const sockaddr_in6_t* const remote_addr);
+                                                         sockaddr_in6_t* const remote_addr);
 
 /**************************************************************************//**
  * @brief Remove broken meters
@@ -246,12 +246,11 @@ void sl_wisun_collector_init_common_resources(void)
 }
 
 /* Register meter */
-sl_status_t sl_wisun_collector_register_meter(const sockaddr_in6_t *meter_addr)
+sl_status_t sl_wisun_collector_register_meter(sockaddr_in6_t *meter_addr)
 {
   const sl_mempool_block_hnd_t *block     = NULL;
   sl_wisun_meter_entry_t *tmp_meter_entry = NULL;
   sl_status_t res                         = SL_STATUS_FAIL;
-  const char *ip_addr                     = NULL;
 
   sl_wisun_mc_mutex_acquire(_collector_hnd);
 
@@ -282,9 +281,8 @@ sl_status_t sl_wisun_collector_register_meter(const sockaddr_in6_t *meter_addr)
   // Send a registration request to the meter
   res = sl_wisun_collector_send_request(_common_socket, &tmp_meter_entry->addr, &_registration_req);
   if (res != SL_STATUS_OK) {
-    ip_addr = tr_ipv6(meter_addr->sin6_addr.s6_addr);
-    tr_info("[Collector cannot send registration request to the meter: %s]", ip_addr);
-    //////app_wisun_trace_util_destroy_ip_str(ip_addr);
+    tr_info("[Collector cannot send registration request to the meter: %s]", tr_ipv6(meter_addr->sin6_addr.s6_addr));
+    free(meter_addr);
     sl_wisun_mc_release_mtx_and_return_val(_collector_hnd, SL_STATUS_FAIL);
   }
 
@@ -293,12 +291,11 @@ sl_status_t sl_wisun_collector_register_meter(const sockaddr_in6_t *meter_addr)
 }
 
 /* Remove meter */
-sl_status_t sl_wisun_collector_remove_meter(const sockaddr_in6_t *meter_addr)
+sl_status_t sl_wisun_collector_remove_meter(sockaddr_in6_t *meter_addr)
 {
   const sl_mempool_block_hnd_t *block           = NULL;
   const sl_wisun_meter_entry_t *tmp_meter_entry = NULL;
   sl_status_t res                               = SL_STATUS_FAIL;
-  const char *ip_addr                           = NULL;
 
   sl_wisun_mc_mutex_acquire(_collector_hnd);
 
@@ -322,9 +319,8 @@ sl_status_t sl_wisun_collector_remove_meter(const sockaddr_in6_t *meter_addr)
   // Send a remove request to the meter
   res = sl_wisun_collector_send_request(_common_socket, &tmp_meter_entry->addr, &_removal_req);
   if (res != SL_STATUS_OK) {
-    ip_addr = tr_ipv6(meter_addr->sin6_addr.s6_addr);
-    tr_info("[Collector cannot send removal request to the meter: %s]", ip_addr);
-    /////app_wisun_trace_util_destroy_ip_str(ip_addr);
+    tr_info("[Collector cannot send removal request to the meter: %s]", tr_ipv6(meter_addr->sin6_addr.s6_addr));
+    free(meter_addr);
     sl_wisun_mc_release_mtx_and_return_val(_collector_hnd, SL_STATUS_FAIL);
   }
 
@@ -335,12 +331,11 @@ sl_status_t sl_wisun_collector_remove_meter(const sockaddr_in6_t *meter_addr)
   return SL_STATUS_OK;
 }
 
-sl_status_t sl_wisun_send_async_request(const sockaddr_in6_t *meter_addr)
+sl_status_t sl_wisun_send_async_request(sockaddr_in6_t *meter_addr)
 {
   const sl_mempool_block_hnd_t *block     = NULL;
   sl_wisun_meter_entry_t *tmp_meter_entry = NULL;
   sl_status_t res                         = SL_STATUS_FAIL;
-  const char *ip_addr                     = NULL;
 
   if (meter_addr == NULL) {
     return SL_STATUS_FAIL;
@@ -370,9 +365,8 @@ sl_status_t sl_wisun_send_async_request(const sockaddr_in6_t *meter_addr)
   // Send a async measurement request to the meter
   res = sl_wisun_collector_send_request(_common_socket, &tmp_meter_entry->addr, &_async_meas_req);
   if (res != SL_STATUS_OK) {
-    ip_addr = tr_ipv6(meter_addr->sin6_addr.s6_addr);
-    tr_info("[Collector cannot send async measurement request to the meter: %s]", ip_addr);
-    //////app_wisun_trace_util_destroy_ip_str(ip_addr);
+    tr_info("[Collector cannot send async measurement request to the meter: %s]", tr_ipv6(meter_addr->sin6_addr.s6_addr));
+    free(meter_addr);
     sl_wisun_mc_release_mtx_and_return_val(_collector_hnd, SL_STATUS_FAIL);
   }
   sl_wisun_mc_mutex_release(_collector_hnd);
@@ -489,7 +483,7 @@ static void _create_common_socket(void)
   res = bind(_common_socket,
              (const struct sockaddr *) &collector_addr,
              sizeof(sockaddr_in6_t));
-  assert(res < 0);
+  assert(res >= 0);
 }
 
 static sl_status_t _collector_recv_response(const int32_t sockid,
@@ -527,12 +521,12 @@ static sl_status_t _collector_recv_response(const int32_t sockid,
 
 static sl_wisun_meter_entry_t *_collector_parse_response(void *raw,
                                                          int32_t packet_data_len,
-                                                         const sockaddr_in6_t* const remote_addr)
+                                                         sockaddr_in6_t* const remote_addr)
 {
 #if !defined(SL_CATALOG_WISUN_COAP_PRESENT)
   uint16_t packet_size              = 0U;
   sl_wisun_meter_entry_t *meter     = NULL;
-  const char *ip_addr               = NULL;
+  char ip_addr[STR_MAX_LEN_IPV6];
   const char *packet                = NULL;
   sl_wisun_request_type_t resp_type = SL_WISUN_MC_REQ_UNKNOWN;
 
@@ -558,14 +552,14 @@ static sl_wisun_meter_entry_t *_collector_parse_response(void *raw,
   }
 
   tr_info("[%s response]", resp_type == SL_WISUN_MC_REQ_ASYNC ? "Async" : "Periodic");
-  ip_addr = tr_ipv6(remote_addr->sin6_addr.s6_addr);
+  str_ipv6(remote_addr->sin6_addr.s6_addr, ip_addr);
   packet = raw;
   while (packet_data_len >= packet_size) {
     sl_wisun_mc_print_mesurement(ip_addr, packet, true);
     packet += packet_size;
     packet_data_len -= packet_size;
   }
-  /////app_wisun_trace_util_destroy_ip_str(ip_addr);
+  free(remote_addr);
   return meter;
 #else
   (void) raw;
@@ -580,8 +574,8 @@ static void _collector_remove_broken_meters(sl_mempool_t *mempool)
   const sl_mempool_block_hnd_t *block           = NULL;
   const sl_wisun_meter_entry_t *tmp_meter_entry = NULL;
   uint64_t timestamp                            = 0U;
-  const char *ip_addr                           = NULL;
   uint32_t elapsed_ms                           = 0U;
+  char ip_addr[STR_MAX_LEN_IPV6];
 
   if (mempool == NULL) {
     return;
@@ -601,7 +595,7 @@ static void _collector_remove_broken_meters(sl_mempool_t *mempool)
       continue;
     }
 
-    ip_addr = tr_ipv6(tmp_meter_entry->addr.sin6_addr.s6_addr);
+    str_ipv6(tmp_meter_entry->addr.sin6_addr.s6_addr, ip_addr);
     tr_info("[%s not responded for the %s request in time, therefore has been removed]",
            ip_addr, tmp_meter_entry->type == SL_WISUN_MC_REQ_ASYNC ? "async" : "registration");
 
@@ -686,7 +680,7 @@ static void _collector_print_async_meters(void)
   const sl_wisun_meter_entry_t *tmp_meter_entry = NULL;
   uint32_t remaining_ms                         = 0U;
   uint32_t elapsed_ms                           = 0U;
-  const char *ip_addr                           = NULL;
+  char ip_addr[STR_MAX_LEN_IPV6];
 
   sl_wisun_mc_mutex_acquire(_collector_hnd);
 
@@ -702,9 +696,8 @@ static void _collector_print_async_meters(void)
     } else {
       remaining_ms = SL_WISUN_COLLECTOR_REQUEST_TIMEOUT - elapsed_ms;
     }
-    ip_addr = tr_ipv6(tmp_meter_entry->addr.sin6_addr.s6_addr);
+    str_ipv6(tmp_meter_entry->addr.sin6_addr.s6_addr, ip_addr);
     tr_info("[%s - time to live: %d ms]", ip_addr, remaining_ms);
-    //////app_wisun_trace_util_destroy_ip_str(ip_addr);
     block = block->next;
   }
   sl_wisun_mc_mutex_release(_collector_hnd);
@@ -716,7 +709,7 @@ static void _collector_print_registered_meters(void)
   const sl_mempool_block_hnd_t *block           = NULL;
   const sl_wisun_meter_entry_t *tmp_meter_entry = NULL;
   uint32_t elapsed_ms                           = 0U;
-  const char *ip_addr                           = NULL;
+  char ip_addr[STR_MAX_LEN_IPV6];
 
   sl_wisun_mc_mutex_acquire(_collector_hnd);
 
@@ -727,9 +720,8 @@ static void _collector_print_registered_meters(void)
   while (block != NULL) {
     tmp_meter_entry = (sl_wisun_meter_entry_t *)block->start_addr;
     elapsed_ms = timestamp - tmp_meter_entry->req_sent_timestamp;
-    ip_addr = tr_ipv6(tmp_meter_entry->addr.sin6_addr.s6_addr);
+    str_ipv6(tmp_meter_entry->addr.sin6_addr.s6_addr, ip_addr);
     tr_info("[%s - registered %d seconds ago]", ip_addr, elapsed_ms / 1000);
-    //////app_wisun_trace_util_destroy_ip_str(ip_addr);
     block = block->next;
   }
   sl_wisun_mc_mutex_release(_collector_hnd);

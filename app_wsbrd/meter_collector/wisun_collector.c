@@ -449,11 +449,6 @@ sl_status_t sl_wisun_collector_send_request(const int32_t sockid,
   }
 
   len = sizeof(*addr);
-  WARN("--------socket sendto: %s", tr_ipv6(addr->sin6_addr.s6_addr));
-  WARN("-------- sendto port: %d", addr->sin6_port);
-  WARN("-------- len = : %d", len);
-  WARN("-------- sizeof(sockaddr_in6_t)= : %d", sizeof(sockaddr_in6_t));
-
   res = sendto(sockid,
                req->buff,
                req->length,
@@ -514,7 +509,7 @@ static sl_status_t _collector_recv_response(const int32_t sockid,
     return SL_STATUS_FAIL;
   }
 
-  WARN("--------socket received from: %s", tr_ipv6(remote_addr->sin6_addr.s6_addr));
+  ///////WARN("--------socket received from: %s", tr_ipv6(remote_addr->sin6_addr.s6_addr));
   if (!memcmp(&remote_addr->sin6_addr, &in6addr_any, sizeof(in6addr_any))) {
     tr_warn("[Invalid address received]");
     return SL_STATUS_FAIL;

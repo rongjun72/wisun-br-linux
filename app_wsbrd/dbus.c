@@ -1555,6 +1555,8 @@ int dbus_register_meter(sd_bus_message *m, void *userdata, sd_bus_error *ret_err
     int ret;
     sockaddr_in6_t *meter_addr = malloc(sizeof(sockaddr_in6_t));
     memset(meter_addr, 0, sizeof(sockaddr_in6_t));
+    meter_addr->sin6_family = AF_INET6;
+    meter_addr->sin6_port = htons(SL_WISUN_METER_PORT);
     char ip_addr[STR_MAX_LEN_IPV6];
 
     ret = sd_bus_message_read_array(m, 'y', (const void **)&dest_addr, &len);
@@ -1580,6 +1582,8 @@ int dbus_remove_meter(sd_bus_message *m, void *userdata, sd_bus_error *ret_error
     int ret;
     sockaddr_in6_t *meter_addr = malloc(sizeof(sockaddr_in6_t));
     memset(meter_addr, 0, sizeof(sockaddr_in6_t));
+    meter_addr->sin6_family = AF_INET6;
+    meter_addr->sin6_port = htons(SL_WISUN_METER_PORT);
     char ip_addr[STR_MAX_LEN_IPV6];
 
     ret = sd_bus_message_read_array(m, 'y', (const void **)&dest_addr, &len);
@@ -1589,7 +1593,7 @@ int dbus_remove_meter(sd_bus_message *m, void *userdata, sd_bus_error *ret_error
     if (inet_pton(AF_INET6, ip_addr, meter_addr->sin6_addr.s6_addr) == -1 ) {
         tr_error("[Failed: invalid remote address parameter]");
     }
-    tr_warn("register meter ipv6 address: %s", ip_addr);
+    tr_warn("remove meter ipv6 address: %s", ip_addr);
 
     ret = sl_wisun_collector_remove_meter(meter_addr);
 
@@ -1605,6 +1609,8 @@ int dbus_async_request(sd_bus_message *m, void *userdata, sd_bus_error *ret_erro
     int ret;
     sockaddr_in6_t *meter_addr = malloc(sizeof(sockaddr_in6_t));
     memset(meter_addr, 0, sizeof(sockaddr_in6_t));
+    meter_addr->sin6_family = AF_INET6;
+    meter_addr->sin6_port = htons(SL_WISUN_METER_PORT);
     char ip_addr[STR_MAX_LEN_IPV6];
 
     ret = sd_bus_message_read_array(m, 'y', (const void **)&dest_addr, &len);
@@ -1614,9 +1620,7 @@ int dbus_async_request(sd_bus_message *m, void *userdata, sd_bus_error *ret_erro
     if (inet_pton(AF_INET6, ip_addr, meter_addr->sin6_addr.s6_addr) == -1 ) {
         tr_error("[Failed: invalid remote address parameter]");
     }
-    tr_warn("register meter ipv6 address: %s", ip_addr);
-    meter_addr->sin6_family = AF_INET6;
-    meter_addr->sin6_port   = SL_WISUN_METER_PORT;
+    tr_warn("async request meter ipv6 address: %s", ip_addr);
 
     ret = sl_wisun_send_async_request(meter_addr);
 

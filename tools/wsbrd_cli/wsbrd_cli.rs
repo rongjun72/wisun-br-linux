@@ -1150,11 +1150,20 @@ fn list_meters(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
     }
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
+    println!("List Meters:");
     println!("--------------------------------------------------------------");
-    println!("Wi-SUN PAN id: {:#04x}", dbus_proxy.wisun_pan_id().unwrap_or(0));
+    let list_meters = dbus_proxy.list_meters().unwrap_or(vec![]);
+    for (i, g) in list_meters.iter().enumerate() {
+        let ip_addr = Ipv6Addr::new((g[0] as u16)*256+(g[1] as u16), (g[2] as u16)*256+(g[3] as u16), 
+                                    (g[4] as u16)*256+(g[5] as u16), (g[6] as u16)*256+(g[7] as u16), 
+                                    (g[8] as u16)*256+(g[9] as u16), (g[10] as u16)*256+(g[11] as u16),
+                                    (g[12] as u16)*256+(g[13] as u16), (g[14] as u16)*256+(g[15] as u16));
+        println!("IP address[{}]: {}", i, ip_addr);
+    }
 
     Ok(())
 }
+
 
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {

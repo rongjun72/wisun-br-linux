@@ -1628,6 +1628,36 @@ int dbus_async_request(sd_bus_message *m, void *userdata, sd_bus_error *ret_erro
     return 0;
 }
 
+static int dbus_list_meters(sd_bus *bus, const char *path, const char *interface,
+                         const char *property, sd_bus_message *reply,
+                         void *userdata, sd_bus_error *ret_error)
+{
+    struct wsbr_ctxt *ctxt = userdata;
+    int interface_id = ctxt->rcp_if_id;
+    int ret;
+
+    ////////tr_warn("---- Network state:");
+    uint8_t address_buf[128];
+    int address_count = 0;
+
+    ret = sd_bus_message_open_container(reply, 'a', "ay");
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+    if (arm_net_address_list_get(interface_id, 128, address_buf, &address_count) == 0) {
+        uint8_t *t_buf = address_buf;
+        for (int i = 0; i < address_count; ++i) {
+            ////////tr_info("address%d: %s",i,tr_ipv6(t_buf));
+            ret = sd_bus_message_append_array(reply, 'y', t_buf, 16);
+            WARN_ON(ret < 0, "%s", strerror(-ret));
+            t_buf += 16;
+        }
+    }
+    ret = sd_bus_message_close_container(reply);
+    WARN_ON(ret < 0, "%s", strerror(-ret));
+
+    return 0;
+}
+
+
 
 static const sd_bus_vtable dbus_vtable[] = {
         SD_BUS_VTABLE_START(0),
@@ -1778,9 +1808,8 @@ static const sd_bus_vtable dbus_vtable[] = {
                         dbus_remove_meter, 0),
         SD_BUS_METHOD("asyncRequest", "ay", NULL,
                         dbus_async_request, 0),
-        SD_BUS_PROPERTY("listMeters", "q", dbus_get_ws_pan_id,
-                        offsetof(struct wsbr_ctxt, rcp_if_id),
-                        SD_BUS_VTABLE_PROPERTY_CONST),
+        SD_BUS_PROPERTY("listMeters", "aay", dbus_list_meters, 0,
+                        SD_BUS_VTABLE_PROPERTY_EMITS_CHANGE),
         SD_BUS_VTABLE_END
 };
 

@@ -27,7 +27,6 @@ use clap::{Arg, App, SubCommand};
 use std::net::{Ipv6Addr};
 use std::string::String;
 
-
 fn format_byte_array(input: &[u8]) -> String {
     input.iter().map(|m| format!("{:02x}", m)).collect::<Vec<_>>().join(":")
 }
@@ -190,10 +189,7 @@ fn get_networkstate(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
     println!("--------------------------------------------------------------");
     let network_state = dbus_proxy.get_network_state().unwrap_or(vec![]);
     for (i, g) in network_state.iter().enumerate() {
-        let ip_addr = Ipv6Addr::new((g[0] as u16)*256+(g[1] as u16), (g[2] as u16)*256+(g[3] as u16), 
-                                    (g[4] as u16)*256+(g[5] as u16), (g[6] as u16)*256+(g[7] as u16), 
-                                    (g[8] as u16)*256+(g[9] as u16), (g[10] as u16)*256+(g[11] as u16),
-                                    (g[12] as u16)*256+(g[13] as u16), (g[14] as u16)*256+(g[15] as u16));
+        let ip_addr = Ipv6Addr::from([g[0],g[1],g[2],g[3],g[4],g[5],g[6],g[7],g[8],g[9],g[10],g[11],g[12],g[13],g[14],g[15]]);
         println!("IP address[{}]: {}", i, ip_addr);
     }
 
@@ -1150,14 +1146,11 @@ fn list_meters(dbus_user: bool) -> Result<(), Box<dyn std::error::Error>> {
     }
     let dbus_proxy = dbus_conn.with_proxy("com.silabs.Wisun.BorderRouter", "/com/silabs/Wisun/BorderRouter", Duration::from_millis(500));
 
-    println!("List Meters:");
+    println!("Registered Meters:");
     println!("--------------------------------------------------------------");
     let list_meters = dbus_proxy.list_meters().unwrap_or(vec![]);
     for (i, g) in list_meters.iter().enumerate() {
-        let ip_addr = Ipv6Addr::new((g[0] as u16)*256+(g[1] as u16), (g[2] as u16)*256+(g[3] as u16), 
-                                    (g[4] as u16)*256+(g[5] as u16), (g[6] as u16)*256+(g[7] as u16), 
-                                    (g[8] as u16)*256+(g[9] as u16), (g[10] as u16)*256+(g[11] as u16),
-                                    (g[12] as u16)*256+(g[13] as u16), (g[14] as u16)*256+(g[15] as u16));
+        let ip_addr = Ipv6Addr::from([g[0],g[1],g[2],g[3],g[4],g[5],g[6],g[7],g[8],g[9],g[10],g[11],g[12],g[13],g[14],g[15]]);
         println!("IP address[{}]: {}", i, ip_addr);
     }
 

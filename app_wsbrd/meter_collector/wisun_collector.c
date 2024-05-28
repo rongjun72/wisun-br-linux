@@ -713,7 +713,7 @@ static void _collector_print_registered_meters(void)
 
   sl_wisun_mc_mutex_acquire(_collector_hnd);
 
-  printf("[Registered meters:]\n");
+  tr_info("[Registered meters:]");
   timestamp = get_monotonic_ms();
   block = _reg_meters_mempool.blocks;
 

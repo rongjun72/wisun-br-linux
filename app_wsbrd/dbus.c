@@ -1639,6 +1639,7 @@ static int dbus_list_meters(sd_bus *bus, const char *path, const char *interface
     ////////tr_warn("---- Network state:");
     uint8_t address_buf[128];
     int address_count = 0;
+    sl_wisun_collector_print_meters();
 
     ret = sd_bus_message_open_container(reply, 'a', "ay");
     WARN_ON(ret < 0, "%s", strerror(-ret));

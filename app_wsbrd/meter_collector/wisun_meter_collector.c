@@ -63,7 +63,7 @@
 /// Print measurement packet internal macro function
 #define __print_packet(ip_address, packet)                              \
   do {                                                                  \
-    TRACE(TR_TIMERS, "[%s: {id: %d}{temp: %d.%d}{hum: %d.%d}{lx: %d}]", \
+    TRACE(TR_DHCP, "[%s: {id: %d}{temp: %d.%d}{hum: %d.%d}{lx: %d}]", \
            ip_address,                                                  \
            packet->id,                                                  \
            packet->temperature / 1000,                                  \
